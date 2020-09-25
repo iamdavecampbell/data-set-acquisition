@@ -1,0 +1,117 @@
+---
+title: "Production and Sale of Greenhouse Flowers and Plants - Open Canada"
+date: '2020-08-10'
+author: "Junpu Xie & Dave Campbell"
+slug: production-data-production-and-sale-of-greenhouse-flowers-and-plants-open-canada
+categories: ["Production Data"]
+tags: ["Spatial Data Set", "Time Series", "Line Chart", "Regression", "Greenhouse Flowers and Plants", "Production Data", "Canada"]
+subtitle: ''
+summary: 'The dataset of plants production and sales is described by many meaningful variables, such as years from 2007 to 2019, geometry which includes Canada and its 10 provinces, flowers and 5 plants types and two output types, which are production with the unit of a number and sales with the unit of a dollar.'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Possible analysis and Keywords
+
+- Spatial Data Set 
+- Time Series
+- Line Chart
+- Simple Linear Regression
+- Greenhouse Flowers and Plants
+- Production Data
+
+## Data Provider
+
+Statistics Canada's [Open Government](https://open.canada.ca/en) is a free and open-access platform  containing over 80,000 datasets across diverse subjects. The purpose of sharing all data documents with the public is to remain transparent and accessible. 
+
+Dataset can be discovered by multiple searching methods [here](https://open.canada.ca/en/open-data), such as [Browse by subject](https://open.canada.ca/en/open-data), [Open Government Portal](https://search.open.canada.ca/en/od/?sort=last_modified_tdt%20desc&page=1&search_text=&od-search-portal=Open%20Data&_ga=2.198521263.1872662645.1597195650-535176367.1594143568) for direct keywords search, [Open Maps](https://open.canada.ca/en/open-map) which contains geospatial information data, [Open Data Inventory](https://open.canada.ca/en/search/inventory) from the government of Canada organization, [Apps Gallery](https://open.canada.ca/en/apps) for representing those mobile and web-based application data, [Open Data 101](https://open.canada.ca/en/open-data-principles) for letting people know how to use dataset and so on.
+
+***
+
+## Production and Sales of Greenhouse flowers and plants
+
+The annual production and sales of different types of flowers and plants from 2007 to 2019 in Canada is compiled with its metadata file  [here](https://open.canada.ca/data/en/dataset/31552d6f-7504-4258-9125-8d9aa45792ce).  The metadata  contains detailed variable descriptions. The dataset and supporting documentation can are available from  [Statistics Canada](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3210024601).
+
+Variables include years from 2007 to 2019, province of production, flower and plant types, and production count and sales.
+
+## Exploratory Analysis
+
+### Organizing Dataset
+
+The following R code is used to obtain and organize the dataset and separate it into two by output type (sales and production).
+
+```{r dataset}
+library(tidyverse)
+library(GGally)
+# Download the zip file of plant sales and production
+temp <- tempfile()
+download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip",temp)
+(file_list <- as.character(unzip(temp, list = TRUE)$Name))
+plants <- read.csv(unz(temp, "32100246.csv")) %>%as_tibble
+unlink(temp) # Delete temp file
+
+# Rename a couple of columns
+plants <- plants %>% rename(year = REF_DATE, location = GEO)
+
+```
+
+### Greenhouse plants production and sales in Canada
+
+The following code is used to plot greenhouse plant production and sales in Canada.
+
+```{r canada, message = FALSE}
+
+
+# Subset a dataset of plants production in Canada 
+plants %>% subset(location == "Canada" & Output =="Production (number)") %>%
+ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
+  labs(y = "Production (number)", title = "Greenhouse plants production in Canada") +
+  geom_line(aes(color = Flowers.and.plants))
+
+plants %>% subset(location == "Canada" & Output =="Sales") %>%
+ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
+  labs(y = "Sales ($ dollars)", title = "Greenhouse plants sales in Canada") +
+  geom_line(aes(color = Flowers.and.plants))
+
+```
+
+
+
+* So, the following code is used to discover the plant production in different provinces.
+
+### Bedding plants (vegetables & ornamental) production 
+
+```{r bedding plants, warning = FALSE}
+
+# Select the datasets of two different bedding plants (vegetable & ornamental) in 10 different provinces
+
+plants %>% subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total vegetable bedding plants [115143421]") %>%
+ggplot( aes(x = year, y = VALUE, group = location)) +
+  geom_line(aes(color = location)) +
+  labs(y = "Number produced")+
+  ggtitle("Total vegetable bedding plants production")
+
+
+
+plants %>% subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total ornamental bedding plants [115143411]") %>%
+ggplot( aes(x = year, y = VALUE, group = location)) +
+  geom_line(aes(color = location)) +
+  labs(y = "Number produced")+
+  ggtitle("Total ornamental bedding plants production")
+
+
+```
+
+
+## Examining all production counts within Canada
+
+
+```{r}
+plants %>% subset(location == "Canada" & Output =="Production (number)") %>% select(year, Flowers.and.plants, VALUE)%>%
+  spread(Flowers.and.plants,VALUE) %>%
+  ggpairs()
+
+```
