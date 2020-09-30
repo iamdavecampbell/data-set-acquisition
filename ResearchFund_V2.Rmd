@@ -55,7 +55,7 @@ library(hrbrthemes)
 library(ggridges) # for geom_density_ridges()
 
 # Download the CSV file and organize the dataset
-data <- read.csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", stringsAsFactors = FALSE, header = TRUE,skip=1)
+data <- read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skip=1)
 
 
 
