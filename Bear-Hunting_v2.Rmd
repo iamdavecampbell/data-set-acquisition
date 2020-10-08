@@ -71,9 +71,8 @@ head(data)
 
 ### Total Number of Bear Hunters and Harvest
 
-The following code plots  the total number of active hunters and bear harvested by year.
+The following code plots the total number of bears harvested per active hunter in each WMU.
 
-* The blue line shows the number of active black bear hunters in a year, its axis is on the left side. The purple line represents the number of black bear harvests in a given year and its axis is on the right side of the graph.
 
 
 
