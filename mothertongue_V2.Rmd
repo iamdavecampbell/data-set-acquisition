@@ -59,7 +59,7 @@ tongue <- read_csv(unz(temp, "15100003.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the dataset and split it by measurement methods
-tongue = tongue %>% 
+tongue = tongue %>% rename_all(make.names) %>%
          rename(year = REF_DATE, location = GEO)%>%
          select(year, location, Mother.tongue, Statistics, VALUE) %>% 
          spread(Statistics, VALUE)
