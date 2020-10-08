@@ -55,11 +55,11 @@ library(gridExtra) #for grid.arrage() function
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-tongue <- read.csv(unz(temp, "15100003.csv"), stringsAsFactors = FALSE)
+tongue <- read_csv(unz(temp, "15100003.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the dataset and split it by measurement methods
-tongue = as_tibble(tongue) %>% 
+tongue = tongue %>% 
          rename(year = REF_DATE, location = GEO)%>%
          select(year, location, Mother.tongue, Statistics, VALUE) %>% 
          spread(Statistics, VALUE)
