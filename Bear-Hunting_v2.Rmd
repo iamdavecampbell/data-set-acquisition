@@ -69,7 +69,7 @@ head(data)
 ```
 
 
-### Total Number of Bear Hunters and Harvest
+### Plotting the Number of Bear Hunters and Harvest
 
 The following code plots the number of bears harvested per active hunter in each WMU.
 
