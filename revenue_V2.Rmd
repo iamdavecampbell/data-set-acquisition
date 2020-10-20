@@ -59,8 +59,7 @@ unlink(temp) # Delete temp file
 
 revenue <- revenue %>% 
   separate(REF_DATE, c("year", "year.end"), "/") %>% 
-  mutate(year = as.numeric(year))%>%
-  drop_na(VALUE) 
+  mutate(year = as.numeric(year))
 
 
 ```
