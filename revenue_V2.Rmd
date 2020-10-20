@@ -52,7 +52,7 @@ library(hrbrthemes)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/37100084-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-revenue <- read.csv(unz(temp, "37100084.csv"), stringsAsFactors = FALSE)
+revenue <- read_csv(unz(temp, "37100084.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the dataset
@@ -60,8 +60,7 @@ unlink(temp) # Delete temp file
 revenue <- revenue %>% 
   separate(REF_DATE, c("year", "year.end"), "/") %>% 
   mutate(year = as.numeric(year))%>%
-  drop_na(VALUE) %>%
-  as_tibble()
+  drop_na(VALUE) 
 
 
 ```
