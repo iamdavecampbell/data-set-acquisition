@@ -53,15 +53,14 @@ library(lubridate)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/16100100-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-quarterlydata <- read.csv(unz(temp, "16100100.csv"), stringsAsFactors = FALSE)
+quarterlydata <- read_csv(unz(temp, "16100100.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the quarterly dataset 
 quarterly     = quarterlydata 
 quarterly[,1] = as_date(paste(quarterly[,1],"-1",sep =""))
 quarterly     = quarterly %>% rename(quarter = REF_DATE, QuarterlyValue = VALUE)%>%
-                as_tibble() %>%
-  select(quarter, QuarterlyValue)
+                select(quarter, QuarterlyValue)
 
 
 
@@ -69,14 +68,14 @@ quarterly     = quarterly %>% rename(quarter = REF_DATE, QuarterlyValue = VALUE)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/16100099-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-monthlydata <- read.csv(unz(temp, "16100099.csv"), stringsAsFactors = FALSE)
+monthlydata <- read_csv(unz(temp, "16100099.csv"))
 unlink(temp)
 monthlydata     = monthlydata %>% rename(date = REF_DATE, Produced = VALUE)
 
 
 # It is necessary to add the month and day values at the end of the year data before running as.Date() function. Since the original CSV file has its default data format, we need to fill out the missing parts of the date, which is date data in this case, as the character format, then use the as.Date() function to convert. 
 
-monthly <- monthlydata %>% as_tibble() %>%
+monthly <- monthlydata
                 mutate(date =  as_date(paste(monthlydata[,"date"],"-1",sep ="")))%>%
                 select(date, Produced) 
                 
