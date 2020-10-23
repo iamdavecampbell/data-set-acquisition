@@ -50,7 +50,7 @@ library(GGally)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-plants <- read.csv(unz(temp, "32100246.csv")) %>%as_tibble
+plants <- read_csv(unz(temp, "32100246.csv")) 
 unlink(temp) # Delete temp file
 
 # Rename a couple of columns
