@@ -51,12 +51,12 @@ download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100008-eng.zip",temp)
 meta <- read.csv(unz(temp, "32100008_MetaData.csv"), stringsAsFactors = FALSE, skip = 8) %>%
        select(Dimension.ID, Member.Name, Member.ID)
 
-export_data <- read.csv(unz(temp, "32100008.csv"), stringsAsFactors = FALSE)
+export_data <- read_csv(unz(temp, "32100008.csv"))
 unlink(temp)
 
 
 # organize the export data
-export_data <- export_data %>% as_tibble %>% 
+export_data <- export_data %>% 
              rename(date = REF_DATE, location = GEO) %>%
              separate(col = date, into = c("year", "month"), sep = "-")%>%  # split the year-month column into two different columns
              mutate(year = as.numeric(year), month = as.numeric(month)) 
