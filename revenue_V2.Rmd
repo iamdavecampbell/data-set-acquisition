@@ -1,7 +1,7 @@
 ---
 title: "Private Elementary and Secondary Schools Revenues - Open Canada"
+author: "Junpu Xie and Dave Campbell"
 date: '2020-08-10'
-author: "Junpu Xie & Dave Campbell"
 slug: private-elementary-and-secondary-schools-revenues-open-canada
 categories: ["Regression"]
 tags: ["Time Series", "Exploratory Analysis", "Canada", "School Revenue", "Education", "Ontario"]
@@ -59,10 +59,13 @@ unlink(temp) # Delete temp file
 
 revenue <- revenue %>% 
   separate(REF_DATE, c("year", "year.end"), "/") %>% 
-  mutate(year = as.numeric(year)) %>%
+  mutate(year = as.numeric(year))%>%
+  drop_na(VALUE) %>%
   rename_all(make.names)
+  
 
-
+# take a look at the data:
+revenue %>% glimpse
 ```
 
 ### School Revenue by Different Funded Source in Canada
@@ -86,7 +89,7 @@ ggplot( aes(x=year, y=VALUE, group=Direct.source.of.funds, colour =Direct.source
 
 The following code is used to draw the stacked area chart so that we can directly see the time-series trend and proportion in different provinces over the years.
 
-```{r proince, warning = FALSE, message = FALSE}
+```{r province, warning = FALSE, message = FALSE}
 
 
 
@@ -102,3 +105,47 @@ ggplot( aes(x=year, y=VALUE, group=GEO, colour =GEO)) +
 
 ```
 
+
+
+### Tidy the variables
+
+There are quite a few variables that aren't really of interest like *SCALAR_ID* and *COORDINATE*, while other variables are hidden within the single column *Direct.source.of.funds*.  Here we wish to rearrange the data from a tall format into a wider format.  The function *pivot_wider* takes a column and spreads its factors into new columns.  This makes the observational unit combinations of *year* and *GEO*.  
+
+
+```{r pivotwider}
+# select the columns of interest
+revenue_wide = revenue %>% 
+      select(year, GEO, Direct.source.of.funds, VALUE) %>% 
+  # pivot wider by taking factors from Direct.source.of.funds
+  # fill in the variable with values from VALUE
+      pivot_wider(names_from = Direct.source.of.funds, values_from = VALUE) %>%    
+  # rebuild the variable names so that they do not have spaces
+      rename_all(make.names)
+
+revenue_wide %>% glimpse
+
+```
+
+
+
+## Wider data makes easier plotting and analysis
+
+To predict the school fees, one would need to consider the other sources of funding.  Such a regression model can't be directly made without first widening the data.  Below, the variables are plotted against each other and a basic linear model is performed.
+
+
+
+```{r wider plots}
+library(GGally)
+revenue_wide %>% 
+  filter(GEO=="Canada") %>% 
+ ggpairs()
+```
+
+
+```{r linear modelling}
+
+CanadaWide = revenue_wide %>% 
+  filter(GEO=="Canada")
+lm(Fees~Transfers.from.school.boards+Municipal.government+Provincial.government+Federal.government,CanadaWide)
+
+```

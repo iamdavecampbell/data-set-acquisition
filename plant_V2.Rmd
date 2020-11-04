@@ -54,7 +54,8 @@ plants <- read_csv(unz(temp, "32100246.csv"))
 unlink(temp) # Delete temp file
 
 # Rename a couple of columns
-plants <- plants %>% rename(year = REF_DATE, location = GEO)
+plants <- plants %>% rename(year = REF_DATE, location = GEO) %>%
+         rename_all(make.names)
 
 ```
 

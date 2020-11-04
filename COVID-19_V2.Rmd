@@ -219,8 +219,10 @@ There are a heck of a lot of school boards and they have long names that will ma
 
 
 ```{r}
-school = school %>% mutate(School_Board = str_replace_all(
-  School_Board, pattern = "(\\sof\\s)|([Dd]istrict)|(School)|(Board)|([cC]onseil)|(scolaire)|(\\\xe9coles)|( du )|(conseil)|(\\sde\\s)|(\\sdes\\s)|(\\<district\\>)|
+#ensure all variable names are lower case
+colnames(school) = tolower(colnames(school))
+school = school %>% mutate(school_board = str_replace_all(
+  school_board, pattern = "(\\sof\\s)|([Dd]istrict)|(School)|(Board)|([cC]onseil)|(scolaire)|(\\\xe9coles)|( du )|(conseil)|(\\sde\\s)|(\\sdes\\s)|(\\<district\\>)|
   (\\\x92)",
   replacement = ""))  
 
@@ -231,9 +233,9 @@ Now we can plot the school district data
 
 ```{r}
 
-school%>% group_by(Report_Date,School_Board) %>%
-  summarise(DailyTotal = sum(Total_Confirmed_Cases)) %>%
-  ggplot(aes(x= Report_Date, y =DailyTotal , colour = School_Board)) +
+school%>% group_by(reported_date,school_board) %>%
+  summarise(dailytotal = sum(total_confirmed_cases)) %>%
+  ggplot(aes(x= reported_date, y =dailytotal , colour = school_board)) +
   geom_line() +
   scale_x_date(date_labels = "%d/%m", date_breaks = "1 weeks")+
 theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))

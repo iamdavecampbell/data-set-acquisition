@@ -61,7 +61,7 @@ data <- read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skip
 
 
 # Get rid of empty rows and change the formats of date and currency variables
-data <- data %>% as_tibble()%>% 
+data <- data %>% rename_all(make.names)%>% 
   subset(Program!="") %>%
   mutate(Ontario.Commitment = as.numeric(gsub("[$,]", "", Ontario.Commitment))) %>%
   mutate(Total.Project.Costs = as.numeric(gsub("[$,]", "", Total.Project.Costs))) %>%

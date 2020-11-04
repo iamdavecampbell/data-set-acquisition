@@ -57,8 +57,7 @@ quarterlydata <- read_csv(unz(temp, "16100100.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the quarterly dataset 
-quarterly     = quarterlydata 
-quarterly[,1] = as_date(paste(quarterly[,1],"-1",sep =""))
+quarterly     = quarterlydata %>% mutate(REF_DATE = as_date(paste(REF_DATE,"-1",sep ="")))
 quarterly     = quarterly %>% rename(quarter = REF_DATE, QuarterlyValue = VALUE)%>%
                 select(quarter, QuarterlyValue)
 
@@ -75,8 +74,8 @@ monthlydata     = monthlydata %>% rename(date = REF_DATE, Produced = VALUE)
 
 # It is necessary to add the month and day values at the end of the year data before running as.Date() function. Since the original CSV file has its default data format, we need to fill out the missing parts of the date, which is date data in this case, as the character format, then use the as.Date() function to convert. 
 
-monthly <- monthlydata
-                mutate(date =  as_date(paste(monthlydata[,"date"],"-1",sep ="")))%>%
+monthly <- monthlydata %>%
+                mutate(date =  as_date(paste(date,"-1",sep ="")))%>%
                 select(date, Produced) 
                 
 
