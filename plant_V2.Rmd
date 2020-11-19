@@ -50,12 +50,11 @@ library(GGally)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-plants <- read_csv(unz(temp, "32100246.csv")) 
+plants <- read.csv(unz(temp, "32100246.csv")) %>%as_tibble
 unlink(temp) # Delete temp file
 
 # Rename a couple of columns
-plants <- plants %>% rename(year = REF_DATE, location = GEO) %>%
-         rename_all(make.names)
+plants <- plants %>% rename(year = REF_DATE, location = GEO)
 
 ```
 
@@ -112,7 +111,7 @@ ggplot( aes(x = year, y = VALUE, group = location)) +
 
 ```{r}
 plants %>% subset(location == "Canada" & Output =="Production (number)") %>% select(year, Flowers.and.plants, VALUE)%>%
-  spread(Flowers.and.plants,VALUE) %>%
+  pivot_wider(names_from= Flowers.and.plants,values_from=VALUE) %>%
   ggpairs()
 
 ```

@@ -62,7 +62,7 @@ unlink(temp) # Delete temp file
 tongue = tongue %>% rename_all(make.names) %>%
          rename(year = REF_DATE, location = GEO)%>%
          select(year, location, Mother.tongue, Statistics, VALUE) %>% 
-         spread(Statistics, VALUE)
+         pivot_wider(names_from= Statistics, values_from=VALUE)
 
 ```
 
