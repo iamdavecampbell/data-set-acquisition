@@ -54,7 +54,7 @@ library(lubridate)
 library(ggpubr)
 
 Canadian.data <- read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv") %>% 
-                 mutate(date = as_date(date, format = "%d-%m-%y"))
+                 mutate(date = as_date(date, format = "%d-%m-%Y"))
 ```
 
 > Summary
