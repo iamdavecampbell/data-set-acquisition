@@ -2,7 +2,7 @@
 title: "COVID Data: COVID-19 Data - Government of Canada and JHU CSSE"
 author: "Junpu Xie & Dave Campbell"
 date: '2020-07-24'
-slug: covid-data-covid-19-govenrmne-of-canada-and-jhu-csse
+slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse
 categories: ["COVID Data"]
 tags: ["Linear Regression", "Normal Distribution","Time Series", "Aggregated Ddata", "Spatial Data Set", "COVID-19", "COVID Data"]
 subtitle: ''
@@ -228,8 +228,9 @@ school = school %>% mutate(school_board = str_replace_all(
 
 ```
 
-#Plot within district
+# Plot within district
 Now we can plot the school district data
+
 
 ```{r}
 
@@ -238,9 +239,16 @@ school%>% group_by(reported_date,school_board) %>%
   ggplot(aes(x= reported_date, y =dailytotal , colour = school_board)) +
   geom_line() +
   scale_x_date(date_labels = "%d/%m", date_breaks = "1 weeks")+
-theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  # Since making this page in July, the number of schools increased. 
+# It's better to remove the legend so the plot fits the rendered page:
+  theme(legend.position = "none")
+
 
 ```
+
+
+
 
 ## COVID-19 Packages in R 
 
