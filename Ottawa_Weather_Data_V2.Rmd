@@ -44,7 +44,7 @@ The daily climate data in Ottawa is summarized via the Max, Min, and Mean Temper
 #libraries
 library(tidyverse)
 library(lubridate)
-library("RColorBrewer")
+library(RColorBrewer)
 
 ```
 
@@ -104,7 +104,7 @@ for(lp in 1:length(files2load)){
 Make some plots
 ```{r}
 # convert all column names to valid R syntax:
-colnames(data_daily) = gsub(colnames(data_daily),pattern="[[:punct:]]|\\s",replacement=".")
+data_daily = data_daily |> rename_all(make.names)
 ggplot(data_daily,aes(x=Date.Time,y=Mean.Temp...C.,colour=factor(Year)))+
   geom_line()+
   ggtitle("Daily Mean Temperatures")+
@@ -122,7 +122,7 @@ data_daily |>
   group_by(Year) |> 
   summarise(MeanOfJulyMax=mean(Max.Temp...C.),
             MeanOfJanMin=mean(Min.Temp...C.)) |>
-  ungroup |>
+  ungroup() |>
 ggplot()+
   geom_line(aes(x=Year,y=MeanOfJulyMax , color="red"))+
   geom_line(aes(x=Year,y=MeanOfJanMin,color="blue"))+
@@ -138,7 +138,7 @@ data_daily |>
   group_by(Year) |> 
       summarise(MeanOfJulyMax=mean(Max.Temp...C.),
                 MeanOfJanMin=mean(Min.Temp...C.)) |>
-  ungroup |>
+  ungroup() |>
 ggplot()+
   geom_point(aes(x=MeanOfJulyMax,y=MeanOfJanMin))
 

@@ -65,7 +65,7 @@ revenue <- revenue |>
   
 
 # take a look at the data:
-revenue %>% glimpse
+revenue |> glimpse()
 ```
 
 ### School Revenue by Different Funded Source in Canada
@@ -122,7 +122,7 @@ revenue_wide = revenue |>
   # rebuild the variable names so that they do not have spaces
       rename_all(make.names)
 
-revenue_wide %>% glimpse
+revenue_wide |> glimpse()
 
 ```
 

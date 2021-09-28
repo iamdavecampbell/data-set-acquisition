@@ -78,7 +78,7 @@ We'll use that to grab the table.   Be warned that this data table is a csv of a
 ```{R, message = FALSE, cache = TRUE, warning = FALSE}
 data = get_cansim("14-10-0287-01") |> rename_all(make.names) 
 
-data %>% glimpse
+data |> glimpse()
 
 ```
 
@@ -292,9 +292,9 @@ The housing starts are more complicated beacuse they are based on cities but the
 ```{R, housing, cache = TRUE}
 housing = get_cansim("34-10-0154-01") |> rename_all(make.names) 
 
-housing %>% glimpse
+housing |> glimpse()
 # the unique cities
-housing |> pull(GEO) |> unique
+housing |> pull(GEO) |> unique()
 ```
 
 
@@ -310,14 +310,14 @@ Here are a few options using regular expressions.  Note that most of these give 
 ```{R}
 # set up city by replacing everything after the first "," with "":
 housing |> mutate(city = str_replace_all(GEO, pattern = "(,\\s).*", replacement ="")) |> 
-  pull(city) |> unique |> head(16)
+  pull(city) |> unique() |> head(16)
 
 #Split everything at the last comma:
 # Separate GEO at a ", ", but if more than one exists find the one which is NOT followed by any characters, then a comma:
 #Notice how this handles the Ontario and Quebec parts of the Ottawa-Gatineau region
 housing |> separate(GEO, into  = c("city","province"), sep = ",\\s(?!(.*,))") |> 
   select(city,  province) |>
-  unique|> head(16)
+  unique()|> head(16)
 
 #Build the province by splitting at the first comma, then adjusting the province by 
 # handing cases such as "Ontario part, Ontario/Quebec"
@@ -325,7 +325,7 @@ housing |> separate(GEO, into  = c("city","province"), sep = ",\\s(?!(.*,))") |>
 # second comma (where it exists) to be discarded.
 housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
   mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
-  select(city,  province)|> unique|> head(16) 
+  select(city,  province)|> unique()|> head(16) 
 #note that this leaves in an artifact province :"Ontario/Quebec" from Ottawa-Gatineau 
 # but that is a combo of the Ontario part and the Quebec part
 # that province combo could be replaced with NA and then eliminated later
@@ -334,7 +334,7 @@ housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |>
 housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
   mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
   mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))|>
-  select(city,  province)|> unique|> head(16) 
+  select(city,  province)|> unique()|> head(16) 
 ```
 
 #### Preparing for Merging Datasets
@@ -363,7 +363,7 @@ housing.starts = housing |> separate(GEO, into  = c("city","province"), sep = ",
 
 
 
-housing.starts %>% glimpse
+housing.starts |> glimpse()
 ```
 
 #### Clean up extraneous columns, and merge datasets:
@@ -377,7 +377,7 @@ both =  unemployment |>
   inner_join(housing.starts)
 
 
-both %>% glimpse
+both |> glimpse()
 ```
 
 
