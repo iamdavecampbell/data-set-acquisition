@@ -22,14 +22,16 @@ lastmod: '2021-06-11T18:40:19-04:00'
 
 
 
+
 # Goals
 
-First we pull socioeconomic data from Statistics Canada.  We manipulate and plot the unemployment rates.  Then we pull housing starts and consider relationships between the two datasets.
+Find and extract socio-economic data from Statistics Canada.  In this example we manipulate and plot unemployment rates and housing starts.  Relationships between the two datasets are examined.
 
 
 # Data Provider
 
-[cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) makes it easy to pull Statistics Canada's table datasets.  
+Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **cansim** package provides an API for downloading these tables.  See also the 
+[cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignette for examples and instructions to pull Statistics Canada datasets.  
 
 For larger tables, **cansim** offers sqlite integration.  See for example the [vignette](https://cran.r-project.org/web/packages/cansim/vignettes/working_with_large_tables.html)
 
@@ -42,7 +44,7 @@ For larger tables, **cansim** offers sqlite integration.  See for example the [v
 
 # Installing cansim
   
-  There are a lot of specifics in the package vignette, one way to view them is to install the library and use the **vignette* function:
+  There are a lot of specifics in the package vignette, one way to view them is to install the library and use the **vignette** function:
   
 ```{R cancensus package, eval=FALSE}
 
