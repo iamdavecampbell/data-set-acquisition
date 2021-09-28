@@ -57,10 +57,10 @@ unlink(temp) # Delete temp file
 
 # Organize the dataset
 
-revenue <- revenue %>% 
-  separate(REF_DATE, c("year", "year.end"), "/") %>% 
-  mutate(year = as.numeric(year))%>%
-  drop_na(VALUE) %>%
+revenue <- revenue |> 
+  separate(REF_DATE, c("year", "year.end"), "/") |> 
+  mutate(year = as.numeric(year))|>
+  drop_na(VALUE) |>
   rename_all(make.names)
   
 
@@ -75,7 +75,7 @@ The following code is used to draw the stacked area chart so that we can directl
 ```{r graph, warning = FALSE, message = FALSE}
 
 # Subset a reveune dataset which only focus on different funding source in Canada and plot the graph
-revenue %>% subset( GEO == "Canada" & Direct.source.of.funds != "Total revenues")%>%
+revenue |> subset( GEO == "Canada" & Direct.source.of.funds != "Total revenues")|>
 ggplot( aes(x=year, y=VALUE, group=Direct.source.of.funds, colour =Direct.source.of.funds)) + 
     geom_line(alpha=0.6 , size=.5) +
     scale_fill_viridis(discrete = T) +
@@ -94,7 +94,7 @@ The following code is used to draw the stacked area chart so that we can directl
 
 
 # Subset a reveune dataset which only focuses on different funding source in Canada and plot the graph
-revenue %>% subset( GEO != "Canada" & Direct.source.of.funds == "Total revenues")%>%
+revenue |> subset( GEO != "Canada" & Direct.source.of.funds == "Total revenues")|>
 ggplot( aes(x=year, y=VALUE, group=GEO, colour =GEO)) + 
     geom_line(alpha=0.6 , size=.5) +
     scale_fill_viridis(discrete = T) +
@@ -114,11 +114,11 @@ There are quite a few variables that aren't really of interest like *SCALAR_ID* 
 
 ```{r pivotwider}
 # select the columns of interest
-revenue_wide = revenue %>% 
-      select(year, GEO, Direct.source.of.funds, VALUE) %>% 
+revenue_wide = revenue |> 
+      select(year, GEO, Direct.source.of.funds, VALUE) |> 
   # pivot wider by taking factors from Direct.source.of.funds
   # fill in the variable with values from VALUE
-      pivot_wider(names_from = Direct.source.of.funds, values_from = VALUE) %>%    
+      pivot_wider(names_from = Direct.source.of.funds, values_from = VALUE) |>    
   # rebuild the variable names so that they do not have spaces
       rename_all(make.names)
 
@@ -136,15 +136,15 @@ To predict the school fees, one would need to consider the other sources of fund
 
 ```{r wider plots}
 library(GGally)
-revenue_wide %>% 
-  filter(GEO=="Canada") %>% 
+revenue_wide |> 
+  filter(GEO=="Canada") |> 
  ggpairs()
 ```
 
 
 ```{r linear modelling}
 
-CanadaWide = revenue_wide %>% 
+CanadaWide = revenue_wide |> 
   filter(GEO=="Canada")
 lm(Fees~Transfers.from.school.boards+Municipal.government+Provincial.government+Federal.government,CanadaWide)
 

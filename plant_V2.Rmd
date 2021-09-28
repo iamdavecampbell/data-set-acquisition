@@ -50,11 +50,11 @@ library(GGally)
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-plants <- read.csv(unz(temp, "32100246.csv")) %>%as_tibble
+plants <- read_csv(unz(temp, "32100246.csv")) |>as_tibble
 unlink(temp) # Delete temp file
 
 # Rename a couple of columns
-plants <- plants %>% rename(year = REF_DATE, location = GEO)
+plants <- plants |> rename(year = REF_DATE, location = GEO)
 
 ```
 
@@ -66,12 +66,12 @@ The following code is used to plot greenhouse plant production and sales in Cana
 
 
 # Subset a dataset of plants production in Canada 
-plants %>% subset(location == "Canada" & Output =="Production (number)") %>%
+plants |> subset(location == "Canada" & Output =="Production (number)") |>
 ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
   labs(y = "Production (number)", title = "Greenhouse plants production in Canada") +
   geom_line(aes(color = Flowers.and.plants))
 
-plants %>% subset(location == "Canada" & Output =="Sales") %>%
+plants |> subset(location == "Canada" & Output =="Sales") |>
 ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
   labs(y = "Sales ($ dollars)", title = "Greenhouse plants sales in Canada") +
   geom_line(aes(color = Flowers.and.plants))
@@ -88,7 +88,7 @@ ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
 
 # Select the datasets of two different bedding plants (vegetable & ornamental) in 10 different provinces
 
-plants %>% subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total vegetable bedding plants [115143421]") %>%
+plants |> subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total vegetable bedding plants [115143421]") |>
 ggplot( aes(x = year, y = VALUE, group = location)) +
   geom_line(aes(color = location)) +
   labs(y = "Number produced")+
@@ -96,7 +96,7 @@ ggplot( aes(x = year, y = VALUE, group = location)) +
 
 
 
-plants %>% subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total ornamental bedding plants [115143411]") %>%
+plants |> subset(location != "Canada" & Output =="Production (number)" & Flowers.and.plants =="Total ornamental bedding plants [115143411]") |>
 ggplot( aes(x = year, y = VALUE, group = location)) +
   geom_line(aes(color = location)) +
   labs(y = "Number produced")+
@@ -110,8 +110,9 @@ ggplot( aes(x = year, y = VALUE, group = location)) +
 
 
 ```{r}
-plants %>% subset(location == "Canada" & Output =="Production (number)") %>% select(year, Flowers.and.plants, VALUE)%>%
-  pivot_wider(names_from= Flowers.and.plants,values_from=VALUE) %>%
+plants |> subset(location == "Canada" & Output =="Production (number)") |> 
+  select(year, Flowers.and.plants, VALUE)|>
+  pivot_wider(names_from= Flowers.and.plants,values_from=VALUE) |>
   ggpairs()
 
 ```

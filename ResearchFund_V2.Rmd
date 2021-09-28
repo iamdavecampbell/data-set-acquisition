@@ -61,17 +61,17 @@ data <- read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skip
 
 
 # Get rid of empty rows and change the formats of date and currency variables
-data <- data %>% rename_all(make.names)%>% 
-  subset(Program!="") %>%
-  mutate(Ontario.Commitment = as.numeric(gsub("[$,]", "", Ontario.Commitment))) %>%
-  mutate(Total.Project.Costs = as.numeric(gsub("[$,]", "", Total.Project.Costs))) %>%
+data <- data |> rename_all(make.names)|> 
+  subset(Program!="") |>
+  mutate(Ontario.Commitment = as.numeric(gsub("[$,]", "", Ontario.Commitment))) |>
+  mutate(Total.Project.Costs = as.numeric(gsub("[$,]", "", Total.Project.Costs))) |>
   mutate(Approval.Date = as.Date(Approval.Date, "%d-%b-%y"))
 head(data)
 
 # Plot the Paired graph
 #extract the year from the approval date
-data %>% 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")%>%
+data |> 
+  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
 ggplot( )+
   #geom_point(aes(x=year, y=Ontario.Commitment))+
   geom_boxplot(aes(y=Ontario.Commitment, x=factor(year)))+
@@ -90,12 +90,12 @@ ggplot( )+
 The following code is used to draw the different research areas funding.  Note that first we need to sum within each category (OIA\_AREA) and then fill in the table so that we have zeros in all the missing years.
 
 ```{r frequency, warning = FALSE}
-data %>% 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")%>%
-  group_by(year,OIA_AREA) %>%
-  summarize(TotalFunding = sum(Ontario.Commitment))%>%
-  ungroup()%>%
-  complete(OIA_AREA,year,fill = list(TotalFunding = 0))%>%
+data |> 
+  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
+  group_by(year,OIA_AREA) |>
+  summarize(TotalFunding = sum(Ontario.Commitment))|>
+  ungroup()|>
+  complete(OIA_AREA,year,fill = list(TotalFunding = 0))|>
 ggplot( aes(x=year, y=TotalFunding, group=OIA_AREA )) + 
   geom_line(aes(color = OIA_AREA)) +
   ggtitle("Total Funding Per Year Within Each Category")+
@@ -112,12 +112,12 @@ ggplot( aes(x=year, y=TotalFunding, group=OIA_AREA )) +
 ```{r percent, warning = FALSE}
 
 # percentage of study are in research fund
-data %>% 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")%>%
-  group_by(year,OIA_AREA) %>%
-  summarize(TotalFunding = sum(Ontario.Commitment))%>%
-  ungroup()%>%
-  complete(OIA_AREA,year,fill = list(TotalFunding = 0))%>%
+data |> 
+  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
+  group_by(year,OIA_AREA) |>
+  summarize(TotalFunding = sum(Ontario.Commitment))|>
+  ungroup()|>
+  complete(OIA_AREA,year,fill = list(TotalFunding = 0))|>
 ggplot( aes(x = year,fill=OIA_AREA, y=TotalFunding)) + 
     geom_bar(position="fill", stat="identity") +
     scale_fill_viridis(discrete = T) +
@@ -139,23 +139,23 @@ The following codes are used to plot the ridgeline graphs about the frequency of
 
 # Create thier own summarized table
 
-ins = data %>% 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")%>%
-  group_by(year,Lead.Research.Institution) %>%
-  tally() %>%
-  ungroup()%>%
+ins = data |> 
+  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
+  group_by(year,Lead.Research.Institution) |>
+  tally() |>
+  ungroup()|>
   complete(Lead.Research.Institution,year, fill = list(n = 0))
 
-city = data %>% 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")%>%
-  group_by(year,City) %>%
-  tally()%>%
-  ungroup()%>%
+city = data |> 
+  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
+  group_by(year,City) |>
+  tally()|>
+  ungroup()|>
   complete(City,year, fill = list(n = 0))
 
 
 # Plot their ridgeline graphs
-ins %>%
+ins |>
   ggplot(aes(y=Lead.Research.Institution, x=n,  fill=Lead.Research.Institution)) +
     geom_density_ridges(alpha=0.6, stat="binline", bins=20) +
     theme_ridges() +
@@ -165,7 +165,7 @@ ins %>%
     xlab("Number of approved research projects in a year") +
     ylab("Lead Research Institution")
 
-city %>%
+city |>
   ggplot(aes(y=City, x=n,  fill=City)) +
     geom_density_ridges(alpha=0.6, stat="binline", bins=20) +
     theme_ridges() +

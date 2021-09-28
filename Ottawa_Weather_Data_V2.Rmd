@@ -117,12 +117,12 @@ However it is tricky to see a change in a few degrees given the enormous seasona
 
 ```{r}
 
-data_daily %>% 
-  filter(Month == "07") %>% 
-  group_by(Year) %>% 
+data_daily |> 
+  filter(Month == "07") |> 
+  group_by(Year) |> 
   summarise(MeanOfJulyMax=mean(Max.Temp...C.),
-            MeanOfJanMin=mean(Min.Temp...C.)) %>%
-  ungroup %>%
+            MeanOfJanMin=mean(Min.Temp...C.)) |>
+  ungroup |>
 ggplot()+
   geom_line(aes(x=Year,y=MeanOfJulyMax , color="red"))+
   geom_line(aes(x=Year,y=MeanOfJanMin,color="blue"))+
@@ -133,12 +133,12 @@ ggplot()+
 
 
 
-data_daily %>% 
-  filter(Month == "07") %>% 
-  group_by(Year) %>% 
+data_daily |> 
+  filter(Month == "07") |> 
+  group_by(Year) |> 
       summarise(MeanOfJulyMax=mean(Max.Temp...C.),
-                MeanOfJanMin=mean(Min.Temp...C.)) %>%
-  ungroup %>%
+                MeanOfJanMin=mean(Min.Temp...C.)) |>
+  ungroup |>
 ggplot()+
   geom_point(aes(x=MeanOfJulyMax,y=MeanOfJanMin))
 
@@ -165,7 +165,7 @@ colnames(data_monthly) = gsub(colnames(data_monthly),pattern="[[:punct:]]|\\s",r
 
 data_monthly$Date.Time = as_date(paste0(data_monthly$Date.Time,"-1"))
 
-data_monthly %>% 
+data_monthly |> 
 ggplot(
        aes(x=Date.Time,y=Mean.Temp...C.,colour=factor(Year)))+
   geom_line()+

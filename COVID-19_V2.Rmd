@@ -53,7 +53,7 @@ library(tidyverse)
 library(lubridate)
 library(ggpubr)
 
-Canadian.data <- read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv") %>% 
+Canadian.data <- read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv") |> 
                  mutate(date = as_date(date, format = "%d-%m-%Y"))
 ```
 
@@ -70,10 +70,10 @@ Consider the number of case types in a province over the past few months
 
 ```{r stacked barplot, cache = TRUE, warning = FALSE}
 location ="Ontario"
-Canadian.data %>% subset(prname == location) %>%
-  select(date,numrecoveredtoday,numdeathstoday,numactive)%>%
-  rename(recovered.today=numrecoveredtoday,deaths.today=numdeathstoday,active=numactive)%>%
-  gather(key = casetype, value = "cases",-date) %>%
+Canadian.data |> subset(prname == location) |>
+  select(date,numrecoveredtoday,numdeathstoday,numactive)|>
+  rename(recovered.today=numrecoveredtoday,deaths.today=numdeathstoday,active=numactive)|>
+  gather(key = casetype, value = "cases",-date) |>
 ggplot( ) +
   geom_line(aes(x = date, y=cases,colour=casetype)) +
   scale_x_date(date_labels = "%d/%m", date_breaks = "2 weeks") +
@@ -81,10 +81,10 @@ ggplot( ) +
   
 
 
-Canadian.data %>% subset(prname == location) %>%
+Canadian.data |> subset(prname == location) |>
   select(date,
-         numtotal_last14, numdeaths_last14)%>%
-  gather(key = casetype, value = "cases",-date) %>%
+         numtotal_last14, numdeaths_last14)|>
+  gather(key = casetype, value = "cases",-date) |>
 ggplot( ) +
   geom_line(aes(x = date, y=cases,colour=casetype)) +
   scale_x_date(date_labels = "%d/%m", date_breaks = "2 weeks") +
@@ -93,10 +93,10 @@ ggplot( ) +
 
 
 
-Canadian.data %>% subset(prname == location) %>%
-  select(date,numconf,numdeaths,numrecover)%>%
-  mutate(Recovered.plus.Deaths = numdeaths+numrecover)%>%
-  gather(key = casetype, value = "cases",-date) %>%
+Canadian.data |> subset(prname == location) |>
+  select(date,numconf,numdeaths,numrecover)|>
+  mutate(Recovered.plus.Deaths = numdeaths+numrecover)|>
+  gather(key = casetype, value = "cases",-date) |>
 ggplot( ) +
   geom_line(aes(x = date, y=cases,colour=casetype)) +
   scale_x_date(date_labels = "%d/%m", date_breaks = "2 weeks") +
@@ -104,9 +104,9 @@ ggplot( ) +
 
 
 
-Canadian.data %>% subset(prname == location) %>%
-  select(date,numtestedtoday,numtoday)%>%
-    gather(key = casetype, value = "cases",-date) %>%
+Canadian.data |> subset(prname == location) |>
+  select(date,numtestedtoday,numtoday)|>
+    gather(key = casetype, value = "cases",-date) |>
 ggplot( ) +
   geom_line(aes(x = date, y=cases,colour=casetype)) +
   scale_x_date(date_labels = "%d/%m", date_breaks = "2 weeks") +
@@ -122,9 +122,9 @@ Look closely at the vertical scales in these plots.
 
 ```{r}
   
-Canadian.data %>% subset(prname == location) %>%
-  select(date,numtestedtoday,numtoday,numdeathstoday,numrecoveredtoday) %>%
-  gather(key = casetype, value = "cases",-date) %>%
+Canadian.data |> subset(prname == location) |>
+  select(date,numtestedtoday,numtoday,numdeathstoday,numrecoveredtoday) |>
+  gather(key = casetype, value = "cases",-date) |>
 ggplot( ) +
   geom_line(aes(x = date, y=cases,colour=casetype)) +
   scale_x_date(date_labels = "%d/%m", date_breaks = "2 weeks") +
@@ -141,12 +141,12 @@ Alternatively we can make each figure with its own scale and ggarrange them toge
 
 
 ```{r}
-data2use = Canadian.data %>% subset(prname == location) %>%
+data2use = Canadian.data |> subset(prname == location) |>
   select(date,numtestedtoday,numtoday,numdeathstoday,numrecoveredtoday)
 #  gather(key = casetype, value = "cases",-date) 
 
  
-p1 = data2use %>%
+p1 = data2use |>
 ggplot( ) +
   geom_line(aes(x = date, y=numtestedtoday),colour="red") + 
   scale_x_date(date_labels = "%d/%m", date_breaks = "4 weeks") +
@@ -154,14 +154,14 @@ ggplot( ) +
 
 
 
-p2 = data2use %>%
+p2 = data2use |>
 ggplot( ) +
   geom_line(aes(x = date, y=numtoday),colour="blue") + 
   scale_x_date(date_labels = "%d/%m", date_breaks = "4 weeks") +
   ggtitle(paste0("Number of new cases in ",location))
 
   
-p3 = data2use %>%
+p3 = data2use |>
 ggplot( ) +
   geom_line(aes(x = date, y=numdeathstoday),colour="green") + 
   scale_x_date(date_labels = "%d/%m", date_breaks = "4 weeks") +
@@ -169,7 +169,7 @@ ggplot( ) +
 
   
   
-p4 = data2use %>%
+p4 = data2use |>
 ggplot( ) +
   geom_line(aes(x = date, y=numrecoveredtoday),colour="black") + 
   scale_x_date(date_labels = "%d/%m", date_breaks = "4 weeks") +
@@ -185,8 +185,8 @@ ggarrange(p1, p2, p3, p4,
 ## We can also transform the vertical scale
 ```{r}
 
-Canadian.data %>% subset(prname == location) %>%
-  select(date,numtestedtoday,numtoday,numdeathstoday,numrecoveredtoday) %>%
+Canadian.data |> subset(prname == location) |>
+  select(date,numtestedtoday,numtoday,numdeathstoday,numrecoveredtoday) |>
 ggplot( ) +
   geom_line(aes(x = date, y=numdeathstoday),colour="red") + 
   scale_y_log10()+
@@ -221,7 +221,7 @@ There are a heck of a lot of school boards and they have long names that will ma
 ```{r}
 #ensure all variable names are lower case
 colnames(school) = tolower(colnames(school))
-school = school %>% mutate(school_board = str_replace_all(
+school = school |> mutate(school_board = str_replace_all(
   school_board, pattern = "(\\sof\\s)|([Dd]istrict)|(School)|(Board)|([cC]onseil)|(scolaire)|(\\\xe9coles)|( du )|(conseil)|(\\sde\\s)|(\\sdes\\s)|(\\<district\\>)|
   (\\\x92)",
   replacement = ""))  
@@ -234,8 +234,8 @@ Now we can plot the school district data
 
 ```{r}
 
-school%>% group_by(reported_date,school_board) %>%
-  summarise(dailytotal = sum(total_confirmed_cases)) %>%
+school|> group_by(reported_date,school_board) |>
+  summarise(dailytotal = sum(total_confirmed_cases)) |>
   ggplot(aes(x= reported_date, y =dailytotal , colour = school_board)) +
   geom_line() +
   scale_x_date(date_labels = "%d/%m", date_breaks = "1 weeks")+
@@ -271,9 +271,9 @@ The [covid19.data] function pulls the latest data from JHU CSSE.
 Data options include [aggregated] for all cases aggregated by country or a variety of time series for confirmed cases, deaths, etc...  The package vignette also allows users to obtain covid19's genomic sequence data from NCBI, but we won't do that here.
 
 ```{r datagrab, cache=TRUE, eval=FALSE}
-aggretated   <- covid19.data(case = "aggregated") %>% as_tibble()
-confirmed_US <- covid19.data(case = "ts-confirmed-US") %>% as_tibble()
-deaths_US    <- covid19.data(case = "ts-deaths-US") %>% as_tibble()
+aggretated   <- covid19.data(case = "aggregated") |> as_tibble()
+confirmed_US <- covid19.data(case = "ts-confirmed-US") |> as_tibble()
+deaths_US    <- covid19.data(case = "ts-deaths-US") |> as_tibble()
 
 ```
 

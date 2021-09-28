@@ -235,19 +235,19 @@ data2use = Ottawa_residential_Urban
 #Format the coumn nammes by removing spaces and replacing punctuation with "."
 colnames(data2use) = gsub(colnames(data2use),pattern="\\s|[[:punct:]]",replacement = ".")
 
-data2use = data2use  %>% rename(v.CA16.5805..Walked.Male   = v.CA16.5805..Walked, 
+data2use = data2use  |> rename(v.CA16.5805..Walked.Male   = v.CA16.5805..Walked, 
                      v.CA16.5806..Walked.Female = v.CA16.5806..Walked,
                      v.CA16.5806..Walked.Total  = v.CA16.5804..Walked,
                      v.CA16.4963..Average.after.tax.income.in.2015.among.recipients....Total  = v.CA16.4963..Average.after.tax.income.in.2015.among.recipients....,
                      v.CA16.4964..Average.after.tax.income.in.2015.among.recipients....Male  = v.CA16.4964..Average.after.tax.income.in.2015.among.recipients....,
-                     v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....Female  = v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....)%>%
+                     v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....Female  = v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....)|>
   mutate(People_per_sqkm = Population / Area..sq.km., 
         Proportion_walked = v.CA16.5806..Walked.Total/Population) 
 
 
 
 
-data2use %>%
+data2use |>
 ggplot(aes(x = v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....Female, y= v.CA16.4964..Average.after.tax.income.in.2015.among.recipients....Male))+
   geom_point()+
    labs(y = "Average Income for Males",x = "Average Income for Females") +
@@ -256,7 +256,7 @@ ggplot(aes(x = v.CA16.4965..Average.after.tax.income.in.2015.among.recipients...
 
 
 
-data2use %>%
+data2use |>
 ggplot(aes(x = v.CA16.4965..Average.after.tax.income.in.2015.among.recipients....Female, 
            y= Proportion_walked))+
   geom_point()+

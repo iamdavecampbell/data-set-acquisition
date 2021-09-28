@@ -57,8 +57,8 @@ quarterlydata <- read_csv(unz(temp, "16100100.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the quarterly dataset 
-quarterly     = quarterlydata %>% mutate(REF_DATE = as_date(paste(REF_DATE,"-1",sep ="")))
-quarterly     = quarterly %>% rename(quarter = REF_DATE, QuarterlyValue = VALUE)%>%
+quarterly     = quarterlydata |> mutate(REF_DATE = as_date(paste(REF_DATE,"-1",sep ="")))
+quarterly     = quarterly |> rename(quarter = REF_DATE, QuarterlyValue = VALUE)|>
                 select(quarter, QuarterlyValue)
 
 
@@ -69,27 +69,27 @@ download.file("https://www150.statcan.gc.ca/n1/tbl/csv/16100099-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
 monthlydata <- read_csv(unz(temp, "16100099.csv"))
 unlink(temp)
-monthlydata     = monthlydata %>% rename(date = REF_DATE, Produced = VALUE)
+monthlydata     = monthlydata |> rename(date = REF_DATE, Produced = VALUE)
 
 
 # It is necessary to add the month and day values at the end of the year data before running as.Date() function. Since the original CSV file has its default data format, we need to fill out the missing parts of the date, which is date data in this case, as the character format, then use the as.Date() function to convert. 
 
-monthly <- monthlydata %>%
-                mutate(date =  as_date(paste(date,"-1",sep ="")))%>%
+monthly <- monthlydata |>
+                mutate(date =  as_date(paste(date,"-1",sep ="")))|>
                 select(date, Produced) 
                 
 
 # Now we want to extend the quarterly data set by combining over the monthly dataset:             
 
 
-MoreQuarters <- monthly %>% 
-                mutate(quarter =  quarter(date,with_year = TRUE)) %>%
-                group_by(quarter) %>%
-                mutate(QuarterlyValue = sum(Produced))%>%
-                select(date, quarter, QuarterlyValue) %>%
-                distinct( quarter, QuarterlyValue, .keep_all=TRUE) %>%
-                ungroup() %>%
-                select(date, QuarterlyValue) %>%
+MoreQuarters <- monthly |> 
+                mutate(quarter =  quarter(date,with_year = TRUE)) |>
+                group_by(quarter) |>
+                mutate(QuarterlyValue = sum(Produced))|>
+                select(date, quarter, QuarterlyValue) |>
+                distinct( quarter, QuarterlyValue, .keep_all=TRUE) |>
+                ungroup() |>
+                select(date, QuarterlyValue) |>
                 rename(quarter = date)
                 
 AllQuarters = rbind(quarterly,MoreQuarters)
@@ -97,11 +97,11 @@ AllQuarters = rbind(quarterly,MoreQuarters)
 
 
 # Create the dataset of annual soft drink production by summarizing the quaterly production value by year
-annual = AllQuarters %>% 
-  mutate(Year = floor_date(AllQuarters$quarter, unit = "year")) %>%
-  group_by(Year) %>%
-  mutate(AnnualValue = sum(QuarterlyValue))%>%
-  select(Year, AnnualValue) %>%
+annual = AllQuarters |> 
+  mutate(Year = floor_date(AllQuarters$quarter, unit = "year")) |>
+  group_by(Year) |>
+  mutate(AnnualValue = sum(QuarterlyValue))|>
+  select(Year, AnnualValue) |>
   distinct( Year, AnnualValue) 
 
 
@@ -150,8 +150,8 @@ To better see the production proportions across the four quarters in each year, 
 
 # Use separate() function form tidyr package to take the date variable apart into year and month
 
- quarterly %>% 
-  separate( quarter, into = c("year","month", "date"), sep = "-") %>%
+ quarterly |> 
+  separate( quarter, into = c("year","month", "date"), sep = "-") |>
 # Stacked + percent
 ggplot( aes(fill=month, y= QuarterlyValue, x=as.Date(year,"%Y"))) +
   geom_bar(position="fill", stat="identity") + 

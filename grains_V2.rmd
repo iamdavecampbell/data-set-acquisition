@@ -45,20 +45,20 @@ The following code is used to extract the whole dataset of grains export from th
 library(tidyverse)
 
 # Download the zip file of the orginial grains export dataset
-temp <- tempfile()
+temp = tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100008-eng.zip",temp)
-(file_list <- as.character(unzip(temp, list = TRUE)$Name))
-meta <- read.csv(unz(temp, "32100008_MetaData.csv"), stringsAsFactors = FALSE, skip = 8) %>%
+(file_list = as.character(unzip(temp, list = TRUE)$Name))
+meta = read_csv(unz(temp, file_list[2]),  skip = 8) |> rename_all(make.names) |>
        select(Dimension.ID, Member.Name, Member.ID)
 
-export_data <- read_csv(unz(temp, "32100008.csv"))
+export_data = read_csv(unz(temp, "32100008.csv"))
 unlink(temp)
 
 
 # organize the export data
-export_data <- export_data %>% 
-             rename(date = REF_DATE, location = GEO) %>%
-             separate(col = date, into = c("year", "month"), sep = "-")%>%  # split the year-month column into two different columns
+export_data = export_data |> 
+             rename(date = REF_DATE, location = GEO) |>
+             separate(col = date, into = c("year", "month"), sep = "-")|>  # split the year-month column into two different columns
              mutate(year = as.numeric(year), month = as.numeric(month)) 
 ```
 
@@ -68,10 +68,10 @@ Some exploratory plots
 
 ```{r}
 # Summarize the annual export value by group of the year
- export_data %>% group_by(year, Commodity, Destinations) %>% 
-        summarize(total = sum(VALUE)) %>%
-        subset(Destinations == "Total exports, all destinations") %>%
-        ungroup() %>% 
+ export_data |> group_by(year, Commodity, Destinations) |> 
+        summarize(total = sum(VALUE)) |>
+        subset(Destinations == "Total exports, all destinations") |>
+        ungroup() |> 
 ggplot( aes(x = year, y = total, group = Commodity)) +
   labs(y = "total export (tonnes)") +
   geom_line(aes(color = Commodity)) +
@@ -86,11 +86,11 @@ The following code is used to plot total exports among different continents and 
 ```{r graph, warning = FALSE}
 
 # Select the whole export dataset about canola among different continents
-export_data %>% subset(Commodity == "Wheat, excluding durum" & Destinations != "Total exports, all destinations") %>%
-           filter( str_detect(Destinations, "Total")) %>% 
-           group_by(year, Commodity, Destinations) %>% 
-           summarize(total = sum(VALUE)) %>%
-           ungroup() %>% 
+export_data |> subset(Commodity == "Wheat, excluding durum" & Destinations != "Total exports, all destinations") |>
+           filter( str_detect(Destinations, "Total")) |> 
+           group_by(year, Commodity, Destinations) |> 
+           summarize(total = sum(VALUE)) |>
+           ungroup() |> 
 ggplot( aes(x = year, y = total, group = Destinations)) +
   labs(y = "total export (tonnes)") + 
   geom_line(aes(colour = Destinations)) +
@@ -105,11 +105,11 @@ Examining Wheat (excluding durum) for a couple of countries
 
 # Select a few contries and plot their imports
 
-export_data %>% 
-  subset(Commodity == "Wheat, excluding durum" & Destinations %in% c("United States", "People's Republic of China", "United Kingdom", "United Arab Emirates", "India", "Ethiopia")) %>%
-           group_by(year, Destinations) %>% 
-           summarize(total = sum(VALUE)) %>%
-           ungroup() %>%
+export_data |> 
+  subset(Commodity == "Wheat, excluding durum" & Destinations %in% c("United States", "People's Republic of China", "United Kingdom", "United Arab Emirates", "India", "Ethiopia")) |>
+           group_by(year, Destinations) |> 
+           summarize(total = sum(VALUE)) |>
+           ungroup() |>
 ggplot( aes(x = year, y = total, group = Destinations)) +
   labs(y = "total export (tonnes)") +
   geom_line(aes(colour = Destinations)) +
@@ -125,22 +125,22 @@ ggplot( aes(x = year, y = total, group = Destinations)) +
 Now consider canola for countries that have imported at least 1,000,000 tonnes in at least one year.  Plot all of their annual import data.
 
 ```{r}
-tmp_exports = export_data %>% 
-           subset(Commodity == "Canola (rapeseed)" & Destinations != "Total exports, all destinations") %>%
-           group_by(year, Commodity, Destinations) %>% 
-           summarize(total = sum(VALUE)) %>%
-           ungroup() %>%
+tmp_exports = export_data |> 
+           subset(Commodity == "Canola (rapeseed)" & Destinations != "Total exports, all destinations") |>
+           group_by(year, Commodity, Destinations) |> 
+           summarize(total = sum(VALUE)) |>
+           ungroup() |>
            subset(str_detect(Destinations, "Total") == "FALSE")
 
 # find all the countries that surpass 1,000,000 tonnes in at least one year, but keep all of the data for those countries
-big_countries = tmp_exports %>% 
-                  subset(total > 1000000) %>% 
-                  select(Destinations) %>% 
+big_countries = tmp_exports |> 
+                  subset(total > 1000000) |> 
+                  select(Destinations) |> 
                   unique()
 #Subset to just keep the "big" destination countries
 
-tmp_exports %>% 
-    subset(Destinations %in% big_countries$Destinations) %>%
+tmp_exports |> 
+    subset(Destinations %in% big_countries$Destinations) |>
 ggplot( aes(x = year, y = total, group = Destinations)) +
   labs(y = "total export (tonnes)") +
   geom_line(aes(color = Destinations)) +
@@ -155,9 +155,9 @@ ggplot( aes(x = year, y = total, group = Destinations)) +
 ### Look at Canola export by month
 
 ```{r canola}
-export_data %>% 
-           subset(Commodity == "Canola (rapeseed)") %>%
-           filter( str_detect(Destinations, "Total exports, all destinations")) %>%
+export_data |> 
+           subset(Commodity == "Canola (rapeseed)") |>
+           filter( str_detect(Destinations, "Total exports, all destinations")) |>
 ggplot() +
   geom_boxplot(aes(group = month, y = VALUE, x=month)) +
   geom_line(aes(x = month, group = year, y = VALUE, colour=factor(year)))+

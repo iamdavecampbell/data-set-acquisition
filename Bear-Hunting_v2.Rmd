@@ -55,8 +55,8 @@ library(tidyverse)
 data_download <- read_csv("https://files.ontario.ca/opendata/black_bear_2019.csv")
 
 
-total <- data_download %>% rename_all(make.names)%>% filter(WMU =="Total")
-data <- data_download %>% rename_all(make.names)%>% filter(WMU !="Total")
+total <- data_download |> rename_all(make.names)|> filter(WMU =="Total")
+data <- data_download |> rename_all(make.names)|> filter(WMU !="Total")
 
 ```
 

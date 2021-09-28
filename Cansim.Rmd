@@ -76,7 +76,7 @@ We'll use that to grab the table.   Be warned that this data table is a csv of a
 
 
 ```{R, message = FALSE, cache = TRUE, warning = FALSE}
-data = get_cansim("14-10-0287-01") %>% rename_all(make.names) 
+data = get_cansim("14-10-0287-01") |> rename_all(make.names) 
 
 data %>% glimpse
 
@@ -92,10 +92,10 @@ Stat Can tables are structured so that each row has a single value and columns d
 
 Let's inventory a few of these columns so that the exact spelling of attributes can be used below in the plots.
 ```{R}
-data$Labour.force.characteristics  %>% unique()
-data$Statistics  %>% unique()
-data$Age.group  %>% unique()
-data$GEO  %>% unique()
+data$Labour.force.characteristics  |> unique()
+data$Statistics  |> unique()
+data$Age.group  |> unique()
+data$GEO  |> unique()
 ```
 
 ### Plotting provinces against each other
@@ -109,12 +109,12 @@ I will need to filter the data so let's start there.  Here we go right from sele
 
 ```{R, employmentProvinces0}
 
-data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  pivot_wider(names_from= GEO, values_from=VALUE) %>%  # puts each province into its own column
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
   rename_all(make.names) # rebuilt the province names
 
 ```
@@ -123,22 +123,22 @@ The provinces are now _list_ variables, whereas they should be _doubles_ (single
 
 ```{R, employmentProvinces1}
 # run fewer lines of the previous code:
-data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")
 
 
 ## or view the problem this way, select Ontario and check out the first element:
-# data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)%>%
-#   filter(Sex == "Both sexes") %>% 
-#   filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-#   filter( Labour.force.characteristics == "Unemployment rate")%>%
-#   filter(Age.group == "25 to 54 years")%>%
-#   pivot_wider(names_from= GEO, values_from=VALUE) %>%  # puts each province into its own column
-#   rename_all(make.names) %>% 
-#   select(Ontario)%>% head%>% .[[1]]
+# data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+#   filter(Sex == "Both sexes") |> 
+#   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+#   filter( Labour.force.characteristics == "Unemployment rate")|>
+#   filter(Age.group == "25 to 54 years")|>
+#   pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+#   rename_all(make.names) |> 
+#   select(Ontario)|> head|> .[[1]]
 
 
 ```
@@ -147,7 +147,7 @@ If you look closely at the output in the first strategy you'll notice that there
 In order to have a one-to-one mapping add another variable to create a unique mapping.  Taking another close look at the **glimpse** output above, we can see that there is more than one **Data.type**.  Checking out its values we see the following:
 
 ```{R}
-data$Data.type  %>% unique()
+data$Data.type  |> unique()
 ```
 
 The multiple **VALUE**s are made unique when considering the **Data.type** variable.  To simplify things, let's select the _Unadjusted_ unemployment rate.
@@ -156,13 +156,13 @@ The multiple **VALUE**s are made unique when considering the **Data.type** varia
 
 ```{R, employmentProvinces1.5}
 
-data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  filter(Data.type == "Unadjusted")%>%
-  pivot_wider(names_from= GEO, values_from=VALUE) %>%  # puts each province into its own column
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
   rename_all(make.names) 
 
 ```
@@ -171,14 +171,14 @@ data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Da
 
 ```{R, employmentProvinces2}
 
-data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  filter(Data.type == "Unadjusted")%>%
-  pivot_wider(names_from= GEO, values_from=VALUE) %>%  # puts each province into its own column
-  rename_all(make.names) %>% 
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+  rename_all(make.names) |> 
 ggpairs( columns = 6:15, title = "Monthly Unemployment Rate: Not Seasonaly Adjusted",  
         axisLabels = "show")
 
@@ -197,14 +197,14 @@ Notice that the **REF_DATE** column is a character but it should be a date.  We'
 
 
 ```{R, employmentProvinces3}
-data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  filter(Data.type == "Unadjusted")%>%
-  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))%>% # convert from character date to date format.
-  rename(unemployment.rate = VALUE)%>%
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))|> # convert from character date to date format.
+  rename(unemployment.rate = VALUE)|>
   ggplot(aes(x=date, y = unemployment.rate, colour = GEO))+
   geom_line()+
   ggtitle("Unemployment Rates by Province")+
@@ -225,21 +225,21 @@ In some provinces, the strong seasonality of the unemployment rate realy pops ou
 
 ```{R, employmentProvinces4}
 
-data4plot = data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)%>%
-  filter(Sex == "Both sexes") %>% 
-  filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  filter(Data.type == "Unadjusted")%>%
-  separate(REF_DATE, into = c("year","month"),sep = "-")%>%#split year-month into year  month columns
-  mutate(year = as.numeric(year))%>%
-  mutate(month = as.numeric(month))%>%
+data4plot = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
   rename(unemployment.rate = VALUE)
 
   ggplot()+
   geom_line(data=data4plot,aes(x=month, y = unemployment.rate, colour = year, group = year))+
   # re-add in the pandemic year wwhile forcing the colour red
-  geom_line(data=data4plot%>% filter(year>2019),aes(x=month, y = unemployment.rate, group = year),colour = "red",lwd=1.24)+
+  geom_line(data=data4plot|> filter(year>2019),aes(x=month, y = unemployment.rate, group = year),colour = "red",lwd=1.24)+
     #add to the manual legend.
   scale_x_continuous(breaks = c(2,4,6,8,10))+
   ggtitle("Unadjusted Unemployment Rates by Province for 25 - 54 Year Olds: highlighting pandemic years")+
@@ -257,18 +257,18 @@ This time the Canadian average is included, despite the fact that it is a weight
 
 ```{R, pandemic5}
 
-unemployment = data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)%>%
-  filter(Sex == "Both sexes") %>% 
-  # filter(GEO != "Canada")%>% # since the Canada value will be a type of weighted average
-  filter( Labour.force.characteristics == "Unemployment rate")%>%
-  filter(Age.group == "25 to 54 years")%>%
-  filter(Data.type == "Unadjusted")%>%
-  separate(REF_DATE, into = c("year","month"),sep = "-")%>%#split year-month into year  month columns
-  mutate(year = as.numeric(year))%>%
-  mutate(month = as.numeric(month))%>%
-  mutate(pandemic = 1+.1*as.numeric(as.numeric(year>=2020)))%>%
-  mutate(decade = factor(floor(year/10)*10 ))%>%
-  rename(unemployment.rate = VALUE)%>%
+unemployment = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  # filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
+  mutate(pandemic = 1+.1*as.numeric(as.numeric(year>=2020)))|>
+  mutate(decade = factor(floor(year/10)*10 ))|>
+  rename(unemployment.rate = VALUE)|>
   rename(province = GEO)
   
 
@@ -290,11 +290,11 @@ unemployment = data %>% select(GEO,Sex,Age.group,Labour.force.characteristics,RE
 The housing starts are more complicated beacuse they are based on cities but the unemployment is based on provices
 
 ```{R, housing, cache = TRUE}
-housing = get_cansim("34-10-0154-01") %>% rename_all(make.names) 
+housing = get_cansim("34-10-0154-01") |> rename_all(make.names) 
 
 housing %>% glimpse
 # the unique cities
-housing %>% pull(GEO) %>% unique
+housing |> pull(GEO) |> unique
 ```
 
 
@@ -309,32 +309,32 @@ Here are a few options using regular expressions.  Note that most of these give 
 
 ```{R}
 # set up city by replacing everything after the first "," with "":
-housing %>% mutate(city = str_replace_all(GEO, pattern = "(,\\s).*", replacement ="")) %>% 
-  pull(city) %>% unique %>% head(16)
+housing |> mutate(city = str_replace_all(GEO, pattern = "(,\\s).*", replacement ="")) |> 
+  pull(city) |> unique |> head(16)
 
 #Split everything at the last comma:
 # Separate GEO at a ", ", but if more than one exists find the one which is NOT followed by any characters, then a comma:
 #Notice how this handles the Ontario and Quebec parts of the Ottawa-Gatineau region
-housing %>% separate(GEO, into  = c("city","province"), sep = ",\\s(?!(.*,))") %>% 
-  select(city,  province) %>%
-  unique%>% head(16)
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s(?!(.*,))") |> 
+  select(city,  province) |>
+  unique|> head(16)
 
 #Build the province by splitting at the first comma, then adjusting the province by 
 # handing cases such as "Ontario part, Ontario/Quebec"
 # notice that I'm actually splitting at all commas and allowing anything after the 
 # second comma (where it exists) to be discarded.
-housing %>% separate(GEO, into  = c("city","province"), sep = ",\\s") %>% 
-  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))%>%
-  select(city,  province)%>% unique%>% head(16) 
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  select(city,  province)|> unique|> head(16) 
 #note that this leaves in an artifact province :"Ontario/Quebec" from Ottawa-Gatineau 
 # but that is a combo of the Ontario part and the Quebec part
 # that province combo could be replaced with NA and then eliminated later
 # for example:
 
-housing %>% separate(GEO, into  = c("city","province"), sep = ",\\s") %>% 
-  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))%>%
-  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))%>%
-  select(city,  province)%>% unique%>% head(16) 
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))|>
+  select(city,  province)|> unique|> head(16) 
 ```
 
 #### Preparing for Merging Datasets
@@ -345,19 +345,19 @@ Here we rebuild the dataset and sum housing starts within provinces to obtain
 # We will keep the final strategy above, but also mutate in the
 # Housing.estimates  and Type.of.unit
 # select fewer variables, to clean it up prior to merging datasets
-housing.starts = housing %>% separate(GEO, into  = c("city","province"), sep = ",\\s") %>% 
-  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))%>%
-  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))%>%
-  rename(housing.starts = VALUE)%>% # so I'm not confused later
-  filter(Housing.estimates == "Housing starts")%>%
-  filter(Type.of.unit == "Total units") %>%
-  filter(!is.na(province))%>% # get rid of census metropolitan areas
-  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))%>% # convert from character date to date format.
-  separate(REF_DATE, into = c("year","month"),sep = "-")%>%#split year-month into year  month columns
-  mutate(year = as.numeric(year))%>%
-  mutate(month = as.numeric(month))%>%
-  group_by(province, year, month, date) %>% # look within provinces at a given time
-  summarize(total.housing = sum(housing.starts)) %>%
+housing.starts = housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))|>
+  rename(housing.starts = VALUE)|> # so I'm not confused later
+  filter(Housing.estimates == "Housing starts")|>
+  filter(Type.of.unit == "Total units") |>
+  filter(!is.na(province))|> # get rid of census metropolitan areas
+  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))|> # convert from character date to date format.
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
+  group_by(province, year, month, date) |> # look within provinces at a given time
+  summarize(total.housing = sum(housing.starts)) |>
   ungroup() 
 
 
@@ -372,8 +372,8 @@ By default _inner_join_ will merge two datasets based on their common column nam
 
 ```{R}
 
-both =  unemployment %>%
-  select(province, year, month, decade,pandemic, unemployment.rate) %>% 
+both =  unemployment |>
+  select(province, year, month, decade,pandemic, unemployment.rate) |> 
   inner_join(housing.starts)
 
 
@@ -390,7 +390,7 @@ In general as unemployment increases, housing starts decrease.
 
 ```{R}
 
-both %>% ggplot(aes(x=unemployment.rate, y =total.housing))+
+both |> ggplot(aes(x=unemployment.rate, y =total.housing))+
   geom_point( aes(colour =  province, group = province),alpha = .1)+#alpha is the transparancy of the points
   ggpubr::stat_regline_equation()+
   geom_smooth(method = "lm")+

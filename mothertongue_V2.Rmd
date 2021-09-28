@@ -59,9 +59,9 @@ tongue <- read_csv(unz(temp, "15100003.csv"))
 unlink(temp) # Delete temp file
 
 # Organize the dataset and split it by measurement methods
-tongue = tongue %>% rename_all(make.names) %>%
-         rename(year = REF_DATE, location = GEO)%>%
-         select(year, location, Mother.tongue, Statistics, VALUE) %>% 
+tongue = tongue |> rename_all(make.names) |>
+         rename(year = REF_DATE, location = GEO)|>
+         select(year, location, Mother.tongue, Statistics, VALUE) |> 
          pivot_wider(names_from= Statistics, values_from=VALUE)
 
 ```
@@ -73,22 +73,22 @@ The following code plots count, percentage, and percent change in mother tongue 
 
 
 ```{r canada, message = FALSE}
-tongue %>% subset(location == "Canada" & Mother.tongue != "Total, mother tongue") %>%
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
 ggplot( aes(x = year, y = Number, group = Mother.tongue)) +
   labs(title = "Number of speakers of mother tongues in Canada") +
   geom_line(aes(color = Mother.tongue))
 
 
-tongue %>% subset(location == "Canada" & Mother.tongue != "Total, mother tongue") %>%
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
 ggplot( aes(x = year, y = Percentage, group = Mother.tongue)) +
   labs(title = "Percentage of speakers of mother tongues in Canada") +
   geom_line(aes(color = Mother.tongue))
 
 
-tongue %>% subset(location == "Canada" & Mother.tongue != "Total, mother tongue") %>%
-  group_by(Mother.tongue) %>% 
-  mutate(pct_change = (Percentage/lag(Percentage) - 1) * 100) %>%
-  na.omit() %>%
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
+  group_by(Mother.tongue) |> 
+  mutate(pct_change = (Percentage/lag(Percentage) - 1) * 100) |>
+  na.omit() |>
 ggplot( aes(x = year, y = pct_change, group = Mother.tongue)) +
   labs(y = "Percentage Change", title = "Percentage change over 4 years for different mother tongues in Canada") +
   geom_line(aes(color = Mother.tongue))
@@ -109,12 +109,12 @@ After comparing changes in mother tongue, the following code focuses on the chan
 ```{r other language}
 
 # Plot the French and non-official language speakers proportion among all provinces in Canada 
-tongue %>% subset(location != "Canada" & Mother.tongue == "French")%>%
+tongue |> subset(location != "Canada" & Mother.tongue == "French")|>
 ggplot(aes(x = year, y = Percentage, group = location)) +
   labs(y = "Percentage", title = "Percentage of French  mother tongues in different provinces") +
   geom_line(aes(color = location))
 
-tongue %>% subset(location != "Canada" & Mother.tongue == "Non-official languages")%>% 
+tongue |> subset(location != "Canada" & Mother.tongue == "Non-official languages")|> 
 ggplot( aes(x = year, y = Percentage, group = location)) +
   labs(y = "Percentage", title = "Percentage of non-official language mother tongues in different provinces") +
   geom_line(aes(color = location))
