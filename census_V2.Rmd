@@ -233,7 +233,7 @@ Select your final data set and we can make new variables and look at some data.
 data2use = Ottawa_residential_Urban
 
 #Format the coumn nammes by removing spaces and replacing punctuation with "."
-colnames(data2use) = gsub(colnames(data2use),pattern="\\s|[[:punct:]]",replacement = ".")
+data2use = data2use |> rename_all(make.names)
 
 data2use = data2use  |> rename(v.CA16.5805..Walked.Male   = v.CA16.5805..Walked, 
                      v.CA16.5806..Walked.Female = v.CA16.5806..Walked,

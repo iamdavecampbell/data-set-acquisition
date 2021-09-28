@@ -43,18 +43,21 @@ Variables include years from 2007 to 2019, province of production, flower and pl
 
 The following R code is used to obtain and organize the dataset and separate it into two by output type (sales and production).
 
-```{r dataset}
+```{r dataset, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(GGally)
 # Download the zip file of plant sales and production
 temp <- tempfile()
 download.file("https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip",temp)
 (file_list <- as.character(unzip(temp, list = TRUE)$Name))
-plants <- read_csv(unz(temp, "32100246.csv")) |>as_tibble
+plants <- read_csv(unz(temp, file_list[1])) 
 unlink(temp) # Delete temp file
 
 # Rename a couple of columns
-plants <- plants |> rename(year = REF_DATE, location = GEO)
+plants <- plants |> 
+  rename(year = REF_DATE, location = GEO)  |> # personal preference for these names
+  rename_all(make.names)# R friendly naming that replaces spaces with '.'
+  
 
 ```
 

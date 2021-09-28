@@ -160,7 +160,7 @@ file2load = list.files(path="Data",pattern="Ottawa-monthly")
 data_monthly = read_csv(paste0("Data/",file2load))
 
 # convert all column names to valid R syntax:
-colnames(data_monthly) = gsub(colnames(data_monthly),pattern="[[:punct:]]|\\s",replacement=".")
+data_monthly = data_monthly |> rename_all(make.names)
 #convert the dates into valid date format by arbitrarily selecting the 15th of the month to give it a date
 
 data_monthly$Date.Time = as_date(paste0(data_monthly$Date.Time,"-1"))
