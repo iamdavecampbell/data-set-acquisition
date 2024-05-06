@@ -1,0 +1,11 @@
+---
+title: "Black bear hunting activity and harvests - Open Ontario"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2020-08-10'
+slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
+categories: ["Regression"]
+tags: ["Linear Chart", "Linear Regression", "Time Series", "Wildlife Data", "Ontario"]
+subtitle: ''
+summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year from 2012 to 2018 in different wildlife management unit (WMU).'
+output: html_document
+---
