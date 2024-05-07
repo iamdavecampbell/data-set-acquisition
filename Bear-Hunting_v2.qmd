@@ -72,7 +72,7 @@ The following code plots the number of bears harvested per active hunter in each
 
 ```{python plots}
 
-data.plot.scatter(x='Active Hunters', y='Harvest')
+data.plot.scatter(x='Active Hunters', y='Harvest') #Need to colour by WMU
 matplotlib.pyplot.title("Hunters and Harvest in different WMUs")
 
 ```
