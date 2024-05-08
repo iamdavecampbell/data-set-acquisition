@@ -44,7 +44,7 @@ The following code is used to download and change the data format of the year.
 ```{python dataset}
 
 import pandas as pd 
-import matplotlib
+import seaborn as sb
 
 # Download the csv file AND change the data format of the year
 data_download = pd.read_csv("https://files.ontario.ca/opendata/black_bear_2019.csv")
@@ -72,8 +72,8 @@ The following code plots the number of bears harvested per active hunter in each
 
 ```{python plots}
 
-data.plot.scatter(x='Active Hunters', y='Harvest') #Need to colour by WMU - switch to seaborn
-matplotlib.pyplot.title("Hunters and Harvest in different WMUs")
+sb.scatterplot(data=data, x='Active Hunters', y='Harvest', hue='WMU', legend=False).set_title("Hunters and Harvest in different WMUs")
+
 
 ```
 
