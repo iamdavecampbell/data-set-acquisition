@@ -38,3 +38,33 @@ The dataset and its metadata file which contains detailed variable descriptions 
 ### Data Acquisition
 
 The following code is used to download and organize the original dataset, and eparate it into two by groups of population and percentage.
+
+
+```{python dataset}
+
+# packages
+import requests, zipfile, io
+
+
+# Download the zip file of population by mother tongue
+
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+print(file_list)
+
+#temp <- tempfile()
+#download.file("https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip",temp)
+#(file_list <- as.character(unzip(temp, list = TRUE)$Name))
+#tongue <- read_csv(unz(temp, "15100003.csv"))
+#unlink(temp) # Delete temp file
+
+# Organize the dataset and split it by measurement methods
+#tongue = tongue |> rename_all(make.names) |>
+#        rename(year = REF_DATE, location = GEO)|>
+#         select(year, location, Mother.tongue, Statistics, VALUE) |> 
+#         pivot_wider(names_from= Statistics, values_from=VALUE)
+#
+```
