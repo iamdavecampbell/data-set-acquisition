@@ -46,6 +46,7 @@ The following code is used to download and organize the original dataset, and ep
 import requests, zipfile, io
 import tempfile as tf
 import pandas as pd
+import seaborn as sb
 
 
 # Download the zip file of population by mother tongue
@@ -60,15 +61,20 @@ tongue = pd.read_csv(temp.open('15100003.csv'))
 # Organize the dataset and split it by measurement methods
 tongue = tongue.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
 tongue = tongue[["year", "location", "Mother tongue", "Statistics", "VALUE"]]
-
 tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "Mother tongue"], columns = "Statistics").reset_index()
-#tongue.head(10)
+
+canada = tongue[tongue["location"] == "Canada"]
+#canada.head()
+canada2 = tongue[tongue["Mother tongue"] != "Total, mother tongue"]
+#canada2.head()
 
 
-# Organize the dataset and split it by measurement methods
-#tongue = tongue |> rename_all(make.names) |>
-#        rename(year = REF_DATE, location = GEO)|>
-#         select(year, location, Mother.tongue, Statistics, VALUE) |> 
-#         pivot_wider(names_from= Statistics, values_from=VALUE)
+#sb.lineplot(data = (tongue[(tongue["location"] == "Canada") and (tongue["Mother tongue"] != "Total, mother tongue")]), 
+#x = "year", y = "Percentage", hue = "Mother tongue").set_title("Percentage of speakers of mother tongues in Canada")
+
+# tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
+#  ggplot( aes(x = year, y = Percentage, group = Mother.tongue)) +
+#  labs(title = "Percentage of speakers of mother tongues in Canada") +
+#  geom_line(aes(color = Mother.tongue))
 #
 ```
