@@ -44,6 +44,8 @@ The following code is used to download and organize the original dataset, and ep
 
 # packages
 import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
 
 
 # Download the zip file of population by mother tongue
@@ -53,13 +55,15 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
-print(file_list)
+tongue = pd.read_csv(temp.open('15100003.csv'))
 
-#temp <- tempfile()
-#download.file("https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip",temp)
-#(file_list <- as.character(unzip(temp, list = TRUE)$Name))
-#tongue <- read_csv(unz(temp, "15100003.csv"))
-#unlink(temp) # Delete temp file
+# Organize the dataset and split it by measurement methods
+tongue = tongue.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
+tongue = tongue[["year", "location", "Mother tongue", "Statistics", "VALUE"]]
+
+tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "Mother tongue"], columns = "Statistics").reset_index()
+#tongue.head(10)
+
 
 # Organize the dataset and split it by measurement methods
 #tongue = tongue |> rename_all(make.names) |>
