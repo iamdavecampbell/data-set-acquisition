@@ -47,6 +47,7 @@ import requests, zipfile, io
 import tempfile as tf
 import pandas as pd
 import seaborn as sb
+import matplotlib.pyplot as plt
 
 
 # Download the zip file of population by mother tongue
@@ -63,18 +64,36 @@ tongue = tongue.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
 tongue = tongue[["year", "location", "Mother tongue", "Statistics", "VALUE"]]
 tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "Mother tongue"], columns = "Statistics").reset_index()
 
-canada = tongue[tongue["location"] == "Canada"]
-#canada.head()
-canada2 = tongue[tongue["Mother tongue"] != "Total, mother tongue"]
-#canada2.head()
+canada = tongue[(tongue["location"] == "Canada") & (tongue["Mother tongue"] != "Total, mother tongue")]
+
+sb.lineplot(data = canada, x = "year", y = "Number",
+hue = "Mother tongue").set_title("Number of speakers of mother tongues in Canada")
+sb.set_style("darkgrid")
+
+plt.clf()
+sb.lineplot(data = canada, x = "year", y = "Percentage",
+hue = "Mother tongue").set_title("Percentage of speakers of mother tongues in Canada")
+sb.set_style("darkgrid")
+
+plt.clf()
+canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_change()
+sb.lineplot(data = canada, x = "year", y = "Percentage Change",
+hue = "Mother tongue").set_title("Percentage change over 4 years for different mother tongues in Canada")
+sb.set_style("darkgrid")
+
+# Plot the French and non-official language speakers proportion among all provinces in Canada
+plt.clf()
+sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "French")]), x = "year", y = "Percentage",
+hue = "location").set_title("Percentage of French mother tongues in different provinces")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+sb.set_style("darkgrid")
+
+plt.clf()
+sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "Non-official languages")]), x = "year", y = "Percentage",
+hue = "location").set_title("Percentage of non-official language mother tongues in different provinces")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+sb.set_style("darkgrid")
 
 
-#sb.lineplot(data = (tongue[(tongue["location"] == "Canada") and (tongue["Mother tongue"] != "Total, mother tongue")]), 
-#x = "year", y = "Percentage", hue = "Mother tongue").set_title("Percentage of speakers of mother tongues in Canada")
 
-# tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
-#  ggplot( aes(x = year, y = Percentage, group = Mother.tongue)) +
-#  labs(title = "Percentage of speakers of mother tongues in Canada") +
-#  geom_line(aes(color = Mother.tongue))
-#
 ```
