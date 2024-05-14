@@ -34,3 +34,32 @@ The dataset and its metadata file with detailed variable descriptions have been 
 ## Organizing Dataset
 
 The following code is used to extract the whole dataset of grains export from the official website and perform the linear chart of total grains export to all destinations by grouping commodities.
+
+```{python dataset}
+
+# packages
+import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/32100008-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+print(file_list)
+
+#get column names so we can chose the columns we want
+meta_columns= pd.read_csv(temp.open('32100008_MetaData.csv'), nrows=0, skiprows = 8).columns.tolist()
+print(meta_columns)
+
+export_data = pd.read_csv(temp.open('32100008.csv'))
+export_data = export_data.rename(columns = {"GEO" : "location", "REF_DATE" : "date"})
+export_data["year"] = pd.to_numeric(export_data["date"].str.split("-").str[0])
+export_data["month"] = pd.to_numeric(export_data["date"].str.split("-").str[1])
+
+export_data.head()
+
+```
