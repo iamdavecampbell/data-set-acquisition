@@ -72,20 +72,25 @@ The following code plots count, percentage, and percent change in mother tongue 
 ```{python canada}
 canada = tongue[(tongue["location"] == "Canada") & (tongue["Mother tongue"] != "Total, mother tongue")]
 
+sb.set_style("darkgrid")
+
 sb.lineplot(data = canada, x = "year", y = "Number",
 hue = "Mother tongue").set_title("Number of speakers of mother tongues in Canada")
-sb.set_style("darkgrid")
+plt.show()
 
 plt.clf()
 sb.lineplot(data = canada, x = "year", y = "Percentage",
 hue = "Mother tongue").set_title("Percentage of speakers of mother tongues in Canada")
-sb.set_style("darkgrid")
+plt.show()
+
+# Suppress warning about chained indexing from Quarto Output
+pd.options.mode.chained_assignment = None 
 
 plt.clf()
 canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_change()
 sb.lineplot(data = canada, x = "year", y = "Percentage Change",
 hue = "Mother tongue").set_title("Percentage change over 4 years for different mother tongues in Canada")
-sb.set_style("darkgrid")
+plt.show()
 ```
 
 > Summary
@@ -105,12 +110,12 @@ plt.clf()
 sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "French")]), x = "year", y = "Percentage",
 hue = "location").set_title("Percentage of French mother tongues in different provinces")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
-sb.set_style("darkgrid")
+plt.show()
 
 plt.clf()
 sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "Non-official languages")]), x = "year", y = "Percentage",
 hue = "location").set_title("Percentage of non-official language mother tongues in different provinces")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
-sb.set_style("darkgrid")
+plt.show()
 
 ```
