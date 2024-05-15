@@ -49,11 +49,11 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/32100008-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
-print(file_list)
+#print(file_list)
 
 #get column names so we can chose the columns we want
 meta_columns= pd.read_csv(temp.open('32100008_MetaData.csv'), nrows=0, skiprows = 8).columns.tolist()
-print(meta_columns)
+#print(meta_columns)
 
 export_data = pd.read_csv(temp.open('32100008.csv'))
 export_data = export_data.rename(columns = {"GEO" : "location", "REF_DATE" : "date"})
@@ -61,5 +61,21 @@ export_data["year"] = pd.to_numeric(export_data["date"].str.split("-").str[0])
 export_data["month"] = pd.to_numeric(export_data["date"].str.split("-").str[1])
 
 export_data.head()
+
+```
+
+Some exploratory plots 
+
+```{python}
+# Summarize the annual export value by group of the year
+
+totals = export_data.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+
+sb.set_style("darkgrid")
+
+sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], x = "year", y = "VALUE",
+hue = "Commodity").set_title("Total grains export to all destinations")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show()
 
 ```
