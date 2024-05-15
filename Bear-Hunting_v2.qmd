@@ -56,6 +56,8 @@ data = data_download[data_download.WMU != "Total"]
 
 ```
 
+The data has columns WMU, year, number of active hunters, and the harvest.  All numbers of bear harvested and active hunters are estimated based on the replies received from a sample of hunters, so it might contain a statistical error.  In the WMU called Total, all of the WMUs are summed.
+
 ```{python}
 total.head()
 data.head()
