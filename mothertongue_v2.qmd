@@ -94,6 +94,4 @@ hue = "location").set_title("Percentage of non-official language mother tongues 
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 sb.set_style("darkgrid")
 
-
-
 ```
