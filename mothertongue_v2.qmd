@@ -63,7 +63,13 @@ tongue = pd.read_csv(temp.open('15100003.csv'))
 tongue = tongue.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
 tongue = tongue[["year", "location", "Mother tongue", "Statistics", "VALUE"]]
 tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "Mother tongue"], columns = "Statistics").reset_index()
+```
 
+### Percentage changes of different mother-tongue speakers in Canada
+
+The following code plots count, percentage, and percent change in mother tongue speakers in Canada.
+
+```{python canada}
 canada = tongue[(tongue["location"] == "Canada") & (tongue["Mother tongue"] != "Total, mother tongue")]
 
 sb.lineplot(data = canada, x = "year", y = "Number",
@@ -80,7 +86,20 @@ canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_
 sb.lineplot(data = canada, x = "year", y = "Percentage Change",
 hue = "Mother tongue").set_title("Percentage change over 4 years for different mother tongues in Canada")
 sb.set_style("darkgrid")
+```
 
+> Summary
+
+* The upper-panel graph shows the population of different language speakers in Canada from 1961 to 2016. We can see the time series of all different mother-tongue speakers are increasing.
+
+* The second-panel graph of [Percentage of different mother tongue speaker in Canada] tells us the proportion of French speakers has decreased steadily, while the proportion of non-official language speakers has grown.
+
+
+### Percentage changes of mother-tongue speakers in different provinces
+
+After comparing changes in mother tongue, the following code focuses on the changes within provinces. 
+
+```{python other language}
 # Plot the French and non-official language speakers proportion among all provinces in Canada
 plt.clf()
 sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "French")]), x = "year", y = "Percentage",
