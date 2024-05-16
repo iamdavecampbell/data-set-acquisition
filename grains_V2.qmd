@@ -75,6 +75,32 @@ sb.set_style("darkgrid")
 
 sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], x = "year", y = "VALUE",
 hue = "Commodity").set_title("Total grains export to all destinations")
+plt.ylabel("total export (tonnes)")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show()
+```
+
+## Wheat, excluding durum
+
+The following code is used to plot total exports among different continents and then consider just the major importing countries of canola
+
+```{python graph, warning = FALSE}
+
+# Select the whole export dataset about canola among different continents
+
+wheat_ex_durum = export_data[(export_data["Commodity"] == "Wheat, excluding durum") &
+(export_data["Destinations"] != "Total exports, all destinations")]
+
+wheat_ex_durum = wheat_ex_durum[wheat_ex_durum["Destinations"].str.contains("Total")]
+
+#wheat_ex_durum.head()
+
+wheat_totals = wheat_ex_durum.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+
+plt.clf()
+sb.lineplot(data = wheat_totals, x = "year", y = "VALUE",
+hue = "Destinations").set_title("Total Annual Wheat, excluding durum, export among different continents")
+plt.ylabel("total export (tonnes)")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 
