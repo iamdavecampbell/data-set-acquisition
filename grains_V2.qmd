@@ -101,7 +101,30 @@ plt.clf()
 sb.lineplot(data = wheat_totals, x = "year", y = "VALUE",
 hue = "Destinations").set_title("Total Annual Wheat, excluding durum, export among different continents")
 plt.ylabel("total export (tonnes)")
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 
+```
+
+Examining Wheat (excluding durum) for a couple of countries
+```{python}
+
+# Select a few contries and plot their imports
+
+few_countries = export_data[(export_data["Commodity"] == "Wheat, excluding durum") &
+                            ((export_data["Destinations"] == "United States") |
+                             (export_data["Destinations"] == "People's Republic of China") |
+                             (export_data["Destinations"] == "United Kingdom") |
+                             (export_data["Destinations"] == "United Arab Emirates") |
+                             (export_data["Destinations"] == "India") |
+                             (export_data["Destinations"] == "Ethiopia"))]
+
+few_countries_totals = few_countries.groupby(["year", "Destinations"], as_index=False)['VALUE'].sum()
+
+plt.clf()
+sb.lineplot(data = few_countries_totals, x = "year", y = "VALUE",
+hue = "Destinations").set_title("Total Wheat, excluding durum, exported by year")
+plt.ylabel("total export (tonnes)")
+plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show()
 ```
