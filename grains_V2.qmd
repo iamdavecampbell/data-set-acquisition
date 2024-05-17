@@ -128,3 +128,31 @@ plt.ylabel("total export (tonnes)")
 plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 ```
+
+## Canola
+
+
+
+#Now consider canola for countries that have imported at least 1,000,000 tonnes in at least one year.  Plot all of their annual import data.
+
+```{python}
+
+tmp_exports = export_data[(export_data["Commodity"] == "Canola (rapeseed)") &
+                          (export_data["Destinations"] != "Total exports, all destinations")]
+
+tmp_exports = tmp_exports.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+
+tmp_exports = tmp_exports[tmp_exports["Destinations"].str.contains("Total") == False]
+
+big_countries = tmp_exports[tmp_exports["VALUE"] > 1000000]["Destinations"].unique()
+
+tmp_exports = tmp_exports[tmp_exports["Destinations"].isin(big_countries)]
+
+plt.clf()
+sb.lineplot(data = tmp_exports, x = "year", y = "VALUE",
+hue = "Destinations").set_title("Total Canola (rapeseed),  for countries that have surpassed 1,000,000 tonnes imported in at least one year")
+plt.ylabel("total export (tonnes)")
+plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show()
+
+```
