@@ -95,3 +95,21 @@ AllQuarters.head()
 annual.head()
 monthly.head()
 ```
+
+```{python linear}
+
+sb.set_style("darkgrid")
+plt.clf()
+sb.lineplot(data=annual, x="Year", y="AnnualValue").set_title("Annual soft drink production")
+plt.show
+
+plt.clf()
+sb.lineplot(data=AllQuarters, x="quarter", y="QuarterlyValue", marker="o").set_title("Quarterly soft drink production")
+plt.show
+
+plt.clf()
+sb.lineplot(data=monthly, x="date", y="Produced").set_title("Monthly soft drink production")
+plt.show
+
+
+```
