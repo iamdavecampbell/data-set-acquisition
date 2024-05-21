@@ -1,0 +1,97 @@
+---
+title: "Annual and Monthly Soft Drinks Production - Open Canada"
+author: "Deah Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2020-08-10'
+slug: manufacture-data-annual-monthly-soft-drinks-production-open-canada
+categories: ["Regression"]
+tags: ["Linear Chart", "Data Merging and Cleaning", "Time Series", "Soft Drinks", "Canada"]
+subtitle: ''
+summary: 'The dataset of Soft drinks production consists of dates and production variables, and they are recorded by the unit of thousand gallons on a monthly, quarterly, and annual basis.'
+output: html_document
+---
+
+## Possible Analysis and Keywords
+
+- Linear Chart
+- Time Series
+- Data Merging and Cleaning
+- Soft Drinks
+- Manufacturing Data
+## Data Provider
+
+Statistics Canada's [Open Government](https://open.canada.ca/en) is a free and open-access platform  containing over 80,000 datasets across diverse subjects. The purpose of sharing all data documents with the public is to remain transparent and accessible. 
+
+Dataset can be discovered by multiple searching methods [here](https://open.canada.ca/en/open-data), such as [Browse by subject](https://open.canada.ca/en/open-data), [Open Government Portal](https://search.open.canada.ca/en/od/?sort=last_modified_tdt%20desc&page=1&search_text=&od-search-portal=Open%20Data&_ga=2.198521263.1872662645.1597195650-535176367.1594143568) for direct keywords search, [Open Maps](https://open.canada.ca/en/open-map) which contains geospatial information data, [Open Data Inventory](https://open.canada.ca/en/search/inventory) from the government of Canada organization, [Apps Gallery](https://open.canada.ca/en/apps) for representing those mobile and web-based application data, [Open Data 101](https://open.canada.ca/en/open-data-principles) for letting people know how to use dataset and so on.
+
+***
+
+## Food Manufacturing: Annual Soft Drink Production 
+
+A dataset recording the soft drink production every quarter from 1950 to 1977, its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/15dac000-240f-494c-86b6-311d8f8012b9), you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610010001).
+
+The dataset switched to monthly soft drinks production from 1976 to 1995. Its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/de2e4ec3-dcb8-4dd1-aad8-3ccc1a61d633), you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610009901).
+
+All datasets and their metadata files including detailed variable descriptions are stored as a zip file. The variables in the data sets are dates and production variables recorded in units of thousands of gallons on a monthly, quarterly, and annual basis.
+
+## Exprolary Analysis
+
+### Data loading 
+
+The following code is used to organize monthly and annual orginal datasets, and merge them into one quarterly soft drink production dataset from 1950 to 1995. 
+
+```{python dataset}
+
+# packages
+import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+#Download the zip file of QUARTERLY soft drink production AND rearrange the dataset
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/16100100-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+#print(file_list)
+quarterlydata = pd.read_csv(temp.open('16100100.csv'))
+#quarterlydata.head()
+
+# Organize the quarterly dataset 
+quarterly = quarterlydata[["REF_DATE", "VALUE"]].rename(columns = {"REF_DATE" : "quarter", "VALUE" : "QuarterlyValue"})
+quarterly["quarter"] = pd.to_datetime(quarterly["quarter"])
+#quarterly.head()
+
+#Download the zip file of MONTHLY soft drink production AND rearrange the dataset
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/16100099-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+#print(file_list)
+monthlydata = pd.read_csv(temp.open('16100099.csv'))
+
+# Organize the monthly dataset 
+monthly = monthlydata[["REF_DATE", "VALUE"]].rename(columns = {"REF_DATE" : "date", "VALUE" : "Produced"})
+monthly["date"] = pd.to_datetime(monthly["date"])
+#monthly.head()
+
+# Now we want to extend the quarterly data set by combining over the monthly dataset:
+MoreQuarters = monthly.resample(rule = "Q", on="date", label = "left").sum().reset_index()
+MoreQuarters["date"] = MoreQuarters["date"] + pd.Timedelta(days=1)
+MoreQuarters = MoreQuarters.rename(columns = {"date" : "quarter", "Produced" : "QuarterlyValue"})
+#MoreQuarters.head()
+
+AllQuarters = pd.concat([quarterly, MoreQuarters], ignore_index= True)
+#AllQuarters.tail()
+
+annual = AllQuarters.resample(rule = "Y", on="quarter", label = "left").sum().reset_index()
+annual["quarter"] = annual["quarter"] + pd.Timedelta(days=1)
+annual = annual.rename(columns = {"quarter" : "Year", "QuarterlyValue" : "AnnualValue"})
+#annual.tail()
+
+AllQuarters.head()
+annual.head()
+monthly.head()
+```
