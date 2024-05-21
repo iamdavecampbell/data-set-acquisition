@@ -111,5 +111,26 @@ plt.clf()
 sb.lineplot(data=monthly, x="date", y="Produced").set_title("Monthly soft drink production")
 plt.show
 
+```
+
+What happened to the annual data from 1976 and 1977?  Need a hint, Zoomm in by changing the x axis limits by plotting a slice of the annual data frame:
+```{python}
+
+# which data here 
 
 ```
+* Need another hint?  Look back at the quarterly data sets before they were combined from different sources.
+
+## Quarterly soft drink production, just the old dataset
+
+To better see the production proportions across the four quarters in each year, the following code is used to plot the stacked percentage bar plots of quarterly soft drink production.
+
+* Check out how the Year-Month-Date is split into its elements using _separate_:
+
+```{python barplot}
+
+```
+
+> Summary
+
+* The percent produced in each quarter is reasonably stable. 
