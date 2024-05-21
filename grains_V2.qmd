@@ -76,7 +76,7 @@ sb.set_style("darkgrid")
 sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], x = "year", y = "VALUE",
 hue = "Commodity").set_title("Total grains export to all destinations")
 plt.ylabel("total export (tonnes)")
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Commodity", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 ```
 
