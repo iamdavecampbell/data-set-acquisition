@@ -116,7 +116,7 @@ plt.show
 What happened to the annual data from 1976 and 1977?  Need a hint, Zoomm in by changing the x axis limits by plotting a slice of the annual data frame:
 ```{python}
 
-# which data here 
+# plot 1970-1980 from annual data frame to observe double counting
 
 ```
 * Need another hint?  Look back at the quarterly data sets before they were combined from different sources.
@@ -125,10 +125,23 @@ What happened to the annual data from 1976 and 1977?  Need a hint, Zoomm in by c
 
 To better see the production proportions across the four quarters in each year, the following code is used to plot the stacked percentage bar plots of quarterly soft drink production.
 
-* Check out how the Year-Month-Date is split into its elements using _separate_:
+* Check out how the Year-Month-Date is split into its elements using properties of a datetime column in a pandas dataframe
 
 ```{python barplot}
 
+quarterly['year'] = quarterly["quarter"].dt.year
+quarterly['month'] = quarterly["quarter"].dt.month
+
+proportions =  quarterly.pivot_table(index=['year'], columns = 'month',
+            values ='QuarterlyValue').reset_index().set_index('year')
+
+proportions = proportions.div(proportions.sum(axis=1), axis=0)
+
+proportions.head()
+proportions.plot(kind='bar', stacked = True).set_title("Percent Stacked Barchart of Quaterly Soft Drink Production")
+plt.xlabel("Year")
+plt.ylabel("Percentage")
+plt.legend(title="Month", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 ```
 
 > Summary
