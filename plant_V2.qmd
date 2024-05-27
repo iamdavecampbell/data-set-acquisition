@@ -1,0 +1,141 @@
+---
+title: "Production and Sale of Greenhouse Flowers and Plants - Open Canada"
+date: '2020-08-10'
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+slug: production-data-production-and-sale-of-greenhouse-flowers-and-plants-open-canada
+categories: ["Production Data"]
+tags: ["Spatial Data Set", "Time Series", "Line Chart", "Regression", "Greenhouse Flowers and Plants", "Production Data", "Canada"]
+subtitle: ''
+summary: 'The dataset of plants production and sales is described by many meaningful variables, such as years from 2007 to 2019, geometry which includes Canada and its 10 provinces, flowers and 5 plants types and two output types, which are production with the unit of a number and sales with the unit of a dollar.'
+output: html_document
+---
+
+```{python dataset}
+
+# packages
+import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+
+# Download the zip file of plant sales and production
+
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+plants = pd.read_csv(temp.open(file_list[0]))
+
+# Rename a couple of columns
+plants = plants.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
+plants.head()
+```
+
+### Greenhouse plants production and sales in Canada
+
+The following code is used to plot greenhouse plant production and sales in Canada.
+
+```{python canada}
+
+# Subset a dataset of plants production in Canada 
+
+sb.set_style("darkgrid")
+
+sb.lineplot(data = plants[(plants["location"] == "Canada") & 
+                          (plants["Output"] == "Production (number)")],
+                          x = "year",
+                          y = "VALUE",
+                          hue = "Flowers and plants")
+plt.ylabel("Production (number)")
+plt.title("Greenhouse plants production in Canada")                         
+plt.legend(title = "Flowers and Plants",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show()
+
+plt.clf()
+sb.lineplot(data = plants[(plants["location"] == "Canada") & 
+                          (plants["Output"] == "Sales")],
+                          x = "year",
+                          y = "VALUE",
+                          hue = "Flowers and plants")
+plt.ylabel("Production (number)")
+plt.title("Greenhouse plants sales in Canada")                         
+plt.legend(title = "Flowers and Plants",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show()
+```
+
+* So, the following code is used to discover the plant production in different provinces.
+
+### Bedding plants (vegetables & ornamental) production 
+
+```{python bedding plants}
+
+# Select the datasets of two different bedding plants (vegetable & ornamental) in 10 different provinces
+
+plt.clf()
+sb.lineplot(data = plants[(plants["location"] != "Canada") & 
+                          (plants["Output"] == "Production (number)") &
+                          (plants["Flowers and plants"] == "Total vegetable bedding plants [115143421]")],
+                          x = "year",
+                          y = "VALUE",
+                          hue = "location")
+plt.ylabel("Number Produced")
+plt.title("Total vegetable bedding plants production")                         
+plt.legend(title = "Province",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show()
+
+plt.clf()
+sb.lineplot(data = plants[(plants["location"] != "Canada") & 
+                          (plants["Output"] == "Production (number)") &
+                          (plants["Flowers and plants"] == "Total ornamental bedding plants [115143411]")],
+                          x = "year",
+                          y = "VALUE",
+                          hue = "location")
+plt.ylabel("Number Produced")
+plt.title("Total ornamental bedding plants production")                         
+plt.legend(title = "Province",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show()
+
+```
+
+## Examining all production counts within Canada
+
+```{python}
+
+plants_2 = plants[(plants["location"] == "Canada") & 
+                (plants["Output"] == "Sales")][["year",
+                                               "Flowers and plants",
+                                                "VALUE"]]
+
+plants_2 = pd.pivot_table(plants_2,
+                          values = "VALUE",
+                          columns = "Flowers and plants",
+                          index = "year").reset_index()
+plt.clf()
+#sb.pairplot(data = plants_2)
+
+from scipy.stats import pearsonr
+def reg_coef(x,y,label=None,color=None,**kwargs):
+    ax = plt.gca()
+    r,p = pearsonr(x,y)
+    ax.annotate('r = {:.2f}'.format(r), xy=(0.5,0.5), xycoords='axes fraction', ha='center')
+    ax.set_axis_off()
+
+pg = sb.pairgrid(plants_2)
+pg.map_upper(reg_coef)
+                    
+``` 
