@@ -126,16 +126,8 @@ plants_2 = pd.pivot_table(plants_2,
                           columns = "Flowers and plants",
                           index = "year").reset_index()
 plt.clf()
-#sb.pairplot(data = plants_2)
+sb.pairplot(data = plants_2)
 
-from scipy.stats import pearsonr
-def reg_coef(x,y,label=None,color=None,**kwargs):
-    ax = plt.gca()
-    r,p = pearsonr(x,y)
-    ax.annotate('r = {:.2f}'.format(r), xy=(0.5,0.5), xycoords='axes fraction', ha='center')
-    ax.set_axis_off()
 
-pg = sb.pairgrid(plants_2)
-pg.map_upper(reg_coef)
                     
 ``` 
