@@ -1,0 +1,99 @@
+---
+title: "Private Elementary and Secondary Schools Revenues - Open Canada"
+author: "Junpu Xie and Dave Campbell"
+date: '2020-08-10'
+slug: private-elementary-and-secondary-schools-revenues-open-canada
+categories: ["Regression"]
+tags: ["Time Series", "Exploratory Analysis", "Canada", "School Revenue", "Education", "Ontario"]
+subtitle: ''
+summary: 'This dataset contains 138 observational series and several variables, which include the geography of Canada and the other 13 provinces, 9 direct sources of funds and total funded revenue from 1947 to 2002.'
+output: html_document
+---
+
+## Possible analysis and Keywords
+
+- Time Series
+- Spatial Data Set
+- Stacked Area Chart
+- School Revenue
+- Education Data
+
+## Data Provider
+
+The provincial government of Ontaio provides open access to thousands of data sets via their [Open Data Ontario](https://data.ontario.ca/en/) portal. The purpose of sharing all data documents with the public is to remain transparent and accessible.  More details about the data license, training materials, and other information can be found [here](https://data.ontario.ca/about).
+
+***
+
+## Private Elementary and Secondary Schools Revenues, by Direct Source of Funds
+
+This dataset contains 138 observations across provinces and funding sources from 1947 to 2002.
+
+The dataset and its metadata file which contains detailed variable descriptions have been stored together as a zip file. The data resource and its description can be found [here](https://open.canada.ca/data/en/dataset/5b7fd541-5ae6-4602-a895-29210f0abd78), you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3710008401).
+
+
+## Exploratory Analysis
+
+### Organizing Dataset
+
+The following code is used to download and organize the original dataset, and only select the important variables to form a new dataset.
+
+```{python dataset}
+
+# packages
+import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+
+# Download the zip file of plant sales and production
+
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/37100084-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+revenue = pd.read_csv(temp.open("37100084.csv"))
+
+
+revenue[["year", "year end"]] = revenue["REF_DATE"].str.split("/", n=1, expand = True)
+revenue = revenue.dropna(subset = ["VALUE"])
+revenue["year"] = revenue["year"].astype(int)
+
+revenue.head()
+
+
+```
+
+### School Revenue by Different Funded Source in Canada
+
+The following code is used to draw the stacked area chart so that we can directly see the time-series trend and proportion of different funding sources over the years.
+
+```{python graph}
+
+# Subset a reveune dataset which only focus on different funding source in Canada and plot the graph
+
+sb.set_style("darkgrid")
+
+sb.lineplot(data = revenue[(revenue["GEO"] == "Canada") &
+                           (revenue["Direct source of funds"] != "Total revenues")],
+                           x = "year",
+                           y = "VALUE", 
+                           hue = "Direct source of funds")
+plt.title("School Revenue Funded from Different Sources")
+plt.legend(title = "Direct source of funds",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show()
+
+```
+
+### Tidy the variables
+
+There are quite a few variables that aren't really of interest like *SCALAR_ID* and *COORDINATE*, while other variables are hidden within the single column *Direct.source.of.funds*.  Here we wish to rearrange the data from a tall format into a wider format.  The function *pivot_wider* takes a column and spreads its factors into new columns.  This makes the observational unit combinations of *year* and *GEO*.  
+
+```{python pivotwider}
+
+```
