@@ -1,0 +1,63 @@
+---
+title: "Ontario Research Fund - Research Excellence Program - Open Ontario"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2020-08-18'
+slug: education-data-ontario-research-fund-research-excellence-ptrogram-data-catalogue-frome-governmnet-of-ontario
+categories: ["Exploratory Analysis"]
+tags: ["Paired Plot", "Histogram", "Exploratory Analysis","Ontario", "Non-Linear Regression", "Education"]
+subtitle: ''
+summary: 'This dataset includes hundreds of research porjects funded through Research Excellence Program from 2003 to 2018.'
+output: html_document
+---
+
+## Possible Analysis and Keywords
+
+- Paired Plot
+- Histogram Graph
+- Time Series
+- Ridgeline Graph
+- Research Fund
+- Education Data
+
+## Data Provider
+
+The provincial government of Ontaio provides open access to thousands of data sets via their [Open Data Ontario](https://data.ontario.ca/en/) portal. The purpose of sharing all data documents with the public is to remain transparent and accessible.  More details about the data license, training materials, and other information can be found [here](https://data.ontario.ca/about).
+
+***
+
+## Ontario Research Fund - Research Excellence Program 
+
+
+This Ontario Research Fund dataset includes research projects funded through the Research Excellence Program from 2003 to 2018. The first row of the dataset provides the column names.  The variables include research program titles and descriptions, approval date, lead research institution and city where the institution located, total project costs, and Ontario funding commitment. 
+
+The dataset and its supporting document can be found [here](https://data.ontario.ca/en/dataset/ontario-research-fund-research-excellence-program) and you can quickly preview the CSV dataset file [here](https://data.ontario.ca/en/dataset/ontario-research-fund-research-excellence-program/resource/8bd5111a-1684-4254-92a6-e1b28fde495f). Moreover, The legend description can be viewed [here](https://d2khazk8e83rdv.cloudfront.net/research_funding_legend_and_summary_1.txt)
+
+
+## Exprolary Analysis
+
+### Organizing Dataset 
+
+The following code is used to download the dataset, pick important variables to form a new dataset and convert some variables from character format into their specific one.
+
+The head of the well-organized dataset is shown at the end of the code and from that, we can easily found those most important variables. After forming the new dataset, the rest of the paper is going to use this dataset to create some graphs.
+
+```{python dataset}
+
+import pandas as pd 
+import seaborn as sb
+
+# Download the CSV file and organize the dataset
+data = pd.read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skiprows=1, encoding='unicode_escape')
+
+# Get rid of empty rows and change the formats of date and currency variables
+data = data.dropna(subset = ["Program"])
+data["Ontario Commitment"] = data["Ontario Commitment"].replace({'\$': '',
+                                                                 ',': ''}, 
+                                                                 regex=True)
+data["Total Project Costs"] = data["Total Project Costs"].replace({'\$': '',
+                                                                 ',': ''}, 
+                                                                 regex=True)
+
+data["Approval Date"] = pd.to_datetime(data["Approval Date"])
+data.head()
+```
