@@ -105,7 +105,7 @@ revenue_wide = pd.pivot_table(revenue_wide,
                               index = ["year", "GEO"],
                               columns = "Direct source of funds").reset_index()
 
-revenue_wide.head()
+
 ```
 
 ## Wider data makes easier plotting and analysis
@@ -120,4 +120,22 @@ sb.pairplot(data = revenue_wide)
 
 ```{python linear modelling}
 
+from sklearn.linear_model import LinearRegression
+
+
+canada_wide = revenue_wide[revenue_wide["GEO"] == "Canada"]
+canada_wide = canada_wide.dropna()
+model = LinearRegression()
+
+x = canada_wide[['Transfers from school boards',
+                    'Municipal government',
+                    'Provincial government',
+                    'Federal government']]
+
+y = canada_wide['Fees']
+
+model.fit(x,y)
+
+print("Intercept: ", model.intercept_)
+print("Coefficients: ", model.coef_)
 ```
