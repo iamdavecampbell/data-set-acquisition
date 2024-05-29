@@ -96,4 +96,26 @@ There are quite a few variables that aren't really of interest like *SCALAR_ID* 
 
 ```{python pivotwider}
 
+revenue_wide = revenue[["year",
+                         "GEO",
+                         "Direct source of funds",
+                         "VALUE"]]
+revenue_wide = pd.pivot_table(revenue_wide,
+                              values = "VALUE",
+                              index = ["year", "GEO"],
+                              columns = "Direct source of funds").reset_index()
+
+revenue_wide.head()
+```
+
+## Wider data makes easier plotting and analysis
+
+To predict the school fees, one would need to consider the other sources of funding.  Such a regression model can't be directly made without first widening the data.  Below, the variables are plotted against each other and a basic linear model is performed.
+
+```{python widerplots}
+
+```
+
+```{python linear modelling}
+
 ```
