@@ -116,5 +116,21 @@ plt.legend(title = "OIA Area",
 
 ```{python percent}
 
+proportions =  total_funding.pivot_table(index=['year'],
+                                         columns = 'OIA_AREA',
+                                         values ='Ontario Commitment').reset_index().set_index('year').fillna(0)
+
+proportions = proportions.div(proportions.sum(axis=1), axis=0)
+
+plt.clf()
+proportions.plot(kind='bar', stacked = True)
+plt.title("Funding proportion in each research area")
+plt.xlabel("Year")
+plt.ylabel("Proportion of Funding")
+plt.legend(title="OIA Area",
+           bbox_to_anchor=(1.05, 1), 
+           loc='upper left', 
+           borderaxespad=0)
+plt.show()
 ```
 
