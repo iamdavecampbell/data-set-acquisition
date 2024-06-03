@@ -60,4 +60,10 @@ data["Total Project Costs"] = data["Total Project Costs"].replace({'\$': '',
 
 data["Approval Date"] = pd.to_datetime(data["Approval Date"])
 data.head()
+
+# Plot the Paired graph
+# Extract the year from the approval date
+
+
+
 ```
