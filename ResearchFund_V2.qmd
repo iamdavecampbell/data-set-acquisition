@@ -45,6 +45,7 @@ The head of the well-organized dataset is shown at the end of the code and from 
 
 import pandas as pd 
 import seaborn as sb
+import matplotlib.pyplot as plt
 
 # Download the CSV file and organize the dataset
 data = pd.read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skiprows=1, encoding='unicode_escape')
@@ -58,12 +59,27 @@ data["Total Project Costs"] = data["Total Project Costs"].replace({'\$': '',
                                                                  ',': ''}, 
                                                                  regex=True)
 
+data["Ontario Commitment"] = data["Ontario Commitment"].astype(int)
+data["Total Project Costs"] = data["Total Project Costs"].astype(int)
+
+
 data["Approval Date"] = pd.to_datetime(data["Approval Date"])
 data.head()
 
 # Plot the Paired graph
 # Extract the year from the approval date
 
+data["year"] = data["Approval Date"].dt.year
 
+sb.set_style("darkgrid")
+
+sb.boxplot(data=data,
+           x="year",
+           y="Ontario Commitment",
+           orient="v")
+plt.title("Funding per Year (From Ontario)")
+plt.xlabel("Year of Approval")
+plt.ylabel("Dollars of Funding")
+plt.show
 
 ```
