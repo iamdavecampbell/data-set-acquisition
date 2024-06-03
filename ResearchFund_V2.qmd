@@ -83,3 +83,38 @@ plt.ylabel("Dollars of Funding")
 plt.show
 
 ```
+
+* The graph shows that most of the projects were for \$1,000,000 - \$4,000,000 Canadian dollars.
+
+
+### Frequency of Study Area
+
+The following code is used to draw the different research areas funding.  Note that first we need to sum within each category (OIA\_AREA) and then fill in the table so that we have zeros in all the missing years.
+
+```{python frequency}
+
+total_funding = data.groupby(["year", "OIA_AREA"],
+                             as_index=False)['Ontario Commitment'].sum()
+
+plt.clf()
+sb.lineplot(data = total_funding,
+            x = "year",
+            y = "Ontario Commitment",
+            hue = "OIA_AREA")
+plt.title("Total Funding Per Year Within Each Category")
+plt.ylabel("Total Funding")
+plt.legend(title = "OIA Area",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+
+```
+
+> Summary
+
+* Research programs are separated into 5 areas: Advanced health technologies, Bio-economy and clean technologies, Digital media information and communications technologies, Pharmaceutical research and manufacturing, and other unspecified groups. Not all programs were active every year.
+
+```{python percent}
+
+```
+

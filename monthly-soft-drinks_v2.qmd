@@ -142,6 +142,7 @@ proportions.plot(kind='bar', stacked = True).set_title("Percent Stacked Barchart
 plt.xlabel("Year")
 plt.ylabel("Percentage")
 plt.legend(title="Month", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+
 ```
 
 > Summary
