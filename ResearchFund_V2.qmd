@@ -143,12 +143,4 @@ The following codes are used to plot the ridgeline graphs about the frequency of
 ins = data[["year", "Lead Research Institution"]]
 
 ins = ins.groupby(["Lead Research Institution", "year"])["Lead Research Institution"].count()
-
-
-#ins = ins.sort_values("Lead Research Institution")
-
-#ins = data.groupby(["year", "Lead Research Institution"],
-#                             as_index=False)['Lead Research Institution'].count()
-
-
 ```
