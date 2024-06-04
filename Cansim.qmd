@@ -1,0 +1,111 @@
+---
+title: 'Cansim Library for Socio-Economic data'
+author: "Dave Campbell"
+date: '2021-06-11'
+slug: socioeconomic-time-series-and-statistics-canada
+categories: ["Census Data"]
+tags: ["Linear Regression", "Time Series",  "Official Statistics", "Census Data"]
+subtitle: ''
+summary: 'Using R libraries to acquire socioeconomic data from Statistics Canada Mapper.'
+lastmod: '2021-06-11T18:40:19-04:00'
+---
+  
+# Possible Analysis and Keywords
+
+- Regular Expressions
+- String Manipulation
+- Merging Datasets
+- Socioeconomic Data
+- Canadian Data
+- Regression
+- Housing
+
+
+
+
+# Goals
+
+Find and extract socio-economic data from Statistics Canada.  In this example we manipulate and plot unemployment rates and housing starts.  Relationships between the two datasets are examined.
+
+
+# Data Provider
+
+Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **stats-can** package provides an API for downloading these tables.  See also the 
+[stats-can](https://stats-can.readthedocs.io/en/latest/) vignette for examples and instructions to pull Statistics Canada datasets.
+
+# Installing stats-can
+  
+  
+  
+```{python stats-can library, eval=FALSE}
+
+#code not run for this document.
+```
+
+# Basic libraries 
+
+```{python libraries}
+from stats_can import StatsCan # for pulling Stats Can socioeconomic data
+import pandas as pd # for data wrangling
+import seaborn as sb # for plotting
+import matplotlib.pyplot as plt # for plot management
+
+```
+
+## Pulling a table
+
+Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labor force data in html.
+Notice that the StatCan webpage shows the table id, here it is table: 14-10-0287-01.
+
+We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.  While we're at it, let's remake some column names to make them more R friendly.  
+
+```{python}
+sc = StatsCan() # We create a StatsCan Object that will be used to pull data
+data = sc.table_to_df("14-10-0287-01") 
+
+```
+
+There are nearly 5 million rows of data!  
+
+
+## Make a few plots of Employment statistics
+
+
+Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute sex, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the differences data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
+
+Let's inventory a few of these columns so that the exact spelling of attributes can be used below in the plots.
+
+
+```{python}
+
+data["Labour force characteristics"].unique()
+data["Statisitcs"].unique()
+data["Age group"].unique()
+data["GEO"].unique()
+
+```
+
+### Plotting provinces against each other
+Let's consider provincial differences in employment rate for 25-55 year olds.  Using the spelling from the above output we can set up the data filters.
+
+```{python employmentprovinces}
+
+provinces = data[["GEO",
+                  "Sex",
+                  "Age group",
+                  "Labour force characteristics",
+                  "REF_DATE",
+                  "VALUE"]]
+
+provinces = provinces[(provinces["Sex"] == "Both sexes") &
+                      (provinces["GEO"] != "Canada") &
+                      (provinces["Labour force characteristics"] == "Unemployment rate") &
+                      (provinces["Age group"] == "25 to 54 years")]
+
+
+pivoted = pd.pivot_table(provinces,
+                         values = "VALUE",
+                         columns = "GEO").reset_index()
+
+pivoted.head()
+```
