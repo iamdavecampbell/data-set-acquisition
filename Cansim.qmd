@@ -79,33 +79,81 @@ Let's inventory a few of these columns so that the exact spelling of attributes 
 ```{python}
 
 data["Labour force characteristics"].unique()
-data["Statisitcs"].unique()
+data["Statistics"].unique()
 data["Age group"].unique()
 data["GEO"].unique()
+data["Data type"].unique()
 
 ```
 
 ### Plotting provinces against each other
 Let's consider provincial differences in employment rate for 25-55 year olds.  Using the spelling from the above output we can set up the data filters.
 
-```{python employmentprovinces}
+##### Important consideration when pivoting
+Pivoting a data table will spread out a variable into new columns. Sometimes it's more convenient to have each province as it's own column.  Here we do this to plot provinces against each other and see how they relate. In this case, we want each province's unemployment rate from the "Labour force characteristics" column. However, notice that there is a "Data type" column that shows two possible entries for the unemployment rate attribute in the "Labour force characteristics". If we filtered the data without selected one of these Data types, and then pivoted, python would take the mean of these two values! 
+
+```{python employmentprovinces0}
 
 provinces = data[["GEO",
                   "Sex",
                   "Age group",
                   "Labour force characteristics",
                   "REF_DATE",
-                  "VALUE"]]
+                  "VALUE",
+                  "Data type"]]
 
 provinces = provinces[(provinces["Sex"] == "Both sexes") &
                       (provinces["GEO"] != "Canada") &
                       (provinces["Labour force characteristics"] == "Unemployment rate") &
-                      (provinces["Age group"] == "25 to 54 years")]
+                      (provinces["Age group"] == "25 to 54 years") &
+                      (provinces["Data type"] == "Unadjusted")]
 
 
 pivoted = pd.pivot_table(provinces,
+                         index = ["Sex",
+                                  "Age group",
+                                  "Labour force characteristics",
+                                  "REF_DATE"],
                          values = "VALUE",
                          columns = "GEO").reset_index()
 
-pivoted.head()
+```
+
+```{python employmentprovincesplots}
+
+sb.pairplot(pivoted, vars = pivoted.columns[4:14])
+plt.show()
+
+plt.clf()
+sb.lineplot(data = provinces,
+            x = "REF_DATE",
+            y = "VALUE",
+            hue = "GEO")
+
+plt.ylabel("Unemployment rate")
+plt.title("Unemployment Rates by Province")
+plt.legend(title = "Province",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+
+```
+
+```{python employmentprovincesplots2}
+
+
+plt.clf()
+sb.relplot(data = provinces,
+            x = "REF_DATE",
+            y = "VALUE",
+            hue = "GEO",
+            col = "GEO",
+            kind = "line")
+
+plt.ylabel("Unemployment rate")
+plt.title("Unemployment Rates by Province")
+plt.legend(title = "Province",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
 ```
