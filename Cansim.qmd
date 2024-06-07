@@ -119,41 +119,32 @@ pivoted = pd.pivot_table(provinces,
 
 ```
 
-```{python employmentprovincesplots}
+```{python employmentprovincespairplot}
 
 sb.pairplot(pivoted, vars = pivoted.columns[4:14])
 plt.show()
-
-plt.clf()
-sb.lineplot(data = provinces,
-            x = "REF_DATE",
-            y = "VALUE",
-            hue = "GEO")
-
-plt.ylabel("Unemployment rate")
-plt.title("Unemployment Rates by Province")
-plt.legend(title = "Province",
-           bbox_to_anchor=(1.05, 1),
-           loc='upper left',
-           borderaxespad=0)
+# add title
 
 ```
 
-```{python employmentprovincesplots2}
+```{python test}
 
+provinces["GEO"].unique()
+```
+
+```{python employmentprovincesplot3}
 
 plt.clf()
-sb.relplot(data = provinces,
-            x = "REF_DATE",
-            y = "VALUE",
-            hue = "GEO",
-            col = "GEO",
-            kind = "line")
+g = sb.FacetGrid(provinces,
+                 col = "GEO",
+                 col_wrap = 4,
+                 height = 2)
+g.map(sb.lineplot, "REF_DATE", "VALUE")
+g.set_axis_labels("Year", "Unemployment Rate")
+for ax in g.axes.flat:
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)
+plt.show()
 
-plt.ylabel("Unemployment rate")
-plt.title("Unemployment Rates by Province")
-plt.legend(title = "Province",
-           bbox_to_anchor=(1.05, 1),
-           loc='upper left',
-           borderaxespad=0)
 ```
+
