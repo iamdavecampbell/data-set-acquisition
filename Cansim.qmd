@@ -57,7 +57,7 @@ import matplotlib.pyplot as plt # for plot management
 Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labor force data in html.
 Notice that the StatCan webpage shows the table id, here it is table: 14-10-0287-01.
 
-We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.  While we're at it, let's remake some column names to make them more R friendly.  
+We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.   
 
 ```{python}
 sc = StatsCan() # We create a StatsCan Object that will be used to pull data
@@ -127,12 +127,9 @@ plt.show()
 
 ```
 
-```{python test}
+### Plotting the Provinces as Time Series
 
-provinces["GEO"].unique()
-```
-
-```{python employmentprovincesplot3}
+```{python employmentprovincestimeseries}
 
 plt.clf()
 g = sb.FacetGrid(provinces,
@@ -144,7 +141,74 @@ g.set_axis_labels("Year", "Unemployment Rate")
 for ax in g.axes.flat:
     for label in ax.get_xticklabels():
         label.set_rotation(90)
+g.fig.subplots_adjust(top=0.9)
+g.fig.suptitle('Unemployment Rates by Province', fontsize=16)
 plt.show()
+
+#remove Canada plot
+#rename plots
 
 ```
 
+## Plot the Within Year Seasonal Trends
+
+```{python provinceseasonal}
+
+provinces["month"] = provinces["REF_DATE"].dt.month
+provinces["year"] = provinces["REF_DATE"].dt.year
+
+pal = {}
+
+for year in range(1976,2020):
+    pal[year] = "blue"
+
+for year in range(2020, 2025):
+    pal[year] = "red"
+
+plt.clf()
+g = sb.FacetGrid(provinces[provinces["year"] < 2000],
+                 col = "GEO",
+                 col_wrap = 4,
+                 height = 2)
+g.map(sb.lineplot, "month", "VALUE", "year")
+g.set_axis_labels("Month", "Unemployment Rate")
+g.fig.subplots_adjust(top=0.9)
+g.fig.suptitle('Unemployment Rates by Province', fontsize=16)
+
+```
+
+```{python scrap}
+
+
+
+pal = {}
+
+for year in range(1976,2020):
+    pal[year] = "blue"
+
+for year in range(2020, 2025):
+    pal[year] = "red"
+
+plt.clf()
+plt.subplot(3,4,1)
+sb.lineplot(data = provinces[provinces["GEO"] == "Alberta"],
+            x = "month",
+            y = "VALUE",
+            hue = "year",
+            palette = pal)
+plt.subplot(3,4,2)            
+sb.lineplot(data = provinces[provinces["GEO"] == "British Columbia"],
+            x = "month",
+            y = "VALUE",
+            hue = "year",
+            palette = pal)
+
+
+```
+
+```{python test}
+
+test = dict(zip(range(1976, 2020), sb.color_palette("viridis")))
+print(test)
+
+```
