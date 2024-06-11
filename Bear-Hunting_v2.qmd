@@ -45,6 +45,7 @@ The following code is used to download and change the data format of the year.
 
 import pandas as pd 
 import seaborn as sb
+import matplotlib as plt
 
 # Download the csv file AND change the data format of the year
 data_download = pd.read_csv("https://files.ontario.ca/opendata/black_bear_2019.csv")
@@ -59,8 +60,10 @@ data = data_download[data_download.WMU != "Total"]
 The data has columns WMU, year, number of active hunters, and the harvest.  All numbers of bear harvested and active hunters are estimated based on the replies received from a sample of hunters, so it might contain a statistical error.  In the WMU called Total, all of the WMUs are summed.
 
 ```{python}
+
 total.head()
 data.head()
+
 ```
 
 ### Plotting the Number of Bear Hunters and Harvest
@@ -74,8 +77,12 @@ The following code plots the number of bears harvested per active hunter in each
 
 ```{python plots}
 
-sb.scatterplot(data=data, x='Active Hunters', y='Harvest', hue='WMU', legend=False).set_title("Hunters and Harvest in different WMUs")
-
+harvest_hunter_plot = sb.scatterplot(data = data,
+                                     x = 'Active Hunters',
+                                     y = 'Harvest', 
+                                     hue = 'WMU', 
+                                     legend = False)
+harvest_hunter_plot.set_title("Hunters and Harvest in different WMUs")
 
 ```
 
