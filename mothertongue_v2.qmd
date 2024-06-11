@@ -8,6 +8,7 @@ tags: ["Time Series", "Spatial Series", "Regression", "Mother Tongue", "Populati
 subtitle: ''
 summary: 'The dataset records the population and percentage by three different types of mother tongue (English, French, and non-official languages) in the regions of Canada and all Canadian provinces from 1951 to 2016.'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible analysis and Keywords
@@ -49,7 +50,6 @@ import pandas as pd
 import seaborn as sb
 import matplotlib.pyplot as plt
 
-
 # Download the zip file of population by mother tongue
 
 temp = tf.TemporaryFile()
@@ -60,9 +60,20 @@ file_list = temp.namelist()
 tongue = pd.read_csv(temp.open('15100003.csv'))
 
 # Organize the dataset and split it by measurement methods
-tongue = tongue.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
-tongue = tongue[["year", "location", "Mother tongue", "Statistics", "VALUE"]]
-tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "Mother tongue"], columns = "Statistics").reset_index()
+tongue = tongue.rename(columns = {"GEO" : "location",
+                                  "REF_DATE" : "year"})
+tongue = tongue[["year",
+                 "location",
+                 "Mother tongue",
+                 "Statistics",
+                 "VALUE"]]
+
+tongue = pd.pivot_table(tongue, 
+                        values = "VALUE",
+                        index = ["year",
+                                 "location", 
+                                 "Mother tongue"], 
+                                 columns = "Statistics").reset_index()
 ```
 
 ### Percentage changes of different mother-tongue speakers in Canada
@@ -70,26 +81,38 @@ tongue = pd.pivot_table(tongue, values = "VALUE", index = ["year", "location", "
 The following code plots count, percentage, and percent change in mother tongue speakers in Canada.
 
 ```{python canada}
-canada = tongue[(tongue["location"] == "Canada") & (tongue["Mother tongue"] != "Total, mother tongue")]
+
+canada = tongue[(tongue["location"] == "Canada") & 
+                (tongue["Mother tongue"] != "Total, mother tongue")]
 
 sb.set_style("darkgrid")
 
-sb.lineplot(data = canada, x = "year", y = "Number",
-hue = "Mother tongue").set_title("Number of speakers of mother tongues in Canada")
+can_plot_1 = sb.lineplot(data = canada,
+                                x = "year", 
+                                y = "Number", 
+                                hue = "Mother tongue")
+can_plot_1.set_title("Number of speakers of mother tongues in Canada")
 plt.show()
 
 plt.clf()
-sb.lineplot(data = canada, x = "year", y = "Percentage",
-hue = "Mother tongue").set_title("Percentage of speakers of mother tongues in Canada")
+can_plot_2 = sb.lineplot(data = canada, 
+                         x = "year", 
+                         y = "Percentage", 
+                         hue = "Mother tongue")
+can_plot_2.set_title("Percentage of speakers of mother tongues in Canada")
 plt.show()
 
-# Suppress warning about chained indexing from Quarto Output
+# Suppress warning about chained indexing 
 pd.options.mode.chained_assignment = None 
 
-plt.clf()
+
 canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_change()
-sb.lineplot(data = canada, x = "year", y = "Percentage Change",
-hue = "Mother tongue").set_title("Percentage change over 4 years for different mother tongues in Canada")
+
+plt.clf()
+can_plot_3 = sb.lineplot(data = canada, 
+                         x = "year", 
+                         y = "Percentage Change", hue = "Mother tongue")
+can_plot_3.set_title("Percentage change over 4 years for different mother tongues in Canada")
 plt.show()
 ```
 
