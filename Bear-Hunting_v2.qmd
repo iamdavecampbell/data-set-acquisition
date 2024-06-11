@@ -8,6 +8,7 @@ tags: ["Linear Chart", "Linear Regression", "Time Series", "Wildlife Data", "Ont
 subtitle: ''
 summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year from 2012 to 2018 in different wildlife management unit (WMU).'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
