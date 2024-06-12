@@ -89,6 +89,8 @@ harvest_hunter_plot = sb.scatterplot(data = data,
                                      legend = False)
 harvest_hunter_plot.set_title("Hunters and Harvest in different WMUs")
 
+# suppress spurious text output when rendering by including this command:
+None
 ```
 
 
