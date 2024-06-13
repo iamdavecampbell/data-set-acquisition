@@ -41,7 +41,7 @@ The dataset and its metadata file which contains detailed variable descriptions 
 The following code is used to download and organize the original dataset, and eparate it into two by groups of population and percentage.
 
 
-```{python dataset}
+```{python dataset_download}
 
 # packages
 import requests, zipfile, io
@@ -57,6 +57,13 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
+print(file_list)
+
+```
+
+```{python dataset_tidying}
+
+# Reading the csv file by name
 tongue = pd.read_csv(temp.open('15100003.csv'))
 
 # Organize the dataset and split it by measurement methods
@@ -75,7 +82,6 @@ tongue = pd.pivot_table(tongue,
                                  "Mother tongue"], 
                                  columns = "Statistics").reset_index()
 ```
-
 ### Percentage changes of different mother-tongue speakers in Canada
 
 The following code plots count, percentage, and percent change in mother tongue speakers in Canada.
@@ -94,6 +100,10 @@ can_plot_1 = sb.lineplot(data = canada,
 can_plot_1.set_title("Number of speakers of mother tongues in Canada")
 plt.show()
 
+```
+
+``` {python canada2}
+
 plt.clf()
 can_plot_2 = sb.lineplot(data = canada, 
                          x = "year", 
@@ -102,6 +112,9 @@ can_plot_2 = sb.lineplot(data = canada,
 can_plot_2.set_title("Percentage of speakers of mother tongues in Canada")
 plt.show()
 
+```
+
+``` {python canada 3}
 # Suppress warning about chained indexing 
 pd.options.mode.chained_assignment = None 
 
@@ -111,7 +124,8 @@ canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_
 plt.clf()
 can_plot_3 = sb.lineplot(data = canada, 
                          x = "year", 
-                         y = "Percentage Change", hue = "Mother tongue")
+                         y = "Percentage Change",
+                         hue = "Mother tongue")
 can_plot_3.set_title("Percentage change over 4 years for different mother tongues in Canada")
 plt.show()
 ```
@@ -127,17 +141,29 @@ plt.show()
 
 After comparing changes in mother tongue, the following code focuses on the changes within provinces. 
 
-```{python other language}
+```{python other language 1}
 # Plot the French and non-official language speakers proportion among all provinces in Canada
 plt.clf()
-sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "French")]), x = "year", y = "Percentage",
-hue = "location").set_title("Percentage of French mother tongues in different provinces")
+not_eng_plot_1 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
+                                    (tongue["Mother tongue"] == "French")]), 
+                             x = "year", 
+                             y = "Percentage",
+                              hue = "location")
+not_eng_plot_1.set_title("Percentage of French mother tongues in different provinces")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 
+```
+
+``` {python other language 2}
+
 plt.clf()
-sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & (tongue["Mother tongue"] == "Non-official languages")]), x = "year", y = "Percentage",
-hue = "location").set_title("Percentage of non-official language mother tongues in different provinces")
+not_eng_plot_2 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
+                                    (tongue["Mother tongue"] == "Non-official languages")]),
+                             x = "year",
+                             y = "Percentage",
+                             hue = "location")
+not_eng_plot_2.set_title("Percentage of non-official language mother tongues in different provinces")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show()
 
