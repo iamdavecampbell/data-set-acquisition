@@ -7,6 +7,7 @@ categories: ["Trade Data"]
 tags: ["Time Series", "Spatial Data Set", "Linear Chart", "Grains Export", "Trade Data", "Data Wrangling"]
 subtitle: ''
 summary: 'This dataset recorded 862 series from the year 1922 to 2017, the data is described by many dimensions, such as commodities about 9 different types of grains, export destinations which consist of 217 countries, 10 continents(Total Western Europe, Total Asia,…) and 1 total destination(Toal exports, all destinations), the export value unit is recorded as tonnes.'
+ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
@@ -35,7 +36,7 @@ The dataset and its metadata file with detailed variable descriptions have been 
 
 The following code is used to extract the whole dataset of grains export from the official website and perform the linear chart of total grains export to all destinations by grouping commodities.
 
-```{python dataset}
+```{python dataset download}
 
 # packages
 import requests, zipfile, io
@@ -49,18 +50,20 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/32100008-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
-#print(file_list)
+print(file_list)
 
 #get column names so we can chose the columns we want
 meta_columns= pd.read_csv(temp.open('32100008_MetaData.csv'), nrows=0, skiprows = 8).columns.tolist()
-#print(meta_columns)
+print(meta_columns)
 
+```
+
+```{python dataset, warning = False}
 export_data = pd.read_csv(temp.open('32100008.csv'))
 export_data = export_data.rename(columns = {"GEO" : "location", "REF_DATE" : "date"})
 export_data["year"] = pd.to_numeric(export_data["date"].str.split("-").str[0])
 export_data["month"] = pd.to_numeric(export_data["date"].str.split("-").str[1])
 
-export_data.head()
 
 ```
 
@@ -153,6 +156,24 @@ sb.lineplot(data = tmp_exports, x = "year", y = "VALUE",
 hue = "Destinations").set_title("Total Canola (rapeseed),  for countries that have surpassed 1,000,000 tonnes imported in at least one year")
 plt.ylabel("total export (tonnes)")
 plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show()
+
+```
+
+``` {python canola by month}
+
+canola = export_data[(export_data["Commodity"] == "Canola (rapeseed)") &
+                          (export_data["Destinations"] == "Total exports, all destinations")]
+
+plt.clf()
+canola_plot = sb.lineplot(data = canola,
+                          x = "month",
+                          y = "VALUE",
+                          hue = "year")
+canola_plot.set_title("Total canola (rapeseed) plants export by month")
+plt.ylabel("total export (tonnes)")
+plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+
 plt.show()
 
 ```
