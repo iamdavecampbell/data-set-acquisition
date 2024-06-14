@@ -8,6 +8,7 @@ tags: ["Linear Chart", "Data Merging and Cleaning", "Time Series", "Soft Drinks"
 subtitle: ''
 summary: 'The dataset of Soft drinks production consists of dates and production variables, and they are recorded by the unit of thousand gallons on a monthly, quarterly, and annual basis.'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
@@ -54,14 +55,20 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/16100100-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
-#print(file_list)
+print(file_list)
+
+```
+
+```{python quarterly dataset}
 quarterlydata = pd.read_csv(temp.open('16100100.csv'))
-#quarterlydata.head()
 
 # Organize the quarterly dataset 
 quarterly = quarterlydata[["REF_DATE", "VALUE"]].rename(columns = {"REF_DATE" : "quarter", "VALUE" : "QuarterlyValue"})
 quarterly["quarter"] = pd.to_datetime(quarterly["quarter"])
-#quarterly.head()
+
+```
+
+```{python more data}
 
 #Download the zip file of MONTHLY soft drink production AND rearrange the dataset
 temp = tf.TemporaryFile()
@@ -69,47 +76,80 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/16100099-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
-#print(file_list)
+print(file_list)
+
+```
+
+```{python organize monthly and annual data}
+
 monthlydata = pd.read_csv(temp.open('16100099.csv'))
 
 # Organize the monthly dataset 
 monthly = monthlydata[["REF_DATE", "VALUE"]].rename(columns = {"REF_DATE" : "date", "VALUE" : "Produced"})
 monthly["date"] = pd.to_datetime(monthly["date"])
-#monthly.head()
 
 # Now we want to extend the quarterly data set by combining over the monthly dataset:
-MoreQuarters = monthly.resample(rule = "Q", on="date", label = "left").sum().reset_index()
+MoreQuarters = monthly.resample(rule = "QE", on="date", label = "left").sum().reset_index()
 MoreQuarters["date"] = MoreQuarters["date"] + pd.Timedelta(days=1)
 MoreQuarters = MoreQuarters.rename(columns = {"date" : "quarter", "Produced" : "QuarterlyValue"})
-#MoreQuarters.head()
 
 AllQuarters = pd.concat([quarterly, MoreQuarters], ignore_index= True)
-#AllQuarters.tail()
 
-annual = AllQuarters.resample(rule = "Y", on="quarter", label = "left").sum().reset_index()
+annual = AllQuarters.resample(rule = "YE", on="quarter", label = "left").sum().reset_index()
 annual["quarter"] = annual["quarter"] + pd.Timedelta(days=1)
 annual = annual.rename(columns = {"quarter" : "Year", "QuarterlyValue" : "AnnualValue"})
-#annual.tail()
 
-AllQuarters.head()
-annual.head()
-monthly.head()
 ```
 
-```{python linear}
+```{python display quarterly data}
+
+AllQuarters.head()
+
+```
+
+```{python display annual data}
+
+annual.head()
+
+```
+
+```{python display monthly data}
+
+monthly.head()
+
+```
+
+## Soft drink production
+
+
+```{python linear annual}
+
+#Plot the graph of annual soft drink production
 
 sb.set_style("darkgrid")
 plt.clf()
 sb.lineplot(data=annual, x="Year", y="AnnualValue").set_title("Annual soft drink production")
-plt.show
+plt.show;
+
+```
+
+```{python linear quarterly}
+
+#Plot the graph of quarterly soft drink production
 
 plt.clf()
 sb.lineplot(data=AllQuarters, x="quarter", y="QuarterlyValue", marker="o").set_title("Quarterly soft drink production")
-plt.show
+plt.show;
+
+```
+
+```{python linear monthly}
+
+#Plot the graph of monthly soft drink production
 
 plt.clf()
 sb.lineplot(data=monthly, x="date", y="Produced").set_title("Monthly soft drink production")
-plt.show
+plt.show;
 
 ```
 
@@ -117,6 +157,11 @@ What happened to the annual data from 1976 and 1977?  Need a hint, Zoomm in by c
 ```{python}
 
 # plot 1970-1980 from annual data frame to observe double counting
+
+#sb.lineplot(data = annual[(annual["Year"].dt.year > 1970) &
+#                          (annual["Year"].dt.year < 1980)],
+#                          x = "Year",
+#                          y = "AnnualValue")
 
 ```
 * Need another hint?  Look back at the quarterly data sets before they were combined from different sources.
@@ -141,7 +186,7 @@ proportions.head()
 proportions.plot(kind='bar', stacked = True).set_title("Percent Stacked Barchart of Quaterly Soft Drink Production")
 plt.xlabel("Year")
 plt.ylabel("Percentage")
-plt.legend(title="Month", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Month", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0);
 
 ```
 
