@@ -87,10 +87,12 @@ harvest_hunter_plot = sb.scatterplot(data = data,
                                      y = 'Harvest', 
                                      hue = 'WMU', 
                                      legend = False)
-harvest_hunter_plot.set_title("Hunters and Harvest in different WMUs")
+harvest_hunter_plot.set_title("Hunters and Harvest in different WMUs");
+
+# Semicolon at end of last line in code block suppresses text output 
 
 # suppress spurious text output when rendering by including this command:
-None
+# None
 ```
 
 
