@@ -126,7 +126,8 @@ can_plot_3 = sb.lineplot(data = canada,
                          x = "year", 
                          y = "Percentage Change",
                          hue = "Mother tongue")
-can_plot_3.set_title("Percentage change over 4 years for different mother tongues in Canada")
+can_plot_3.set_title("Percentage change over 4 years "
+                     "for different mother tongues in Canada")
 plt.show();
 ```
 
@@ -149,7 +150,8 @@ not_eng_plot_1 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") &
                              x = "year", 
                              y = "Percentage",
                               hue = "location")
-not_eng_plot_1.set_title("Percentage of French mother tongues in different provinces")
+not_eng_plot_1.set_title("Percentage of French "
+                         "mother tongues in different provinces")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show();
 
@@ -163,8 +165,11 @@ not_eng_plot_2 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") &
                              x = "year",
                              y = "Percentage",
                              hue = "location")
-not_eng_plot_2.set_title("Percentage of non-official language mother tongues in different provinces")
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+not_eng_plot_2.set_title("Percentage of non-official "
+                         "language mother tongues in different provinces")
+plt.legend(bbox_to_anchor=(1.05, 1),
+           loc='upper left', 
+           borderaxespad=0)
 plt.show();
 
 ```
