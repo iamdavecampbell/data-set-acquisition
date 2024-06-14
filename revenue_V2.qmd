@@ -8,6 +8,7 @@ tags: ["Time Series", "Exploratory Analysis", "Canada", "School Revenue", "Educa
 subtitle: ''
 summary: 'This dataset contains 138 observational series and several variables, which include the geography of Canada and the other 13 provinces, 9 direct sources of funds and total funded revenue from 1947 to 2002.'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible analysis and Keywords
@@ -54,6 +55,10 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/37100084-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
+print(file_list)
+```
+
+```{python download dataset}
 revenue = pd.read_csv(temp.open("37100084.csv"))
 
 
@@ -63,14 +68,13 @@ revenue["year"] = revenue["year"].astype(int)
 
 revenue.head()
 
-
 ```
 
 ### School Revenue by Different Funded Source in Canada
 
 The following code is used to draw the stacked area chart so that we can directly see the time-series trend and proportion of different funding sources over the years.
 
-```{python graph}
+```{python funds from different revenue sources}
 
 # Subset a reveune dataset which only focus on different funding source in Canada and plot the graph
 
@@ -86,7 +90,28 @@ plt.legend(title = "Direct source of funds",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
-plt.show()
+plt.show();
+
+```
+
+### Total School Revenue in Different Provinces
+
+The following code is used to draw the stacked area chart so that we can directly see the time-series trend and proportion in different provinces over the years.
+
+```{python revenue in different provinces}
+
+plt.clf()
+sb.lineplot(data = revenue[(revenue["GEO"] != "Canada") &
+                           (revenue["Direct source of funds"] == "Total revenues")],
+                           x = "year",
+                           y = "VALUE", 
+                           hue = "GEO")
+plt.title("Total School Revenue Funded in Different Provinces")
+plt.legend(title = "Province",
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left',
+           borderaxespad=0)
+plt.show();
 
 ```
 
@@ -106,6 +131,7 @@ revenue_wide = pd.pivot_table(revenue_wide,
                               columns = "Direct source of funds").reset_index()
 
 
+revenue_wide.head()
 ```
 
 ## Wider data makes easier plotting and analysis
@@ -116,6 +142,7 @@ To predict the school fees, one would need to consider the other sources of fund
 
 plt.clf()
 sb.pairplot(data = revenue_wide)
+
 ```
 
 ```{python linear modelling}
