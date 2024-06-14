@@ -8,6 +8,7 @@ tags: ["Spatial Data Set", "Time Series", "Line Chart", "Regression", "Greenhous
 subtitle: ''
 summary: 'The dataset of plants production and sales is described by many meaningful variables, such as years from 2007 to 2019, geometry which includes Canada and its 10 provinces, flowers and 5 plants types and two output types, which are production with the unit of a number and sales with the unit of a dollar.'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible analysis and Keywords
@@ -56,18 +57,24 @@ url = "https://www150.statcan.gc.ca/n1/tbl/csv/32100246-eng.zip"
 r = requests.get(url)
 temp = zipfile.ZipFile(io.BytesIO(r.content))
 file_list = temp.namelist()
+print(file_list)
+
+```
+
+```{python read csv}
+
 plants = pd.read_csv(temp.open(file_list[0]))
 
 # Rename a couple of columns
 plants = plants.rename(columns = {"GEO" : "location", "REF_DATE" : "year"})
-plants.head()
+
 ```
 
 ### Greenhouse plants production and sales in Canada
 
 The following code is used to plot greenhouse plant production and sales in Canada.
 
-```{python canada}
+```{python greenhouse plant production}
 
 # Subset a dataset of plants production in Canada 
 
@@ -84,7 +91,11 @@ plt.legend(title = "Flowers and Plants",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
-plt.show()
+plt.show();
+
+```
+
+```{python greenhouse plant sales}
 
 plt.clf()
 sb.lineplot(data = plants[(plants["location"] == "Canada") & 
@@ -98,21 +109,23 @@ plt.legend(title = "Flowers and Plants",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
-plt.show()
+plt.show();
+
 ```
 
 * So, the following code is used to discover the plant production in different provinces.
 
 ### Bedding plants (vegetables & ornamental) production 
 
-```{python bedding plants}
+```{python vegetable bedding plants}
 
 # Select the datasets of two different bedding plants (vegetable & ornamental) in 10 different provinces
 
 plt.clf()
 sb.lineplot(data = plants[(plants["location"] != "Canada") & 
                           (plants["Output"] == "Production (number)") &
-                          (plants["Flowers and plants"] == "Total vegetable bedding plants [115143421]")],
+                          (plants["Flowers and plants"] == 
+                          "Total vegetable bedding plants [115143421]")],
                           x = "year",
                           y = "VALUE",
                           hue = "location")
@@ -122,7 +135,11 @@ plt.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
-plt.show()
+plt.show();
+
+```
+
+```{python ornamental bedding plants}
 
 plt.clf()
 sb.lineplot(data = plants[(plants["location"] != "Canada") & 
@@ -137,13 +154,13 @@ plt.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
-plt.show()
+plt.show();
 
 ```
 
 ## Examining all production counts within Canada
 
-```{python}
+```{python all production counts}
 
 plants_2 = plants[(plants["location"] == "Canada") & 
                 (plants["Output"] == "Sales")][["year",
@@ -155,8 +172,6 @@ plants_2 = pd.pivot_table(plants_2,
                           columns = "Flowers and plants",
                           index = "year").reset_index()
 plt.clf()
-sb.pairplot(data = plants_2)
-
-
+sb.pairplot(data = plants_2);
                     
 ``` 
