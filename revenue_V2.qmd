@@ -1,6 +1,6 @@
 ---
 title: "Private Elementary and Secondary Schools Revenues - Open Canada"
-author: "Junpu Xie and Dave Campbell"
+author: "Dean Jayatilleke & Junpu Xie and Dave Campbell"
 date: '2020-08-10'
 slug: private-elementary-and-secondary-schools-revenues-open-canada
 categories: ["Regression"]
@@ -164,5 +164,5 @@ y = canada_wide['Fees']
 model.fit(x,y)
 
 print("Intercept: ", model.intercept_)
-print("Coefficients: ", model.coef_)
+print("Coefficients: \n", list(zip(list(x), model.coef_)))
 ```
