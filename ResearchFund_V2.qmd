@@ -48,7 +48,9 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 
 # Download the CSV file and organize the dataset
-data = pd.read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skiprows=1, encoding='unicode_escape')
+data = pd.read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", 
+                   skiprows=1, 
+                   encoding='unicode_escape')
 
 # Get rid of empty rows and change the formats of date and currency variables
 data = data.dropna(subset = ["Program"])
@@ -66,6 +68,9 @@ data["Total Project Costs"] = data["Total Project Costs"].astype(int)
 data["Approval Date"] = pd.to_datetime(data["Approval Date"])
 data.head()
 
+```
+
+```{python plot1}
 # Plot the Paired graph
 # Extract the year from the approval date
 
@@ -140,9 +145,11 @@ The following codes are used to plot the ridgeline graphs about the frequency of
 
 ```{python city}
 
-ins = data[["year", "Lead Research Institution"]]
+ins = data[["year", "Lead Research Institution"]].sort_values('Lead Research Institution')
 
-ins = ins.groupby(["Lead Research Institution", "year"])["Lead Research Institution"].count()
 
-ins.tail()
+
+#ins = ins.groupby(["Lead Research Institution", "year"])["Lead Research Institution"].count()
+
+ins
 ```
