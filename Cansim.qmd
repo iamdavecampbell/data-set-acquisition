@@ -62,7 +62,7 @@ We'll use that to grab the table.   Be warned that this data table is a csv of a
 ```{python}
 sc = StatsCan() # We create a StatsCan Object that will be used to pull data
 data = sc.table_to_df("14-10-0287-01") 
-
+data.head()
 ```
 
 There are nearly 5 million rows of data!  
@@ -79,9 +79,29 @@ Let's inventory a few of these columns so that the exact spelling of attributes 
 ```{python}
 
 data["Labour force characteristics"].unique()
+
+```
+
+```{python}
+
 data["Statistics"].unique()
+
+```
+
+```{python}
+
 data["Age group"].unique()
+
+```
+
+```{python}
+
 data["GEO"].unique()
+
+```
+
+```{python}
+
 data["Data type"].unique()
 
 ```
@@ -117,6 +137,7 @@ pivoted = pd.pivot_table(provinces,
                          values = "VALUE",
                          columns = "GEO").reset_index()
 
+provinces["GEO"].unique()
 ```
 
 ```{python employmentprovincespairplot}
@@ -129,7 +150,86 @@ plt.show()
 
 ### Plotting the Provinces as Time Series
 
-```{python employmentprovincestimeseries}
+```{python unemployment by province}
+
+x = list(provinces["GEO"].unique())
+y = [1,2,3,4,5,6,7,8,9,10]
+
+sb.set_style("darkgrid")
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+
+    sb.lineplot(data = provinces[provinces["GEO"] == province],
+                x = "year",
+                y = "VALUE")
+     
+    
+    plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unemployment Rates by Province', fontsize=14)
+plt.show()
+
+```
+
+## Plot the Within Year Seasonal Trends
+
+```{python within year seasonal}
+
+provinces["month"] = provinces["REF_DATE"].dt.month
+provinces["year"] = provinces["REF_DATE"].dt.year
+
+x = list(provinces["GEO"].unique())
+y = [1,2,3,4,5,6,7,8,9,10]
+
+plt.clf()
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+    sb.lineplot(data = provinces[(provinces["GEO"] == province) &
+                                 (provinces["year"] < 2020)],
+                x = "month",
+                y = "VALUE",
+                hue = "year",
+                palette = "crest",
+                linewidth = 0.5)
+
+    sb.lineplot(data = provinces[(provinces["GEO"] == province) &
+                                 (provinces["year"] >= 2020)],
+                x = "month",
+                y = "VALUE",
+                hue = "year",
+                palette = "Reds_d",
+                linewidth = 2.5)
+    if province == "British Columbia":
+        plt.legend(title="Year", 
+                   bbox_to_anchor=(1.05, 1), 
+                   loc='upper left', 
+                   borderaxespad=0, 
+                   ncol = 3)
+    else:           
+        plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("")        
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unadjusted Unemployment Rates by Province', fontsize=14)
+plt.show()
+
+```
+
+```{python test}
 
 plt.clf()
 g = sb.FacetGrid(provinces,
@@ -144,71 +244,4 @@ for ax in g.axes.flat:
 g.fig.subplots_adjust(top=0.9)
 g.fig.suptitle('Unemployment Rates by Province', fontsize=16)
 plt.show()
-
-#remove Canada plot
-#rename plots
-
-```
-
-## Plot the Within Year Seasonal Trends
-
-```{python provinceseasonal}
-
-provinces["month"] = provinces["REF_DATE"].dt.month
-provinces["year"] = provinces["REF_DATE"].dt.year
-
-pal = {}
-
-for year in range(1976,2020):
-    pal[year] = "blue"
-
-for year in range(2020, 2025):
-    pal[year] = "red"
-
-plt.clf()
-g = sb.FacetGrid(provinces[provinces["year"] < 2000],
-                 col = "GEO",
-                 col_wrap = 4,
-                 height = 2)
-g.map(sb.lineplot, "month", "VALUE", "year")
-g.set_axis_labels("Month", "Unemployment Rate")
-g.fig.subplots_adjust(top=0.9)
-g.fig.suptitle('Unemployment Rates by Province', fontsize=16)
-
-```
-
-```{python scrap}
-
-
-
-pal = {}
-
-for year in range(1976,2020):
-    pal[year] = "blue"
-
-for year in range(2020, 2025):
-    pal[year] = "red"
-
-plt.clf()
-plt.subplot(3,4,1)
-sb.lineplot(data = provinces[provinces["GEO"] == "Alberta"],
-            x = "month",
-            y = "VALUE",
-            hue = "year",
-            palette = pal)
-plt.subplot(3,4,2)            
-sb.lineplot(data = provinces[provinces["GEO"] == "British Columbia"],
-            x = "month",
-            y = "VALUE",
-            hue = "year",
-            palette = pal)
-
-
-```
-
-```{python test}
-
-test = dict(zip(range(1976, 2020), sb.color_palette("viridis")))
-print(test)
-
 ```
