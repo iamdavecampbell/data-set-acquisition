@@ -137,7 +137,6 @@ pivoted = pd.pivot_table(provinces,
                          values = "VALUE",
                          columns = "GEO").reset_index()
 
-provinces["GEO"].unique()
 ```
 
 ```{python employmentprovincespairplot}
@@ -151,6 +150,9 @@ plt.show()
 ### Plotting the Provinces as Time Series
 
 ```{python unemployment by province}
+
+provinces["month"] = provinces["REF_DATE"].dt.month
+provinces["year"] = provinces["REF_DATE"].dt.year
 
 x = list(provinces["GEO"].unique())
 y = [1,2,3,4,5,6,7,8,9,10]
@@ -181,10 +183,7 @@ plt.show()
 
 ## Plot the Within Year Seasonal Trends
 
-```{python within year seasonal}
-
-provinces["month"] = provinces["REF_DATE"].dt.month
-provinces["year"] = provinces["REF_DATE"].dt.year
+```{python within year seasonal highlight pandemic}
 
 x = list(provinces["GEO"].unique())
 y = [1,2,3,4,5,6,7,8,9,10]
@@ -224,24 +223,85 @@ for province, i in zip(x, y):
         plt.ylabel("")        
 
 plt.subplots_adjust(top = 0.9)
-plt.suptitle('Unadjusted Unemployment Rates by Province', fontsize=14)
+plt.suptitle('Unemployment Rates by Province: Highlighting Pandemic Years', 
+             fontsize = 13)
 plt.show()
 
 ```
 
-```{python test}
+```{python within year seasonal highlight by decade}
 
-plt.clf()
-g = sb.FacetGrid(provinces,
-                 col = "GEO",
-                 col_wrap = 4,
-                 height = 2)
-g.map(sb.lineplot, "REF_DATE", "VALUE")
-g.set_axis_labels("Year", "Unemployment Rate")
-for ax in g.axes.flat:
-    for label in ax.get_xticklabels():
-        label.set_rotation(90)
-g.fig.subplots_adjust(top=0.9)
-g.fig.suptitle('Unemployment Rates by Province', fontsize=16)
+provinces["decade"] = provinces["year"] // 10 * 10
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+
+    sb.lineplot(data = provinces[provinces["GEO"] == province],
+                x = "month",
+                y = "VALUE",
+                hue = "decade",
+                palette = "bright",
+                units = "year",
+                estimator = None)
+     
+    
+    plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+
+    if province == "British Columbia":
+        plt.legend(title="decade", 
+                   bbox_to_anchor=(1.05, 1), 
+                   loc='upper left', 
+                   borderaxespad=0, 
+                   ncol = 3)
+    else:           
+        plt.legend('', frameon = False)
+
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unemployment Rates by Province: Highlighted by Decade', fontsize=13)
 plt.show()
+
+```
+
+## Housing starts
+
+
+The housing starts are more complicated beacuse they are based on cities but the unemployment is based on provices
+
+```{python housing dataset}
+
+housing = sc.table_to_df("34-10-0154-01") 
+housing.head()
+
+```
+
+```{python unique cities}
+
+# the unique cities
+housing["GEO"].unique()
+
+```
+
+To merge the housing starts with the unemployment, we need to set both to the same measurement unit, provinces per {month, year}.  To construct provincial housing starts, sum over the municipailites within a province. Many of these StatCan tables have multiple data types, so we will only consider **Housing.estimates** = _"Housing starts"_ and **Type.of.unit ** = _"Total units"_.
+
+Notice that Ottawa-Gatineau is split into ON and QC parts.
+
+Let's use the string split function to split apart the province and city. Considering the **GEO** location **"Ottawa-Gatineau, Ontario part, Ontario/Quebec"** and splitting at the ",", we will have to specify that we want to split at the first comma. Also note that location "Census metropolitan area" does not contain province information, so 'None' will appear in that column.
+
+```{python tidy dataset}
+
+# Build the city and province columns by splitting at the first comma - notice the space after the comma
+housing[['city', 'province']] = housing['GEO'].str.split(', ', n=1, expand=True)
+
+# Now handle the "Ontario part", "Quebec part", and "Ontario/Quebec" cases
+
+
+
+
 ```
