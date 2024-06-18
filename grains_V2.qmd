@@ -60,13 +60,17 @@ print(meta_columns)
 
 ```{python dataset}
 
-cols = ['REF_DATE', 'GEO', 'Commodity', 'Destinations', 'VALUE']
+cols = ['REF_DATE', 
+        'GEO', 
+        'Commodity', 
+        'Destinations', 
+        'VALUE']
 export_data = pd.read_csv(temp.open('32100008.csv'), usecols = cols)
 export_data = export_data.rename(columns = {"GEO" : "location", "REF_DATE" : "date"})
 export_data["year"] = pd.to_numeric(export_data["date"].str.split("-").str[0])
 export_data["month"] = pd.to_numeric(export_data["date"].str.split("-").str[1])
 
-
+export_data.head()
 ```
 
 Some exploratory plots 
@@ -74,14 +78,22 @@ Some exploratory plots
 ```{python}
 # Summarize the annual export value by group of the year
 
-totals = export_data.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+totals = export_data.groupby(["year", 
+                              "Commodity", 
+                              "Destinations"], as_index=False)['VALUE'].sum()
 
 sb.set_style("darkgrid")
 
-sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], x = "year", y = "VALUE",
-hue = "Commodity").set_title("Total grains export to all destinations")
+sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], 
+            x = "year", 
+            y = "VALUE",
+            hue = "Commodity").set_title("Total grains export to all destinations")
+
 plt.ylabel("total export (tonnes)")
-plt.legend(title="Commodity", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Commodity", 
+           bbox_to_anchor=(1.05, 1), 
+           loc='upper left', 
+           borderaxespad=0)
 plt.show();
 ```
 
@@ -100,13 +112,21 @@ wheat_ex_durum = wheat_ex_durum[wheat_ex_durum["Destinations"].str.contains("Tot
 
 #wheat_ex_durum.head()
 
-wheat_totals = wheat_ex_durum.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+wheat_totals = wheat_ex_durum.groupby(["year", 
+                                       "Commodity", 
+                                       "Destinations"], as_index=False)['VALUE'].sum()
 
 plt.clf()
-sb.lineplot(data = wheat_totals, x = "year", y = "VALUE",
-hue = "Destinations").set_title("Total Annual Wheat, excluding durum, export among different continents")
+sb.lineplot(data = wheat_totals, 
+            x = "year", 
+            y = "VALUE",
+            hue = "Destinations")
+plt.title("Total Annual Wheat, excluding durum, export among different continents")
 plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Destinations", 
+           bbox_to_anchor=(1.05, 1), 
+           loc='upper left', 
+           borderaxespad=0)
 plt.show();
 
 ```
@@ -127,10 +147,16 @@ few_countries = export_data[(export_data["Commodity"] == "Wheat, excluding durum
 few_countries_totals = few_countries.groupby(["year", "Destinations"], as_index=False)['VALUE'].sum()
 
 plt.clf()
-sb.lineplot(data = few_countries_totals, x = "year", y = "VALUE",
-hue = "Destinations").set_title("Total Wheat, excluding durum, exported by year")
+sb.lineplot(data = few_countries_totals, 
+            x = "year", 
+            y = "VALUE",
+            hue = "Destinations")
+plt.title("Total Wheat, excluding durum, exported by year")
 plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.legend(title="Destinations", 
+           bbox_to_anchor=(1.05, 1), 
+           loc='upper left', 
+           borderaxespad=0)
 plt.show();
 ```
 
@@ -145,7 +171,10 @@ plt.show();
 tmp_exports = export_data[(export_data["Commodity"] == "Canola (rapeseed)") &
                           (export_data["Destinations"] != "Total exports, all destinations")]
 
-tmp_exports = tmp_exports.groupby(["year", "Commodity", "Destinations"], as_index=False)['VALUE'].sum()
+tmp_exports = tmp_exports.groupby(["year", 
+                                   "Commodity", 
+                                   "Destinations"], 
+                                   as_index=False)['VALUE'].sum()
 
 tmp_exports = tmp_exports[tmp_exports["Destinations"].str.contains("Total") == False]
 
@@ -154,8 +183,12 @@ big_countries = tmp_exports[tmp_exports["VALUE"] > 1000000]["Destinations"].uniq
 tmp_exports = tmp_exports[tmp_exports["Destinations"].isin(big_countries)]
 
 plt.clf()
-sb.lineplot(data = tmp_exports, x = "year", y = "VALUE",
-hue = "Destinations").set_title("Total Canola (rapeseed),  for countries that have surpassed 1,000,000 tonnes imported in at least one year")
+sb.lineplot(data = tmp_exports, 
+            x = "year", 
+            y = "VALUE",
+            hue = "Destinations")
+plt.title("Total Canola (rapeseed),  for countries that have "
+          "surpassed 1,000,000 tonnes imported in at least one year")
 plt.ylabel("total export (tonnes)")
 plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show();
@@ -182,9 +215,10 @@ sb.boxplot(data = canola,
 
 canola_plot.set_title("Total canola (rapeseed) plants export by month")
 plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
-
-
+plt.legend(title="Destinations", 
+           bbox_to_anchor=(1.05, 1), 
+           loc='upper left', 
+           borderaxespad=0)
 plt.show();
 
 ```
