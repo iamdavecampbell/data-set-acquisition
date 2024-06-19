@@ -356,3 +356,44 @@ merged = pd.merge(unemployment, housing_starts, on = ['province', 'year', 'month
 merged["province"].unique()
 
 ```
+
+#### Comparing Unemployment and Housing Starts
+
+Note that there are Prince Edward Island and the territories not represented within the housing starts dataset and therefore are not in the following plots.
+
+In general as unemployment increases, housing starts decrease.
+
+```{python housing v unemployment plot}
+
+x = list(merged["province"].unique())
+y = y = [1,2,3,4,5,6,7,8,9]
+
+for province, i in zip(x, y):
+    plt.subplot(3,3,i)
+    plt.tight_layout()
+
+    sb.regplot(data = merged[merged["province"] == province],
+                x = "unemployment rate",
+                y = "Housing starts",
+                scatter_kws={'s':1})
+     
+    plt.title(province, fontsize = 8)
+    plt.legend('', frameon = False)
+
+    if province == "Quebec":
+        plt.ylabel("Total housing")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Regression plots of Housing vs. Unemployment Rate', fontsize=13)
+plt.show()
+```
+
+
+#### Going Further
+
+- Make residual plots for the linear regessions
+- Consider other variables/ relationship, such as   CPI from table **18-10-0004-01  Consumer Price Index, monthly, not seasonally adjusted**
+- Consider looking for a time varying trend, subsetting the years, or even multiple regression with a year effect.
+
