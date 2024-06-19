@@ -299,9 +299,60 @@ Let's use the string split function to split apart the province and city. Consid
 # Build the city and province columns by splitting at the first comma - notice the space after the comma
 housing[['city', 'province']] = housing['GEO'].str.split(', ', n=1, expand=True)
 
-# Now handle the "Ontario part", "Quebec part", and "Ontario/Quebec" cases
+
+# Now handle the "Ontario part", "Quebec part" entries
+# Discard everything after first space
+housing["province"] = housing["province"].str.split(" p").str[0]
+
+housing.head()
+```
+
+#### Preparing for Merging Datasets
+
+Here we rebuild the dataset and sum housing starts within provinces
+
+```{python prepare for merge}
+
+# Drop all data except Housing Starts and Total Units
+# Rename VALUE Housing start so we know what housing parameter we are looking at
+
+housing_starts = housing[(housing["Housing estimates"] == "Housing starts") &
+                  (housing["Type of unit"] == "Total units")]
+
+housing_starts = housing_starts.rename(columns = {"VALUE" : "Housing starts"})
+
+housing_starts["year"] = housing_starts["REF_DATE"].dt.year
+housing_starts["month"] = housing_starts["REF_DATE"].dt.month
+
+housing_starts = housing_starts.groupby(["province",
+                               "year",
+                               "month",
+                               "REF_DATE"],
+                               as_index = False,)["Housing starts"].sum()
+
+housing_starts.head()
+
+```
+
+```{python merge}
+
+unemployment = provinces[["GEO", "REF_DATE", "VALUE", "month", "year", "decade"]]
 
 
+unemployment = unemployment.rename(columns = {"VALUE" : "unemployment rate", 
+                                              "GEO" : "province"})
 
+unemployment.head()
+
+```
+
+```{python merge2}
+
+
+merged = pd.merge(unemployment, housing_starts, on = ['province', 'year', 'month', 'REF_DATE'])
+
+#merged.tail()
+
+merged["province"].unique()
 
 ```
