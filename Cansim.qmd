@@ -6,7 +6,7 @@ slug: socioeconomic-time-series-and-statistics-canada
 categories: ["Census Data"]
 tags: ["Linear Regression", "Time Series",  "Official Statistics", "Census Data"]
 subtitle: ''
-summary: 'Using R libraries to acquire socioeconomic data from Statistics Canada Mapper.'
+summary: 'Using Python libraries to acquire socioeconomic data from Statistics Canada Mapper.'
 lastmod: '2021-06-11T18:40:19-04:00'
 ipynb-shell-interactivity: all
 ---
@@ -140,7 +140,8 @@ pivoted = pd.pivot_table(provinces,
                                   "Labour force characteristics",
                                   "REF_DATE"],
                          values = "VALUE",
-                         columns = "GEO").reset_index()
+                         columns = "GEO",
+                         observed = False).reset_index()
 
 pivoted.head()
 ```
@@ -186,7 +187,7 @@ for province, i in zip(x, y):
 
 plt.subplots_adjust(top = 0.9)
 plt.suptitle('Unemployment Rates by Province', fontsize=14)
-plt.show()
+plt.show();
 
 ```
 
@@ -238,7 +239,7 @@ for province, i in zip(x, y):
 plt.subplots_adjust(top = 0.9)
 plt.suptitle('Unemployment Rates by Province: Highlighting Pandemic Years', 
              fontsize = 13)
-plt.show()
+plt.show();
 
 ```
 
@@ -282,7 +283,7 @@ for province, i in zip(x, y):
 
 plt.subplots_adjust(top = 0.9)
 plt.suptitle('Unemployment Rates by Province: Highlighted by Decade', fontsize=13)
-plt.show()
+plt.show();
 
 ```
 
@@ -401,7 +402,7 @@ for province, i in zip(x, y):
 
 plt.subplots_adjust(top = 0.9)
 plt.suptitle('Regression plots of Housing vs. Unemployment Rate', fontsize=13)
-plt.show()
+plt.show();
 ```
 
 
