@@ -1,6 +1,6 @@
 ---
 title: 'Cansim Library for Socio-Economic data'
-author: "Dave Campbell"
+author: "Dean Jayatilleke & Dave Campbell"
 date: '2021-06-11'
 slug: socioeconomic-time-series-and-statistics-canada
 categories: ["Census Data"]
@@ -8,6 +8,7 @@ tags: ["Linear Regression", "Time Series",  "Official Statistics", "Census Data"
 subtitle: ''
 summary: 'Using R libraries to acquire socioeconomic data from Statistics Canada Mapper.'
 lastmod: '2021-06-11T18:40:19-04:00'
+ipynb-shell-interactivity: all
 ---
   
 # Possible Analysis and Keywords
@@ -39,7 +40,10 @@ Statistics Canada hosts a large set of socio-economic [datasets](https://www150.
   
 ```{python stats-can library, eval=FALSE}
 
-#code not run for this document.
+# conda install -c conda-forge stats-can
+# OR
+# pip install stats-can
+# code not run for this document.
 ```
 
 # Basic libraries 
@@ -63,6 +67,7 @@ We'll use that to grab the table.   Be warned that this data table is a csv of a
 sc = StatsCan() # We create a StatsCan Object that will be used to pull data
 data = sc.table_to_df("14-10-0287-01") 
 data.head()
+data.tail()
 ```
 
 There are nearly 5 million rows of data!  
@@ -137,7 +142,10 @@ pivoted = pd.pivot_table(provinces,
                          values = "VALUE",
                          columns = "GEO").reset_index()
 
+pivoted.head()
 ```
+
+### Plotting Variables Against Each Other.
 
 ```{python employmentprovincespairplot}
 
@@ -149,6 +157,7 @@ plt.show()
 
 ### Plotting the Provinces as Time Series
 
+Notice how we produce a year and month columns by accessing properties of **pandas datetime** objects. 
 ```{python unemployment by province}
 
 provinces["month"] = provinces["REF_DATE"].dt.month
@@ -182,6 +191,10 @@ plt.show()
 ```
 
 ## Plot the Within Year Seasonal Trends
+
+We plot unemployment for each year in each province using a different line. In order to highlight the effect of the pandemic we first call seaborn lineplot on a subset of the data up to the year 2019. Each year is given a different colour by setting the "hue" parameter to "year". We then call seaborn linepot on a subset of the data from 2020 onwards. We choose a different colour palette so the pandemic years are clearly identifiable. Seaborn will overly successive plots on the same graph unless the plot is cleared using plt.clf().
+
+In some provinces, the strong seasonality of the unemployment rate realy pops out.  
 
 ```{python within year seasonal highlight pandemic}
 
@@ -228,6 +241,10 @@ plt.suptitle('Unemployment Rates by Province: Highlighting Pandemic Years',
 plt.show()
 
 ```
+
+## Plot the within year seasonal trends, but highlight by decade
+
+ A "decade" column is produced using floor division. The yearly data lines are colour grouped by decade so 2020-2021 are inherrently already highlighted.
 
 ```{python within year seasonal highlight by decade}
 
@@ -296,12 +313,11 @@ Let's use the string split function to split apart the province and city. Consid
 
 ```{python tidy dataset}
 
-# Build the city and province columns by splitting at the first comma - notice the space after the comma
+# Build the city and province columns by splitting at the first comma - notice the space after the comma - this serves to discard that space
 housing[['city', 'province']] = housing['GEO'].str.split(', ', n=1, expand=True)
 
 
 # Now handle the "Ontario part", "Quebec part" entries
-# Discard everything after first space
 housing["province"] = housing["province"].str.split(" p").str[0]
 
 housing.head()
@@ -311,7 +327,7 @@ housing.head()
 
 Here we rebuild the dataset and sum housing starts within provinces
 
-```{python prepare for merge}
+```{python mergeprep housing}
 
 # Drop all data except Housing Starts and Total Units
 # Rename VALUE Housing start so we know what housing parameter we are looking at
@@ -334,7 +350,7 @@ housing_starts.head()
 
 ```
 
-```{python merge}
+```{python mergeprep unemployment}
 
 unemployment = provinces[["GEO", "REF_DATE", "VALUE", "month", "year", "decade"]]
 
@@ -346,14 +362,12 @@ unemployment.head()
 
 ```
 
-```{python merge2}
+```{python merge}
 
 
 merged = pd.merge(unemployment, housing_starts, on = ['province', 'year', 'month', 'REF_DATE'])
 
-#merged.tail()
-
-merged["province"].unique()
+merged.head()
 
 ```
 
