@@ -1,0 +1,54 @@
+---
+title: "COVID Data: COVID-19 Data - Government of Canada and JHU CSSE"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2020-07-24'
+slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse
+categories: ["COVID Data"]
+tags: ["Linear Regression", "Normal Distribution","Time Series", "Aggregated Ddata", "Spatial Data Set", "COVID-19", "COVID Data"]
+subtitle: ''
+summary: 'JHU CSSE and JHU APL have cooperated together to create a large COVID-19 data repository and update real-time official COVID-19 data worldwide. Moreover, the COVID-19 data from the Government of Canada provide detailed information about COVID-19 data in time-series and aggregated forms.'
+lastmod: '2020-07-24T18:48:09-04:00'
+---
+
+## Possible Analysis and Keywords
+- Linear Regression
+- Normal Distribution
+- Time Series
+- Aggregated Data
+- Spatial Data Set
+- COVID-19
+- COVID Data
+
+## Data Provider - Worldwide 
+
+COVID-19 data plays a vital role in managing a pandemic. Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE), ESRI Living Atlas Team and the Johns Hopkins University Applied Physics Lab (JHU APL) have compiled a COVID-19 data repository which is updated in real-time with worldwide COVID-19 [data](https://github.com/CSSEGISandData/COVID-19).
+
+The real-time visual dashboard can be viewed in [desktop](https://www.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6) and [mobile](http://www.arcgis.com/apps/opsdashboard/index.html#/85320e2ea5424dfaaa75ae62e5c06e61).
+
+## Data Provider - Canada
+
+COVID-19 is a serious health threat for individuals and its extended social problems are also evolving daily. Based on the given number of cases in Canada, the risk to Canadians is still considered high. 
+
+The government of Canada updates regular COVID-19 information and news [here](https://www.canada.ca/en/public-health/services/diseases/coronavirus-disease-covid-19.html), it also creates interactive data visualizations by providing a visual data gallery [here](https://health-infobase.canada.ca/covid-19/visual-data-gallery/), so that everyone can easily see the current situation of COVID-19 across Canada and the world with different measurements. Health Canada provides several visualizations including the [Canada COVID-19 Situational Awareness Dashboard](https://experience.arcgis.com/experience/2f1a13ca0b29422f9b34660f0b705043/?fbclid=IwAR0k_pf1jxwanqldeaZy0-1bao8njVXrz6A3-ejp72Kyh4Qcj0MrE72lgdo) and [interactive data map](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html).
+
+***
+
+## COVID-19 Data from the Government of Canada
+
+The COVID-19 data from the Government of Canada provide detailed information in number, percent, and rate data of tested, confirmed, recovered, and death cases in time series, it is also aggregated forms with a given date among different provinces and you can view and download the dataset [here](https://health-infobase.canada.ca/src/data/covidLive/covid19.csv).
+
+### Organizing Data
+
+The following code is used to download and rearrange the original dataset from webpage.
+
+```{python ontario}
+
+import pandas as pd 
+import seaborn as sb
+import matplotlib as plt
+
+
+canadian_data = pd.read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv")
+
+canadian_data.head()
+```
