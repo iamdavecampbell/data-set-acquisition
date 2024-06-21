@@ -119,7 +119,7 @@ plt.legend(title = "OIA Area",
 
 * Research programs are separated into 5 areas: Advanced health technologies, Bio-economy and clean technologies, Digital media information and communications technologies, Pharmaceutical research and manufacturing, and other unspecified groups. Not all programs were active every year.
 
-```{python percent}
+```{python proportion}
 
 proportions =  total_funding.pivot_table(index=['year'],
                                          columns = 'OIA_AREA',
@@ -145,11 +145,18 @@ The following codes are used to plot the ridgeline graphs about the frequency of
 
 ```{python city}
 
-ins = data[["year", "Lead Research Institution"]].sort_values('Lead Research Institution')
+# Create their own summarized table
 
+# Count projects per year for each institution
+ins = data[['year', 'Lead Research Institution']].value_counts().reset_index(name = 'count')
 
+# Get frequency of counts
+ins2 = ins[['count', 'Lead Research Institution']].value_counts().reset_index(name = 'freq')
 
-#ins = ins.groupby(["Lead Research Institution", "year"])["Lead Research Institution"].count()
+ins3 = ins2.pivot_table(values = 'freq', index = "Lead Research Institution", columns = 'count').fillna(0)
 
-ins
-```
+# Add in frequency of 0 project years for each institute
+ins3[0] = 13 - sum(ins3[i] for i in range(1,9))
+
+ins3
+
