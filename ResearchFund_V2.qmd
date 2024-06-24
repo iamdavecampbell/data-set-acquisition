@@ -143,7 +143,7 @@ plt.show()
 
 The following codes are used to plot the ridgeline graphs about the frequency of research projects by cities and Lead Research Institutions.
 
-```{python city}
+```{python ins}
 
 # Create their own summarized table
 
@@ -158,9 +158,7 @@ ins3 = ins2.pivot_table(values = 'freq', index = "Lead Research Institution", co
 # Add in frequency of 0 project years for each institute
 ins3[0] = 13 - sum(ins3[i] for i in range(1,9))
 
-#ins3.reset_index()
-
-ins3.index[29]
+ins3
 
 ```
 ```{python ins bar}
@@ -173,7 +171,7 @@ for i in range(30):
     plt.subplot(30,1,i+1)
 
     sb.barplot(data = ins3.iloc[i],
-               width = 0.)
+               width = 0.2)
     
     plt.legend('', frameon = False)
     plt.xlabel('')
@@ -183,7 +181,62 @@ for i in range(30):
 
     if i != 29:
         plt.xticks([])
+    if i == 29:
+        plt.xlabel("Number of approved research projects in a year")
 
 plt.show();
 
 ```
+
+```{python city}
+
+# Count projects per year for each institution
+city = data[['year', 'City']].value_counts().reset_index(name = 'count')
+
+# Get frequency of counts
+city2 = city[['count', 'City']].value_counts().reset_index(name = 'freq')
+
+city3 = city2.pivot_table(values = 'freq', index = "City", columns = 'count').fillna(0)
+
+# Fill in years where num projects was 0
+
+for i in [7,8,9,10,14,15,16,19,20,21]:
+    city3[i] = 0
+
+# Add in frequency of 0 project years for each institute
+city3[0] = 13 - sum(city3[i] for i in range(1,23))
+
+```
+
+```{python city plot}
+
+plt.clf()
+sb.set_style('white')
+
+
+for i in range(13):
+    plt.subplot(13,1,i+1)
+
+    sb.barplot(data = city3.iloc[i],
+               width = 0.2)
+    
+    plt.legend('', frameon = False)
+    plt.xlabel('')
+    plt.ylabel(city3.index[i], rotation = 0, ha = 'right', va = 'center')
+    plt.yticks([])
+    sb.despine(left = True)
+
+    if i != 12:
+        plt.xticks([])
+    if i == 12:
+        plt.xlabel("Number of approved research projects in a year")
+
+plt.show();
+
+
+```
+
+> Summary
+
+* The graph counts the number of approved projects by cities and Lead Research Institutions, essentially a histogram of approvals within each year.  There are many years in which the values are zero for a city or institution so these must be re-included, otherwise the data will be misleading.
+
