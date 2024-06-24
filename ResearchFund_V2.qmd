@@ -158,5 +158,32 @@ ins3 = ins2.pivot_table(values = 'freq', index = "Lead Research Institution", co
 # Add in frequency of 0 project years for each institute
 ins3[0] = 13 - sum(ins3[i] for i in range(1,9))
 
-ins3
+#ins3.reset_index()
 
+ins3.index[29]
+
+```
+```{python ins bar}
+
+plt.clf()
+sb.set_style('white')
+
+
+for i in range(30):
+    plt.subplot(30,1,i+1)
+
+    sb.barplot(data = ins3.iloc[i],
+               width = 0.)
+    
+    plt.legend('', frameon = False)
+    plt.xlabel('')
+    plt.ylabel(ins3.index[i], rotation = 0, ha = 'right', va = 'center')
+    plt.yticks([])
+    sb.despine(left = True)
+
+    if i != 29:
+        plt.xticks([])
+
+plt.show();
+
+```
