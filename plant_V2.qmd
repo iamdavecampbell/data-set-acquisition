@@ -171,7 +171,6 @@ plants_2 = pd.pivot_table(plants_2,
                           values = "VALUE",
                           columns = "Flowers and plants",
                           index = "year").reset_index()
-plt.clf()
 sb.pairplot(data = plants_2);
                     
 ``` 
