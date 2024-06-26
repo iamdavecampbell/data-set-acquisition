@@ -50,5 +50,5 @@ import matplotlib as plt
 
 canadian_data = pd.read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv")
 
-canadian_data.head()
+canadian_data.tail()
 ```
