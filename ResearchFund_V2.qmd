@@ -86,7 +86,7 @@ sb.boxplot(data=data,
 plt.title("Funding per Year (From Ontario)")
 plt.xlabel("Year of Approval")
 plt.ylabel("Dollars of Funding")
-plt.show
+plt.show;
 
 ```
 
@@ -112,7 +112,7 @@ plt.ylabel("Total Funding")
 plt.legend(title = "OIA Area",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
-           borderaxespad=0)
+           borderaxespad=0);
 
 ```
 
@@ -137,7 +137,7 @@ plt.legend(title="OIA Area",
            bbox_to_anchor=(1.05, 1), 
            loc='upper left', 
            borderaxespad=0)
-plt.show()
+plt.show();
 ```
 
 ## Frequency distribution of research projects grouped by cities and Lead Research Institutions
@@ -158,8 +158,6 @@ ins3 = ins2.pivot_table(values = 'freq', index = "Lead Research Institution", co
 
 # Add in frequency of 0 project years for each institute
 ins3[0] = 13 - sum(ins3[i] for i in range(1,9))
-
-ins3
 
 ```
 ```{python ins bar}
