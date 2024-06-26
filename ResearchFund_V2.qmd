@@ -8,6 +8,7 @@ tags: ["Paired Plot", "Histogram", "Exploratory Analysis","Ontario", "Non-Linear
 subtitle: ''
 summary: 'This dataset includes hundreds of research porjects funded through Research Excellence Program from 2003 to 2018.'
 output: html_document
+ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
