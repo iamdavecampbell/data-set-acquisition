@@ -140,8 +140,7 @@ To predict the school fees, one would need to consider the other sources of fund
 
 ```{python widerplots}
 
-plt.clf()
-sb.pairplot(data = revenue_wide)
+sb.pairplot(data = revenue_wide);
 
 ```
 
