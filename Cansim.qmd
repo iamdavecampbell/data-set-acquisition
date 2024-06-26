@@ -150,9 +150,12 @@ pivoted.head()
 
 ```{python employmentprovincespairplot}
 
-sb.pairplot(pivoted, vars = pivoted.columns[4:14])
+sb.pairplot(pivoted, 
+            vars = pivoted.columns[4:14]).fig.suptitle("Monthly Unemployment Rate: Not Seasonally Adjusted",
+                                                        y = 1.01,
+                                                        fontsize = 14)
 plt.show()
-# add title
+
 
 ```
 
