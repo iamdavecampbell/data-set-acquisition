@@ -148,3 +148,12 @@ plt.show();
 As with the total case count, the Canada wide trend seems to be driven by the Ontario and Quebec seasonal trends. 
 
 
+```{python test}
+
+plt.clf()
+
+sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
+            x = "date",
+            y = "numtotal_last7")
+
+```
