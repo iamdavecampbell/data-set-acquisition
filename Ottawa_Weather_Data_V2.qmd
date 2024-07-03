@@ -1,0 +1,109 @@
+---
+title: 'Climate Report: Ottawa - Environment Canada'
+author: "Dean Jayatilleke and Junpu Xie and Dave Campbell"
+date: '2020-07-24'
+slug: climate-report-Ottawa
+categories: ["Regression"]
+tags: ["Bar Plots", "Time Series", "Spatial Data Set", "Climate Change", "Climate Data","Environment Canada", "Forloops","Data Acquisition"]
+subtitle: ''
+summary: 'Historical Climate Data resource records monthly summaries, averages, extremes values of temperature, precipitation, degree days, relative humidity, wind speed, and direction among 370 city stations in Canada.'
+output: html_document
+lastmod: '2020-07-24T18:48:09-04:00'
+---
+
+## Possible Analysis and Keywords
+
+- Exploratory Analysis
+- Data Wrangling
+- Regression
+- Spatial Data Set
+- Climate Change
+- Climate Data
+
+## Data Provider
+
+Environment Canada records maintains records of historical weather variables. The available data sets include as monthly summaries, averages, extremes values of temperature, precipitation, degree days, relative humidity, wind speed, and direction among 370 city stations in Canada. The dataset and its description file can be found [here](https://climate.weather.gc.ca/index_e.html). 
+
+You also can [search](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html)  for historical climate data by station name and date, province/territory, or do a proximity search.
+
+***
+
+## Climate Data: Daily Weather Report for the first half of 2020
+
+This dataset shows the basic [historical weather data](https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=53001&Year=2020&Month=6&Day=1&timeframe=2&submit=Download+Data) in a specific climate station.  Both climate ID and TC ID are used to identify meteorological reports, one is assigned by Meteorological Service of Canada, another is assigned by Transport Canada. More glossary can be found [here](https://climate.weather.gc.ca/glossary_e.html#stnOper).
+
+The daily climate data in Ottawa is summarized via the Max, Min, and Mean Temperatures, as well as Heat and Cool Degree Days.  Data is also collected for the speed and direction of maximum gust when the maximum gust speed exceeds 29 km/h. The data source can be downloaded in CSV form, you can modify the code to download monthly data files, with additional instructions in the "readme.pdf" file  [here](https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH).  
+
+
+```{python packages}
+
+#libraries
+import os
+import requests
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+```
+
+Python's "os" library contains a variety of functions for working with directories. 
+
+```{python os functions}
+
+# Code not run for this document
+
+print(os.getcwd()) # Prints the current working directory
+
+os.chdir("..") # Move up one directory or input the path of the desired working directory
+
+```
+
+The following code creates a folder named "OttawaWeather" in the current working directory. 
+
+```{python set up directory}
+
+if not os.path.exists("OttawaWeather"):
+    os.mkdir("OttawaWeather")
+
+os.chdir("OttawaWeather")
+
+```
+
+Now we can use python's requests library to loop over a list of urls for different years and download the linked files into the directory we just made.
+
+```{python ottawa daily data}
+
+base_url = ["https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=4333&Year=", "&Month=1&Day=1&timeframe=2&submit=Download+Data"]
+
+for year in range(1970, 2021):
+    r = requests.get(base_url[0] + str(year) + base_url[1])
+
+    with open("Ottawa" + str(year) + "-daily.csv", "wb") as file:
+        file.write(r.content)
+
+```
+
+```{python ottawa monthly data}
+
+base_url2 = "https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=4333&timeframe=3&submit=Download+Data"
+
+r = requests.get(base_url2)
+with open("Ottawa-monthly.csv", "wb") as file:
+        file.write(r.content)
+
+```
+
+```{python st-ambroise data}
+
+base_url3 = "https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=5936&timeframe=3&submit=Download+Data"
+
+r = requests.get(base_url3)
+with open("StAmbroise-monthly.csv", "wb") as file:
+        file.write(r.content)
+
+```
+
+
+## Exploratory Analysis
+
+### Loading and compiling the daily data
