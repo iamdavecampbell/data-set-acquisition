@@ -115,7 +115,26 @@ To load the daily data into a dataframe, we loop over all the files in the curre
 filepaths = [f for f in os.listdir(".") if f.endswith('-daily.csv')]
 
 daily = pd.concat(map(pd.read_csv, filepaths, ignore_index = True)
-
+df["Date/Time"] = pd.to_datetime(df["Date/Time"])
 ```
 
 
+```{python daily mean temp plot}
+
+sb.set_style("darkgrid")
+sb.lineplot(data = df,
+            x = "Date/Time",
+            y = "Mean Temp (°C)",
+            hue = "Year")
+plt.legend('', frameon = False)
+plt.title("Daily Mean Temperatures")
+plt.show();
+```
+
+However it is tricky to see a change in a few degrees given the enormous seasonal variation.  Let's focus the plots:
+
+```{python July max and Jan min plot}
+
+
+
+```
