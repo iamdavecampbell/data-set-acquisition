@@ -107,3 +107,15 @@ with open("StAmbroise-monthly.csv", "wb") as file:
 ## Exploratory Analysis
 
 ### Loading and compiling the daily data
+
+To load the daily data into a dataframe, we loop over all the files in the current working directory and add all files ending in daily.csv to a list. We then pass this list to the pandas concatenate function which will combine all the given files into a dataframe.
+
+```{python load daily ottawa data}
+
+filepaths = [f for f in os.listdir(".") if f.endswith('-daily.csv')]
+
+daily = pd.concat(map(pd.read_csv, filepaths, ignore_index = True)
+
+```
+
+
