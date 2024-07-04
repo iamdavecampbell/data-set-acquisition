@@ -147,13 +147,15 @@ plt.show();
 
 As with the total case count, the Canada wide trend seems to be driven by the Ontario and Quebec seasonal trends. 
 
+***
 
-```{python test}
 
-plt.clf()
+## Ontario School Covid reports:
 
-sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
-            x = "date",
-            y = "numtotal_last7")
+Ontario keeps [records](https://data.ontario.ca/dataset/summary-of-cases-in-schools) of the number of cases in different schools.  Here we will directly download the latest data from today
+
+
+```{python school data}
+
 
 ```
