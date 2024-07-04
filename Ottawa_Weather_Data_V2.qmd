@@ -135,6 +135,73 @@ However it is tricky to see a change in a few degrees given the enormous seasona
 
 ```{python July max and Jan min plot}
 
+july = df[df["Month"] == 7].groupby("Year").agg(
+july_meanmax = pd.NamedAgg(column = "Max Temp (°C)", aggfunc = 'mean'))
 
+january = df[df["Month"] == 1].groupby("Year").agg(
+jan_meanmin = pd.NamedAgg(column = "Min Temp (°C)", aggfunc = 'mean'))
+
+sb.lineplot(data = july,
+            x = "Year",
+            y = "july_meanmax")
+sb.lineplot(data = january,
+            x = "Year",
+            y = "jan_meanmin")
+plt.legend('', frameon = False)
+plt.ylabel("Degrees C")
+plt.title("Mean July Max and January Min Temperatures")
+plt.show();
+
+plt.clf()
+sb.scatterplot(data = july,
+               x = "july_meanmax",
+               y = "jan_meanmin")
+plt.legend('', frameon = False)
+plt.title("January Min vs July Max Temperature by Year")
+plt.show();
 
 ```
+
+### Loading and compiling the monthly data
+
+Alternatively we can work with the monthly data, but note that the daily record is ongoing, but started much later than the monthly record.  Here we find and load downloaded monthly from the current working directory.
+
+```{python ottawa monthly data}
+
+for f in os.listdir():
+    if f.endswith("Ottawa-monthly.csv"):
+        filepath = f
+        break
+
+ottawa_monthly =pd.read_csv(filepath)
+ottawa_monthly["Date/Time"] = pd.to_datetime(ottawa_monthly["Date/Time"])
+ottawa_monthly.tail()
+
+```
+
+```{python ottawa monthly plot}
+
+plt.clf()
+
+sb.lineplot(data = ottawa_monthly,
+            x = "Date/Time",
+            y = "Mean Temp (°C)",
+            hue = "Year")
+plt.legend('', frameon = False)
+plt.title("Monthly Mean Temperatures")
+plt.xlabel("Year")
+plt.ylabel("Degrees C")
+plt.show();
+
+```
+
+### Data details
+
+- Temperature units are in Celcius.
+- Monthly values can be derived from daily ones.
+- The speed of maximum gust is in kilometers per hour.
+- Heat degree days is the number of degrees Celsius that the mean temperature is less than 18 Celcius, the cool degree days is a number of degrees Celsius that the mean temperature is equal to and above 18 Celcius.
+- The direction of the maximum gust is in tens of degrees, 9 means 90 degrees, which is an east wind, and 36 means 360 degrees implies a wind blowing from the geographic north pole.
+- Other appeared letters like "M" indicates a missing value, "^" indicates the value displayed is based on incomplete data. All legend is shown at the end of the data source page.
+
+
