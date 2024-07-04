@@ -114,7 +114,7 @@ To load the daily data into a dataframe, we loop over all the files in the curre
 
 filepaths = [f for f in os.listdir(".") if f.endswith('-daily.csv')]
 
-daily = pd.concat(map(pd.read_csv, filepaths, ignore_index = True)
+df = pd.concat(map(pd.read_csv, filepaths), ignore_index = True)
 df["Date/Time"] = pd.to_datetime(df["Date/Time"])
 ```
 
@@ -151,6 +151,8 @@ plt.legend('', frameon = False)
 plt.ylabel("Degrees C")
 plt.title("Mean July Max and January Min Temperatures")
 plt.show();
+
+july["jan_meanmin"] = january["jan_meanmin"] # Add Jan column to july dataframe because seaborn takes data from a single dataframe
 
 plt.clf()
 sb.scatterplot(data = july,
