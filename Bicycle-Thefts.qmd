@@ -1,0 +1,39 @@
+---
+title: "Bike theft occurences 2015-2020 - Open Ottawa"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'The dataset records bike theft occurences in the Ottawa-Gatineau area from 2015-2020'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Bike Thefts
+- Police Data
+- Ottawa Open Data
+
+## Data Provider
+
+```{python packages}
+
+import pandas as pd 
+import seaborn as sb
+import matplotlib as plt
+
+```
+
+
+```{python dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::bike-thefts/about
+
+bike_thefts = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/5f7a545debc64d4d8883281b66ab960c_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
+
+bike_thefts.head()
+```
