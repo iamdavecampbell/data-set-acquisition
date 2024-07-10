@@ -1,15 +1,17 @@
----
-title: "COVID Data: COVID-19 Data - Government of Canada"
+title: "COVID Data: COVID-19 Data - Government of Canada and JHU CSSE"
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2020-07-24'
 slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse
 categories: ["COVID Data"]
 tags: ["Linear Regression", "Normal Distribution","Time Series", "Aggregated Ddata", "Spatial Data Set", "COVID-19", "COVID Data"]
 subtitle: ''
-summary: The Government of Canada provides detailed information about COVID-19 data in time-series and aggregated forms, broken down by province.'
+summary: 'JHU CSSE and JHU APL have cooperated together to create a large COVID-19 data repository and update real-time official COVID-19 data worldwide. Moreover, the COVID-19 data from the Government of Canada provide detailed information about COVID-19 data in time-series and aggregated forms.'
 lastmod: '2020-07-24T18:48:09-04:00'
-ipynb-shell-interactivity: all
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ## Possible Analysis and Keywords
 - Linear Regression
@@ -40,63 +42,53 @@ The COVID-19 data from the Government of Canada provide detailed information in 
 
 ### Organizing Data
 
- 
-```{python packages}
+The following code is used to download and rearrange the original dataset from webpage.
 
-import pandas as pd # data cleaning and organizing
-import seaborn as sb # plotting
-import matplotlib.pyplot as plt # plot management
+```{r ontario}
 
+library(reshape2)
+library(gridExtra)
+library(tidyverse)
+library(lubridate)
+library(ggpubr)
+
+Canadian.data <- read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv") |> 
+                 mutate(date = as_date(date, format = "%d-%m-%Y"))
+
+Canadian.data|> head()
 ```
 
-The following code is used to download and reorganize the original dataset from webpage.
+> Summary
 
-The data is collected chronologically so we take a look at the end of the data to see what variables are still being updated.
+*  We use mutate to modify a column.  Its arguments are of the form new.column.name=function.of.old.column.names.
 
-```{python dataset}
-
-canadian_data = pd.read_csv("https://health-infobase.canada.ca/src/data/covidLive/covid19.csv")
-
-canadian_data["date"] = pd.to_datetime(canadian_data["date"], 
-                                       dayfirst = True)
-canadian_data.tail()
-```
+* the lubridate package includes a lot of functionality for dealing with dates.  Here we use it to convert a character column into date format.
 
 ### Total COVID-19 Cases
 
 Let's start by looking at total cases.
 
-```{python totalcases}
+```{r totalcases, cache = TRUE, warning = FALSE}
 
-sb.set_style("darkgrid")
+location = "Canada"
 
-canada_total = sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
-                           x = "date",
-                           y = "totalcases")
+Canadian.data |> subset(prname == location) |>
+  select(date,totalcases)|>
+  ggplot( ) +
+  geom_line(aes(x = date, y=totalcases)) +
+  ylab("Total Cases") +
+  xlab("Year") +
+  ggtitle(paste0("Total Covid-19 Case Count in Canada"))
 
-plt.title("Total Covid-19 Case Count in Canada")
-plt.xlabel("Date")
-plt.ylabel("Total Cases")
-plt.show()
-
-plt.clf()
-provinces_total = sb.lineplot(data = canadian_data[(canadian_data["prname"] != "Canada") &
-                                                   (canadian_data["prname"] != "Repatriated travellers")],
-                              x = "date",
-                              y = "totalcases",
-                              hue = "prname")
-
-plt.title("Total Covid-19 Case Count by Province")
-plt.xlabel("Date")
-plt.ylabel("Total Cases")
-plt.legend(title = "Province",
-           bbox_to_anchor=(1.05, 1),
-           loc='upper left',
-           borderaxespad=0)
-plt.show();
+Canadian.data |> subset(prname != location & prname != "Repatriated travellers") |>
+  select(date,totalcases,prname)|>
+  ggplot( ) +
+  geom_line(aes(x = date, y=totalcases, colour=prname)) +
+  ylab("Total Cases") +
+  xlab("Year") +
+  ggtitle(paste0("Total Covid-19 Case Count by Province"))
 
 ```
-
 
 Looking at the case count broken down by province we can see that the Canadian trend is largely driven by Ontario and Quebec. This is to be expected as these provinces account for over half the population of the country.  
 
@@ -104,47 +96,30 @@ Looking at the case count broken down by province we can see that the Canadian t
 
 Total cases can be expected to increase indefinitely but of more interest is how Covid-19 will settle into a yearly pattern, much like the seasonal cold and flu.
 
-```{python canada yearly trends}
+```{r canada yearly trends}
 
-plt.clf()
-
-sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
-            x = "date",
-            y = "numdeaths_last7")
-
-plt.title("Covid-19 Deaths by Week in Canada")
-plt.xlabel("Date")
-plt.ylabel("Covid-19 Deaths in Last 7 Days")
-
-plt.show();
+Canadian.data |> subset(prname == location) |>
+  select(date,numdeaths_last7)|>
+  ggplot( ) +
+  geom_line(aes(x = date, y=numdeaths_last7)) +
+  ylab("Covid-19 Deaths in Last 7 Days") +
+  xlab("Year") +
+  ggtitle(paste0("Covid-19 Deaths by Week in Canada"))
 
 ```
 
 As predicted, Covid-19 deaths appear to follow a yearly pattern peaking during cold and flu season. 2023 and 2024 observed a large drop off Covid-19 deaths, possibly due to higher vaccination rates and increased awareness. 
 
-```{python provincial yearly trends}
+```{r provincial yearly trends}
 
-plt.clf()
-
-sb.lineplot(data = canadian_data[(canadian_data["prname"] != "Canada") &
-                                 (canadian_data["prname"] != "Repatriated travellers")],
-            x = "date",
-            y = "numdeaths_last7",
-            hue = "prname")
-
-plt.title("Covid-19 Deaths by Week in Provinces")
-plt.xlabel("Date")
-plt.ylabel("Covid-19 Deaths in Last 7 Days")
-
-plt.legend(title = "Province",
-           bbox_to_anchor=(1.05, 1),
-           loc='upper left',
-           borderaxespad=0)
-
-plt.show();
+Canadian.data |> subset(prname != location & prname != "Repatriated travellers") |>
+  select(date,numdeaths_last7, prname)|>
+  ggplot( ) +
+  geom_line(aes(x = date, y=numdeaths_last7, colour=prname)) +
+  ylab("Covid-19 Deaths in Last 7 Days") +
+  xlab("Year") +
+  ggtitle(paste0("Covid-19 Deaths by Week by Province"))
 
 ```
 
 As with the total case count, the Canada wide trend seems to be driven by the Ontario and Quebec seasonal trends. 
-
-
