@@ -23,6 +23,8 @@ ipynb-shell-interactivity: all
 ```{python packages}
 
 import pandas as pd 
+import geopandas as gp
+import folium
 import seaborn as sb
 import matplotlib as plt
 
@@ -36,4 +38,13 @@ import matplotlib as plt
 bike_thefts = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/5f7a545debc64d4d8883281b66ab960c_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
 
 bike_thefts.head()
+```
+
+```{python test}
+
+geo_df = gp.GeoDataFrame(bike_thefts)
+
+geo_df.head()
+
+#folium.map(location = )
 ```
