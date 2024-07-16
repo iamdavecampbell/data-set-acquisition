@@ -1,0 +1,33 @@
+
+
+
+
+```{python modules}
+
+import pandas as pd
+import geopandas as gp
+
+```
+```{python dataset}
+
+#https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
+
+crime = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-692/CrimeMap_YE_-5915901148112462236.csv?sv=2018-03-28&sr=b&sig=elDbbv%2BXGaihCPMHXFJ9ZL%2F7wACm9524pcOoSIzvEtU%3D&se=2024-07-16T21%3A09%3A47Z&sp=r")
+
+crime.head()
+```
+
+
+```{python test}
+
+#https://open.ottawa.ca/datasets/ottawa::shootings-and-firearm-discharges/about
+
+shootings = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/523e37626061468bb280173815d01757_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
+
+shootings.head()
+
+geo_df = gp.GeoDataFrame(
+    shootings, geometry=gp.points_from_xy(shootings["X"], shootings["Y"]), crs="epsg:2951")
+
+geo_df.explore()
+```
