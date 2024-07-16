@@ -24,7 +24,6 @@ ipynb-shell-interactivity: all
 
 import pandas as pd 
 import geopandas as gp
-import osmnx as ox
 import mapclassify
 import folium
 import seaborn as sb
@@ -39,24 +38,25 @@ import matplotlib.pyplot as plt
 
 bike_thefts = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/5f7a545debc64d4d8883281b66ab960c_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
 
+bike_thefts.head()
 
+```
+
+
+```{python geopandas}
 
 geo_df = gp.GeoDataFrame(
     bike_thefts, geometry=gp.points_from_xy(bike_thefts["X"], bike_thefts["Y"]), crs="epsg:4386")
+
+bike_thefts.columns
 ```
 
-```{python test, cache = True}
 
-bike_thefts.head()
-```
 
 ```{python test2}
 
-#ottawa_poly = ox.geocode_to_gdf({'city': 'Ottawa'})
+geo_df.explore()
+#geo_df.explore(column = "Bicycle_Co")
 
-#t = ottawa_poly.explore()
-
-#geo_df.explore(column = "Location_T", control_scale = False)
-
-geo_df[geo_df["Location_T"] == "PARK"].explore()
+#geo_df[geo_df["Location_T"] == "PARK"].explore()
 ```
