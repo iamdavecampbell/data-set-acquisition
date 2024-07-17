@@ -1,0 +1,57 @@
+---
+title: "Open Ottawa"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'Retrieving Open Ottawa Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Traffic Collisions
+- Service Requests
+- Ottawa Open Data
+
+## Data Provider
+
+```{python packages}
+
+import pandas as pd 
+
+import geopandas as gp
+import mapclassify
+import folium
+
+```
+
+```{python service request dataset}
+
+
+
+```
+```{python traffic collision dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
+
+traffic = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/bf701649829642d28fa2e400a7136bdd_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
+
+traffic.head()
+
+```
+
+
+```{python collision map}
+
+traffic_geo = gp.GeoDataFrame(
+    traffic, geometry=gp.points_from_xy(traffic["Longitude"],
+    traffic["Latitude"]), crs="epsg:4386")
+
+traffic_geo.explore()
+
+```
