@@ -32,9 +32,29 @@ import folium
 
 ```{python service request dataset}
 
+#https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about
 
+service = pd.read_csv("https://www.arcgis.com/sharing/rest/content/items/8a5030af268a4a3485b72356dd7dfa85/data")
+
+service.head()
 
 ```
+
+
+```{python service data cleaning}
+
+service.columns = service.columns.str.split("|").str[0].str.rstrip()
+
+```
+
+```{python service locations}
+
+service_locations = service[~service["Latitude"].str.contains("N")]
+
+service_locations.tail()
+
+```
+
 ```{python traffic collision dataset}
 
 #https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
