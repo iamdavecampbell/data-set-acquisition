@@ -52,6 +52,6 @@ traffic.head()
 
 ```{python test2}
 
-traffic_geo.explore()
+traffic_geo.explore(zoom_start = 9.5)
 
 ```

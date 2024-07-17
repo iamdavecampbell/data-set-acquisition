@@ -1,24 +1,66 @@
+---
+title: Crime Data - Open Ottawa and Ottawa Police Data"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'Analysis of various crime report datasets from Open Ottawa and Ottawa Police Open Data'
+output: html_document
+ipynb-shell-interactivity: all
+---
 
+## Possible Analysis and Keywords
 
+- Open Street Maps
+- Bike Thefts
+- Shootings
+- Historical Crime Rates
+- Motor Vehicle Thefts
+- Police Data
+- Ottawa Open Data
 
+## Data Provider
 
 ```{python modules}
 
-import pandas as pd
+import pandas as pd 
 import geopandas as gp
+import mapclassify
+import folium
+import seaborn as sb
+import matplotlib.pyplot as plt
 
 ```
-```{python dataset}
+```{python crime dataset}
 
 #https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
 
-crime = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-692/CrimeMap_YE_-5915901148112462236.csv?sv=2018-03-28&sr=b&sig=elDbbv%2BXGaihCPMHXFJ9ZL%2F7wACm9524pcOoSIzvEtU%3D&se=2024-07-16T21%3A09%3A47Z&sp=r")
+crime = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-692/CrimeMap_YE_-5915901148112462236.csv?sv=2018-03-28&sr=b&sig=euC5b2WiPNK%2B5kPUedEYP1%2FGeYJ5DAQUEa%2FjrJvJmNk%3D&se=2024-07-17T14%3A14%3A28Z&sp=r")
 
 crime.head()
 ```
 
 
-```{python test}
+```{python crime }
+
+crime["Offence_Category"].unique()
+
+```
+
+```{python crime map}
+
+crime_geo = gp.GeoDataFrame(
+    crime, geometry=gp.points_from_xy(crime["x"], crime["y"]), crs="epsg:2951")
+
+crime_geo[crime_geo["Offence_Category"] == "Break and Enter"].explore()
+
+```
+
+
+
+```{python shootings data}
 
 #https://open.ottawa.ca/datasets/ottawa::shootings-and-firearm-discharges/about
 
@@ -26,8 +68,44 @@ shootings = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/523e3762606
 
 shootings.head()
 
+```
+
+```{python shootings map}
+
 geo_df = gp.GeoDataFrame(
     shootings, geometry=gp.points_from_xy(shootings["X"], shootings["Y"]), crs="epsg:2951")
 
 geo_df.explore()
+```
+
+```{python shootings by day and hour}
+
+
+```
+
+```{python bicycle thefts dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::bike-thefts/about
+
+bike_thefts = pd.read_csv("https://opendata.arcgis.com/api/v3/datasets/5f7a545debc64d4d8883281b66ab960c_0/downloads/data?format=csv&spatialRefId=4326&where=1%3D1")
+
+bike_thefts.head()
+
+```
+
+
+```{python bicycle thefts map}
+
+geo_df = gp.GeoDataFrame(
+    bike_thefts, geometry=gp.points_from_xy(bike_thefts["X"], bike_thefts["Y"]), crs="epsg:4386")
+
+geo_df.explore()
+#geo_df.explore(column = "Bicycle_Co")
+
+#geo_df[geo_df["Location_T"] == "PARK"].explore()
+
+```
+
+```{python motor vehicle theft data}
+
 ```
