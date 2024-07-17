@@ -49,12 +49,20 @@ crime["Offence_Category"].unique()
 
 ```
 
+```{python crime }
+
+crime["Reported_Year"].unique()
+
+```
+
+
 ```{python crime map}
 
 crime_geo = gp.GeoDataFrame(
     crime, geometry=gp.points_from_xy(crime["x"], crime["y"]), crs="epsg:2951")
 
-crime_geo[crime_geo["Offence_Category"] == "Break and Enter"].explore()
+crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
+          (crime_geo["Reported_Year"] == 2023)].explore()
 
 ```
 
@@ -108,4 +116,18 @@ geo_df.explore()
 
 ```{python motor vehicle theft data}
 
+#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+
+vehicle_theft = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-724/Auto_Theft_Open_Data_2158590371504723284.csv?sv=2018-03-28&sr=b&sig=ZrY0GCAmzLC%2BBNbcE2B4xjAxuNIjNQY7cfS1ipdv2SU%3D&se=2024-07-17T14%3A38%3A07Z&sp=r")
+
+vehicle_theft.head()
+
+```
+
+```{python car theft map}
+
+vehicle_theft_geo = gp.GeoDataFrame(
+    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], shootvehicle_theftings["y"]), crs="epsg:2951")
+
+vehicle_theft_geo.explore()
 ```
