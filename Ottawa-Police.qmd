@@ -1,5 +1,8 @@
 ---
 title: Ottawa Police Open Data"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2024-07-10'
 slug: 
@@ -37,7 +40,7 @@ import matplotlib.pyplot as plt
 
 #https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
 
-crime = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-692/CrimeMap_YE_-5915901148112462236.csv?sv=2018-03-28&sr=b&sig=qUyikBNYdZt%2FbMBIjySmKFRHN8TAIyl0OoMdIqE5vTM%3D&se=2024-07-17T15%3A34%3A41Z&sp=r")
+crime = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-692/CrimeMap_YE_-5915901148112462236.csv?sv=2018-03-28&sr=b&sig=QYKXqTWhRh1TrGHU9xlwyHwMIieWsD87Ae7RdKg1pTo%3D&se=2024-07-18T15%3A47%3A26Z&sp=r")
 
 crime.head()
 ```
@@ -69,13 +72,34 @@ crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
 
 ```
 
+```{python test}
 
+import requests, io
+import tempfile as tf
+
+url = "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=5yvh1Wqzz9hcUSC6KSUhoKWrFbSlFOrexSeFhxcUsNo%3D&se=2024-07-17T15%3A32%3A30Z&sp=r"
+
+temp = tf.TemporaryFile()
+
+r = requests.get(url)
+
+test = pd.read_csv(r.content)
+
+r
+
+url = 
+
+
+
+```
 
 ```{python shootings data}
 
 #https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
 
-shootings = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=5yvh1Wqzz9hcUSC6KSUhoKWrFbSlFOrexSeFhxcUsNo%3D&se=2024-07-17T15%3A32%3A30Z&sp=r")
+url = "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=T%2FUcCA7fhMR46RZK9zLsnzCFAOqTXeFfUpFOiY8CbkI%3D&se=2024-07-18T18%3A59%3A53Z&sp=r"
+
+shootings = pd.read_csv(url)
 
 shootings.head()
 

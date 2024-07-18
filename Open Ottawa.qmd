@@ -55,6 +55,18 @@ service_locations.tail()
 
 ```
 
+```{python noise complaints map}
+
+service_geo = gp.GeoDataFrame(
+    service_locations, geometry=gp.points_from_xy(service_locations["Longitude"],
+    service_locations["Latitude"]), crs="epsg:4386")
+
+service_geo.explore()
+#service_geo[service_geo["Type"].str.contains("Dead Animal")].explore()
+
+
+```
+
 ```{python traffic collision dataset}
 
 #https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
