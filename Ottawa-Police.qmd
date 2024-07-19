@@ -36,6 +36,25 @@ import matplotlib.pyplot as plt
 
 ```
 
+```{python shootings data}
+
+#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+
+url = "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=T%2FUcCA7fhMR46RZK9zLsnzCFAOqTXeFfUpFOiY8CbkI%3D&se=2024-07-18T18%3A59%3A53Z&sp=r"
+
+shootings = pd.read_csv(url)
+
+shootings.head()
+
+```
+
+```{python shootings map}
+
+geo_df = gp.GeoDataFrame(
+    shootings, geometry=gp.points_from_xy(shootings["x"], shootings["y"]), crs="epsg:2951")
+
+geo_df.explore()
+```
 ```{python crime dataset}
 
 #https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
@@ -71,48 +90,6 @@ crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
           (crime_geo["Reported_Year"] == 2023)].explore()
 
 ```
-
-```{python test}
-
-import requests, io
-import tempfile as tf
-
-url = "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=5yvh1Wqzz9hcUSC6KSUhoKWrFbSlFOrexSeFhxcUsNo%3D&se=2024-07-17T15%3A32%3A30Z&sp=r"
-
-temp = tf.TemporaryFile()
-
-r = requests.get(url)
-
-test = pd.read_csv(r.content)
-
-r
-
-url = 
-
-
-
-```
-
-```{python shootings data}
-
-#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
-
-url = "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=T%2FUcCA7fhMR46RZK9zLsnzCFAOqTXeFfUpFOiY8CbkI%3D&se=2024-07-18T18%3A59%3A53Z&sp=r"
-
-shootings = pd.read_csv(url)
-
-shootings.head()
-
-```
-
-```{python shootings map}
-
-geo_df = gp.GeoDataFrame(
-    shootings, geometry=gp.points_from_xy(shootings["x"], shootings["y"]), crs="epsg:2951")
-
-geo_df.explore()
-```
-
 
 ```{python bicycle thefts dataset}
 

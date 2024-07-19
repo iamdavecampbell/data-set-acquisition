@@ -1,0 +1,56 @@
+---
+title: Ottawa Police Open Data"
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'Retrieving Ottawa Police Open Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Bike Thefts
+- Shootings
+- Crime
+- Motor Vehicle Thefts
+- Police Data
+
+## Data Provider
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r libraries}
+
+library(leaflet)
+library(sf)
+library(tidyverse)
+
+```
+
+```{r shootings dataset}
+
+#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+
+csv_link <- "https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-723/Shootings_Open_Data_3086844035331583488.csv?sv=2018-03-28&sr=b&sig=T%2FUcCA7fhMR46RZK9zLsnzCFAOqTXeFfUpFOiY8CbkI%3D&se=2024-07-18T18%3A59%3A53Z&sp=r"
+
+shootings <- read_csv(csv_link)
+
+head(shootings)
+
+```
+
+The location of each reported shooting is given in the EPSG:2951 coordinate system, represented in the X and Y columns. 
+In order to plot these points on Open Street Maps using the Leaflet library, we will need to convert to Latitude and Longitude, also
+known as the EPSG:4386 coordinate system. R's Simple Features (sf) library can be used to manipulate spatial data.
+[Simple Features] (https://cran.r-project.org/web/packages/sf/index.html).
+
+
