@@ -28,6 +28,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+## Plotting Geographical Data Points on Open Street Maps
+
 ```{r libraries}
 
 library(leaflet) 
@@ -40,6 +42,8 @@ A word about retrieving Ottawa Police Data.
 
 Ottawa Police datasets are available to download as CSVs, however the download URL is generated on demand, and expires shortly, within a few days,
 or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
+
+### Shootings 
 
 ```{r shootings dataset}
 
@@ -74,3 +78,8 @@ leaflet() |>
 
 ```
 
+### Bike Thefts
+
+### Motor Vehicle Thefts
+
+### Historical Crime Data 2013 - 2022 
