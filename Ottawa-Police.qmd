@@ -25,6 +25,8 @@ ipynb-shell-interactivity: all
 
 ## Data Provider
 
+## Plotting Geographical Data Points on Open Street Maps
+
 ```{python modules}
 
 import pandas as pd 
@@ -35,6 +37,8 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 
 ```
+
+### Shootings 
 
 ```{python shootings data}
 
@@ -55,6 +59,66 @@ geo_df = gp.GeoDataFrame(
 
 geo_df.explore()
 ```
+
+### Bike Thefts
+
+```{python bicycle thefts dataset}
+
+#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
+
+bike_thefts = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-707/Bike_Theft_Open_Data_3884822422354997826.csv?sv=2018-03-28&sr=b&sig=af%2FluU61ydPRGJqFp%2FifzlEgMUGASVYLWg9bHO7tk3w%3D&se=2024-07-17T15%3A37%3A44Z&sp=r")
+
+bike_thefts.head()
+
+```
+
+
+```{python bicycle thefts map}
+
+geo_df = gp.GeoDataFrame(
+    bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]), crs="epsg:2951")
+
+geo_df.explore()
+
+```
+```{python bicycle thefts filtered maps}
+
+geo_df[geo_df["Time of Day"] == "Evening"].explore()
+
+```
+
+### Motor Vehicle Thefts
+
+```{python motor vehicle theft data}
+
+#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+
+vehicle_theft = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-724/Auto_Theft_Open_Data_2158590371504723284.csv?sv=2018-03-28&sr=b&sig=MTRzc7L6iVETVr2zQqXpeRpvkO1zZUcoZv5vCBNFErk%3D&se=2024-07-17T15%3A40%3A26Z&sp=r")
+
+vehicle_theft.head()
+
+```
+
+```{python car theft map}
+
+vehicle_theft_geo = gp.GeoDataFrame(
+    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]), crs="epsg:2951")
+
+vehicle_theft_geo.explore()
+```
+
+```{python car theft filtered maps}
+
+x = vehicle_theft["Vehicle Make"].value_counts()
+
+x.head(50)
+
+vehicle_theft_geo[vehicle_theft_geo["Vehicle Make"] == "VOLK"].explore()
+
+```
+
+### Historical Crime Data 2013 - 2022 
+
 ```{python crime dataset}
 
 #https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
@@ -91,56 +155,7 @@ crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
 
 ```
 
-```{python bicycle thefts dataset}
-
-#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
-
-bike_thefts = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-707/Bike_Theft_Open_Data_3884822422354997826.csv?sv=2018-03-28&sr=b&sig=af%2FluU61ydPRGJqFp%2FifzlEgMUGASVYLWg9bHO7tk3w%3D&se=2024-07-17T15%3A37%3A44Z&sp=r")
-
-bike_thefts.head()
-
-```
 
 
-```{python bicycle thefts map}
 
-geo_df = gp.GeoDataFrame(
-    bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]), crs="epsg:2951")
 
-geo_df.explore()
-
-```
-
-```{python bicycle thefts filtered maps}
-
-geo_df[geo_df["Time of Day"] == "Evening"].explore()
-
-```
-
-```{python motor vehicle theft data}
-
-#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
-
-vehicle_theft = pd.read_csv("https://stg-arcgisazurecdataprod7.az.arcgis.com/exportfiles-858-724/Auto_Theft_Open_Data_2158590371504723284.csv?sv=2018-03-28&sr=b&sig=MTRzc7L6iVETVr2zQqXpeRpvkO1zZUcoZv5vCBNFErk%3D&se=2024-07-17T15%3A40%3A26Z&sp=r")
-
-vehicle_theft.head()
-
-```
-
-```{python car theft map}
-
-vehicle_theft_geo = gp.GeoDataFrame(
-    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]), crs="epsg:2951")
-
-vehicle_theft_geo.explore()
-```
-
-```{python car theft filtered maps}
-
-x = vehicle_theft["Vehicle Make"].value_counts()
-
-x.head(50)
-
-vehicle_theft_geo[vehicle_theft_geo["Vehicle Make"] == "VOLK"].explore()
-
-```

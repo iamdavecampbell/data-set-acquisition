@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries}
 
-library(leaflet)
+library(leaflet) 
 library(sf)
 library(tidyverse)
 
@@ -39,7 +39,7 @@ library(tidyverse)
 A word about retrieving Ottawa Police Data.
 
 Ottawa Police datasets are available to download as CSVs, however the download URL is generated on demand, and expires shortly, within a few days,
-or sometimes even hours. For this reason, you may have to navigate to the dataset's "About" page, and regenerate a download link.
+or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
 
 ```{r shootings dataset}
 
