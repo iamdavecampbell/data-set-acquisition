@@ -25,6 +25,8 @@ ipynb-shell-interactivity: all
 
 ## Data Provider
 
+Ottawa Police's [Community Safety Data Portal](https://data.ottawapolice.ca/) is an open-access data portal designed to provide transparent and accessible information about police activity to the public. Data is available in tabular and geographic forms, and can be freely downloaded and interacted with.  
+
 ## Plotting Geographical Data Points on Open Street Maps
 
 ```{python modules}
@@ -37,6 +39,11 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 
 ```
+
+A word about retrieving Ottawa Police Data.
+
+Ottawa Police datasets are available to download as CSVs, however the download URL is generated on demand and expires shortly, within a few days
+or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
 
 ### Shootings 
 

@@ -4,11 +4,10 @@ author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2024-07-10'
 slug: 
 categories: []
-tags: ["Ottawa"]
+tags: ["Ottawa Police", "Open Street Maps", "Shootings", "Bike Theft", "Crime"]
 subtitle: ''
 summary: 'Retrieving Ottawa Police Open Data and producing plots using Open Street Maps'
 output: html_document
-ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
@@ -21,6 +20,8 @@ ipynb-shell-interactivity: all
 - Police Data
 
 ## Data Provider
+
+Ottawa Police's [Community Safety Data Portal](https://data.ottawapolice.ca/) is an open-access data portal designed to provide transparent and accessible information about police activity to the public. Data is available in tabular and geographic forms, and can be freely downloaded and interacted with.  
 
 ```{r setup, include=FALSE}
 
@@ -80,6 +81,35 @@ leaflet() |>
 
 ### Bike Thefts
 
+```{r bike thefts dataset}
+
+
+
+csv_link <- 
+
+shootings <- read_csv(csv_link)
+
+head(bike_thefts)
+
+```{r bike_thefts geo data}
+
+bike_theftslatlong <- st_as_sf(shootings, coords = c("x", "y"), crs = 2951) |> # Tell R that the X and Y columns represent location coordinates in the EPSG:2951 system
+                      st_transform(crs = 4386 ) |> # Transform the X and Y location data into the EPSG:4386 system, aka latitude and longitude.
+                      st_coordinates() # Extract the latitude and longitude data into a new dataframe that we will plot
+
+```
+
+```{r bike thefts map}
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = bike_theftslatlong)
+
+```
+
+```{python bicycle thefts filtered maps}
+
+```
 ### Motor Vehicle Thefts
 
 ### Historical Crime Data 2013 - 2022 
