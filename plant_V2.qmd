@@ -1,5 +1,8 @@
 ---
 title: "Production and Sale of Greenhouse Flowers and Plants - Open Canada"
+execute:
+    cache: true
+    jupyter: python3
 date: '2020-08-10'
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 slug: production-data-production-and-sale-of-greenhouse-flowers-and-plants-open-canada

@@ -1,5 +1,8 @@
 ---
 title: "Open Ottawa"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2024-07-10'
 slug: 

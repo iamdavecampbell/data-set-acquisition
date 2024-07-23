@@ -1,5 +1,8 @@
 ---
 title: "Population by Mother Tongue and Geography - Open Canada"
+execute:
+    cache: true
+    jupyter: python3
 date: '2020-08-10'
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 slug: population-data-population-by-mother-tongue-and-geography-open-canada

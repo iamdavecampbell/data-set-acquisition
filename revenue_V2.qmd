@@ -1,5 +1,8 @@
 ---
 title: "Private Elementary and Secondary Schools Revenues - Open Canada"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie and Dave Campbell"
 date: '2020-08-10'
 slug: private-elementary-and-secondary-schools-revenues-open-canada

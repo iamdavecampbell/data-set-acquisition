@@ -1,5 +1,8 @@
 ---
 title: "Annual and Monthly Soft Drinks Production - Open Canada"
+execute:
+    cache: true
+    jupyter: python3
 author: "Deah Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2020-08-10'
 slug: manufacture-data-annual-monthly-soft-drinks-production-open-canada
