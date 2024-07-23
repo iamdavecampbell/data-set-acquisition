@@ -52,7 +52,7 @@ import matplotlib.pyplot as plt
 Python's "os" library contains a variety of functions for working with directories. 
 
 ```{python os functions}
-
+#| eval: false
 # Code not run for this document
 
 print(os.getcwd()) # Prints the current working directory
