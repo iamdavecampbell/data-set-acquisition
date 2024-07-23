@@ -1,5 +1,8 @@
 ---
 title: "COVID Data: COVID-19 Data - Government of Canada"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2020-07-24'
 slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse

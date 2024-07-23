@@ -1,5 +1,8 @@
 ---
 title: 'Cansim Library for Socio-Economic data'
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Dave Campbell"
 date: '2021-06-11'
 slug: socioeconomic-time-series-and-statistics-canada

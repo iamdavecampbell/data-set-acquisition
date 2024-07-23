@@ -1,5 +1,8 @@
 ---
 title: "Trade Data: Monthly Exports of Grains - Open Canada"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2020-07-24'
 slug: trade-data-monthly-exports-of-grains-open-canada

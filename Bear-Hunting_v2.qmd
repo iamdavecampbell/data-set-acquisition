@@ -1,5 +1,8 @@
 ---
 title: "Black bear hunting activity and harvests - Open Ontario"
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
 date: '2020-08-10'
 slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
