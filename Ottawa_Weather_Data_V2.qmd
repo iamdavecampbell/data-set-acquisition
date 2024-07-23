@@ -1,5 +1,8 @@
 ---
 title: 'Climate Report: Ottawa - Environment Canada'
+execute:
+    cache: true
+    jupyter: python3
 author: "Dean Jayatilleke and Junpu Xie and Dave Campbell"
 date: '2020-07-24'
 slug: climate-report-Ottawa
