@@ -1,0 +1,95 @@
+---
+title: "Open Ottawa"
+execute:
+    cache: true
+    jupyter: python3
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'Retrieving Open Ottawa Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Traffic Collisions
+- Service Requests
+- Ottawa Open Data
+
+## Data Provider
+
+```{python packages}
+
+import pandas as pd 
+
+import geopandas as gp
+import mapclassify
+import folium
+
+```
+
+```{python service request dataset}
+
+#https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about
+
+service = pd.read_csv("311opendata_currentyear")
+
+service.head()
+
+```
+
+
+```{python service data cleaning}
+
+service.columns = service.columns.str.split("|").str[0].str.rstrip()
+
+```
+
+Some service requests do not include location data. Let's filter those out.
+
+```{python service locations}
+
+service_locations = service[~service["Latitude"].str.contains("N")]
+
+service_locations.tail()
+
+```
+
+After initially plotting all points, I noticed that there was a service request apparently placed from the Pacific Ocean near Africa. Clearly there was a data input error. It's worth filtering for latitudes containing 45 (which reflect Ottawa).
+
+```{python noise complaints map}
+
+service_geo = gp.GeoDataFrame(
+    service_locations, geometry=gp.points_from_xy(service_locations["Longitude"],
+    service_locations["Latitude"]), crs="epsg:4386")
+
+service_geo[service_geo["Latitude"].str.contains("45")].explore()
+
+
+```
+
+```{python traffic collision dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
+
+traffic = pd.read_csv("2020_Tabular_Transportation_Collision_Data.csv")
+
+traffic.head()
+
+```
+
+
+```{python collision map}
+
+traffic_geo = gp.GeoDataFrame(
+    traffic, geometry=gp.points_from_xy(traffic["Longitude"],
+    traffic["Latitude"]), crs="epsg:4386")
+
+traffic_geo.explore()
+
+```
