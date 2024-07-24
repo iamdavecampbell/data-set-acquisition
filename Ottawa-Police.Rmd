@@ -105,7 +105,7 @@ expensive_bike_theftslatlong <- st_as_sf(bike_thefts |> subset(Bicycle.Value > 2
 
 leaflet() |>
   addTiles() |>
-  addMarkers(data = expendsive_bike_theftslatlong)
+  addMarkers(data = expensive_bike_theftslatlong)
 
 ```
 
