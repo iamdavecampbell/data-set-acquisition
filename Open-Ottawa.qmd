@@ -23,6 +23,8 @@ ipynb-shell-interactivity: all
 
 ## Data Provider
 
+[Open Ottawa](https://open.ottawa.ca/) is an open-access data portal designed to provide accessible datasets from municipal data sources. Users can access datasets from a variety of municipal departments including Parks, Public Health, Water Treatment, and many others. All data from this portal is subject to [Open Data Licence Version 2.0](https://open.ottawa.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – City of Ottawa.
+
 ```{python packages}
 
 import pandas as pd 

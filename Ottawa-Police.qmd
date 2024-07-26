@@ -25,7 +25,8 @@ ipynb-shell-interactivity: all
 
 ## Data Provider
 
-Ottawa Police's [Community Safety Data Portal](https://data.ottawapolice.ca/) is an open-access data portal designed to provide transparent and accessible information about police activity to the public. Data is available in tabular and geographic forms, and can be freely downloaded and interacted with.  
+Ottawa Police's [Community Safety Data Portal](https://data.ottawapolice.ca/) is an open-access data portal designed to provide transparent and accessible information about police activity to the public. Data is available in tabular and geographic forms, and can be freely downloaded and interacted with. All data from this portal is subject to [Open Data Licence Version 2.0](https://data.ottawapolice.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – Ottawa Police Service.
+
 
 ## Plotting Geographical Data Points on Open Street Maps
 
