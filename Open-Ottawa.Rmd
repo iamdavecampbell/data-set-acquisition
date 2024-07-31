@@ -81,13 +81,9 @@ parkservice <- service_locations |> filter(str_detect(Latitude, "45")) |>
                st_as_sf(coords = c("Longitude", "Latitude")) |>
                st_coordinates()
 
-```
-
-```{r park service map}
-
 leaflet() |>
   addTiles() |>
-  addMarkers(data = servicelatlong)
+  addMarkers(data = parkservice)
 
 ```
 
@@ -109,7 +105,7 @@ Let's filter for a particular type of collison and plot them on Open Street Maps
 
 ```{r sideswipe map}
 
-sideswipe_latlong <- traffic |> filter(str_detect(Initial_Impact_Type, "Sideswipe"))
+sideswipe_latlong <- traffic |> filter(str_detect(Initial_Impact_Type, "Sideswipe")) |>
                      st_as_sf(coords = c("Longitude", "Latitude")) |>
                      st_coordinates()
                      
