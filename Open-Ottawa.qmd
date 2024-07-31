@@ -35,6 +35,14 @@ import folium
 
 ```
 
+A word about retrieving Open Ottawa Data.
+
+Open Ottawa datasets are available to download as CSVs, however the download URL is generated on demand, and expires shortly, within a few days,
+or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
+
+
+### Service Requests 
+
 ```{python service request dataset}
 
 #https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about

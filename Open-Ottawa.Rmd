@@ -1,0 +1,119 @@
+---
+title: Open Ottawa
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+summary: 'Retrieving Open Ottawa Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Traffic Collisions
+- Service Requests
+- Ottawa Open Data
+
+## Data Provider
+
+[Open Ottawa](https://open.ottawa.ca/) is an open-access data portal designed to provide accessible datasets from municipal data sources. Users can access datasets from a variety of municipal departments including Parks, Public Health, Water Treatment, and many others. All data from this portal is subject to [Open Data Licence Version 2.0](https://open.ottawa.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – City of Ottawa.
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Plotting Geographical Data Points on Open Street Maps
+
+```{r libraries, message = FALSE, warning = FALSE}
+
+library(leaflet) 
+library(sf)
+library(tidyverse)
+
+```
+
+A word about retrieving Open Ottawa Data.
+
+Open Ottawa datasets are available to download as CSVs, however the download URL is generated on demand, and expires shortly, within a few days,
+or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
+
+### Service Requests 
+
+```{r service request dataset}
+
+#https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about
+
+csv_path <- ("311opendata_currentyear")
+
+service <- read_csv(csv_path)
+
+head(service)
+
+```
+
+```{r service data prep}
+
+colnames(service) <- sub(" \\|.*", "", colnames(service))
+service <- service |> rename_all(make.names)
+
+```
+
+Some service requests do not include location data. Let's filter those out.
+
+```{r service locations}
+
+service_locations <- service |> filter(!str_detect(Latitude, 'N'))
+
+```
+
+After initially plotting all points, I noticed that there was a service request apparently placed from the Pacific Ocean near Africa. Clearly there was a data input error. It's worth filtering for latitudes containing 45 (which reflect Ottawa). We will also filter for a particular type of service request to reduce the total number of points plotted.
+
+```{r park service map}
+
+parkservice <- service_locations |> filter(str_detect(Latitude, "45")) |>
+               filter(str_detect(Description, "Park")) |>
+               st_as_sf(coords = c("Longitude", "Latitude")) |>
+               st_coordinates()
+
+```
+
+```{r park service map}
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = servicelatlong)
+
+```
+
+### Traffic Collisions
+
+```{r traffic collision dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
+
+csv_path <- "2020_Tabular_Transportation_Collision_Data.csv"
+
+traffic = read_csv(csv_path)
+
+head(traffic)
+
+```
+
+Let's filter for a particular type of collison and plot them on Open Street Maps.
+
+```{r sideswipe map}
+
+sideswipe_latlong <- traffic |> filter(str_detect(Initial_Impact_Type, "Sideswipe"))
+                     st_as_sf(coords = c("Longitude", "Latitude")) |>
+                     st_coordinates()
+                     
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = sideswipe_latlong)
+```
