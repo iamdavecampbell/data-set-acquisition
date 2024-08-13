@@ -198,6 +198,8 @@ plt.show();
 
 ```
 
+### Look at Canola export by month
+
 ``` {python canola by month}
 
 canola = export_data[(export_data["Commodity"] == "Canola (rapeseed)") &
