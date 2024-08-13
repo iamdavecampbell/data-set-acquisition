@@ -64,7 +64,7 @@ library(cansim) #for pulling Stat Can socioeconomic data
 library(lubridate) # for dealing with dates
 library(GGally) # for pairs plot
 library(ggpubr) # for putting a regression equation onto a ggplot figure
-````
+```
   
   
 ## Pulling a table

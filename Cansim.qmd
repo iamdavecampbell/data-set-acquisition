@@ -158,8 +158,6 @@ sb.pairplot(pivoted,
                                                         y = 1.01,
                                                         fontsize = 14)
 plt.show();
-
-
 ```
 
 ### Plotting the Provinces as Time Series
