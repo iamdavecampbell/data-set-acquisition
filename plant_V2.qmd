@@ -41,7 +41,7 @@ Variables include years from 2007 to 2019, province of production, flower and pl
 
 ### Organizing Dataset
 
-The following R code is used to obtain and organize the dataset and separate it into two by output type (sales and production).
+The following code is used to obtain and organize the dataset and separate it into two by output type (sales and production).
 
 ```{python dataset}
 
