@@ -25,6 +25,8 @@ ipynb-shell-interactivity: all
 
 [Open Ottawa](https://open.ottawa.ca/) is an open-access data portal designed to provide accessible datasets from municipal data sources. Users can access datasets from a variety of municipal departments including Parks, Public Health, Water Treatment, and many others. All data from this portal is subject to [Open Data Licence Version 2.0](https://open.ottawa.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – City of Ottawa.
 
+## Plotting Geographical Data Points on Open Street Maps
+
 ```{python packages}
 
 import pandas as pd 
@@ -72,7 +74,7 @@ service_locations.tail()
 
 After initially plotting all points, I noticed that there was a service request apparently placed from the Pacific Ocean near Africa. Clearly there was a data input error. It's worth filtering for latitudes containing 45 (which reflect Ottawa).
 
-```{python noise complaints map}
+```{python service map}
 
 service_geo = gp.GeoDataFrame(
     service_locations, geometry=gp.points_from_xy(service_locations["Longitude"],
@@ -82,6 +84,8 @@ service_geo[service_geo["Latitude"].str.contains("45")].explore()
 
 
 ```
+
+### Traffic Collisions
 
 ```{python traffic collision dataset}
 
@@ -93,13 +97,14 @@ traffic.head()
 
 ```
 
+Let's filter for a particular type of collison and plot them on Open Street Maps.
 
-```{python collision map}
+```{python sideswipe map}
 
 traffic_geo = gp.GeoDataFrame(
     traffic, geometry=gp.points_from_xy(traffic["Longitude"],
     traffic["Latitude"]), crs="epsg:4386")
 
-traffic_geo.explore()
+traffic_geo[traffic_geo["Initial_Impact_Type"] == "Sideswipe"].explore()
 
 ```
