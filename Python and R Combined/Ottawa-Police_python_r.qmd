@@ -1,0 +1,335 @@
+---
+title: Ottawa Police Open Data
+execute:
+    cache: true
+    jupyter: python3
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-07-10'
+slug: 
+categories: []
+tags: ["Ottawa"]
+subtitle: ''
+image: 'ottawa-police-preview-image.png'
+summary: 'Retrieving Ottawa Police Open Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Possible Analysis and Keywords
+
+- Open Street Maps
+- Bike Thefts
+- Shootings
+- Crime
+- Motor Vehicle Thefts
+- Police Data
+
+## Data Provider
+
+Ottawa Police's [Community Safety Data Portal](https://data.ottawapolice.ca/) is an open-access data portal designed to provide transparent and accessible information about police activity to the public. Data is available in tabular and geographic forms, and can be freely downloaded and interacted with. All data from this portal is subject to [Open Data Licence Version 2.0](https://data.ottawapolice.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – Ottawa Police Service.
+
+
+## Plotting Geographical Data Points on Open Street Maps
+
+::: {.panel-tabset}
+
+## Python
+```{python pmodules}
+
+import pandas as pd 
+import geopandas as gp # Useful for manipulating geographic data in dataframes
+import mapclassify # Geopandas uses these to produce plots on Open Street Maps 
+import folium # Geopandas uses these to produce plots on Open Street Maps 
+
+
+```
+
+## R
+```{r rlibraries, message = FALSE, warning = FALSE}
+
+library(leaflet) 
+library(sf)
+library(tidyverse)
+
+```
+
+:::
+
+A word about retrieving Ottawa Police Data.
+
+Ottawa Police datasets are available to download as CSVs, however the download URL is generated on demand and expires shortly, within a few days or sometimes even hours. Also, the availability of dataset csv download is somewhat tenuous, and you may find that particular dataset is unavailable for download at a given time.  For this reason, it is recommended that the dataset of interest be downloaded into a working directory. It can then be read using read_csv directly from that file. Errors may occur if a download url is passed directly to read_csv.
+
+### Shootings 
+
+::: {.panel-tabset}
+
+## Python
+```{python pshootings data}
+
+#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+
+shootings = pd.read_csv("Shootings_Open_Data_3086844035331583488.csv")
+
+shootings.head()
+
+```
+
+The location of each reported shooting is given in the EPSG:2951 coordinate system, represented in the X and Y columns. In order to plot these points on Open Street Maps, we pass the pandas dataframe to a [Geopandas](https://geopandas.org/en/stable/) dataframe, which is better suited for geographical data. The Geopandas explore function usings libraries folium and mapclassify to plot on open street maps.  
+
+```{python pshootings map}
+
+geo_df = gp.GeoDataFrame(
+    shootings, geometry=gp.points_from_xy(shootings["x"], shootings["y"]), crs="epsg:2951")
+
+geo_df.explore()
+```
+
+## R
+```{r rshootings dataset}
+
+#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+
+csv_link <- "Shootings_Open_Data_3086844035331583488.csv"
+
+shootings <- read_csv(csv_link)
+
+head(shootings)
+
+```
+
+The location of each reported shooting is given in the EPSG:2951 coordinate system, represented in the X and Y columns. 
+In order to plot these points on Open Street Maps using the [Leaflet] (https://rstudio.github.io/leaflet/) library, we will need to convert to Latitude and Longitude, also
+known as the EPSG:4386 coordinate system. R's Simple Features (sf) library can be used to manipulate spatial data.
+[Simple Features] (https://cran.r-project.org/web/packages/sf/index.html).
+
+```{r rshootings geo data}
+
+shootingslatlong <- st_as_sf(shootings, coords = c("x", "y"), crs = 2951) |> # Tell R that the X and Y columns represent location coordinates in the EPSG:2951 system
+                    st_transform(crs = 4386 ) |> # Transform the X and Y location data into the EPSG:4386 system, aka latitude and longitude.
+                    st_coordinates() # Extract the latitude and longitude data into a new dataframe that we will plot
+
+```
+
+```{r rshootings map}
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = shootingslatlong)
+
+```
+
+:::
+
+### Bike Thefts
+
+::: {.panel-tabset}
+
+## Python
+```{python pbicycle thefts dataset}
+
+#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
+
+bike_thefts = pd.read_csv("Bike_Theft_Open_Data_3884822422354997826.csv")
+
+bike_thefts.head()
+
+```
+
+
+```{python pexpensive bicycle thefts map}
+
+geo_df = gp.GeoDataFrame(
+    bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]), crs="epsg:2951")
+
+geo_df[geo_df["Bicycle Value"] > 2000].explore()
+
+```
+
+## R
+```{r rbike thefts dataset}
+
+#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
+
+csv_link <- "Bike_Theft_Open_Data_3884822422354997826.csv"
+
+bike_thefts <- read_csv(csv_link)
+bike_thefts <- bike_thefts |> rename_all(make.names)
+
+head(bike_thefts)
+
+```
+
+```{r rexpensive_bike_thefts geo data}
+
+expensive_bike_theftslatlong <- st_as_sf(bike_thefts |> subset(Bicycle.Value > 2000), coords = c("x", "y"), crs = 2951) |> 
+                                st_transform(crs = 4386 ) |> 
+                                st_coordinates() 
+```
+
+```{r rexpensive bike thefts map}
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = expensive_bike_theftslatlong)
+
+```
+
+:::
+
+### Motor Vehicle Thefts
+
+::: {.panel-tabset}
+
+## Python
+```{python pmotor vehicle theft data}
+
+#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+
+vehicle_theft = pd.read_csv("Auto_Theft_Open_Data_2158590371504723284.csv")
+
+vehicle_theft.head()
+
+```
+
+```{python pvehicle makes}
+
+vehicle_theft["Vehicle Make"].unique()
+
+```
+
+```{python pstolen volkswagons map}
+
+vehicle_theft_geo = gp.GeoDataFrame(
+    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]), crs="epsg:2951")
+
+vehicle_theft_geo[vehicle_theft_geo["Vehicle Make"] == "VOLK"].explore()
+
+```
+
+## R
+```{r rmotor vehicle thefts dataset}
+
+#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+
+csv_link <- "Auto_Theft_Open_Data_2158590371504723284.csv"
+
+vehicle_theft <- read_csv(csv_link)
+
+vehicle_theft <- vehicle_theft |> rename_all(make.names)
+
+head(vehicle_theft)
+
+```
+
+```{r rstolen volkswagons map}
+
+stolen_volk_latlong <- st_as_sf(vehicle_theft |> subset(Vehicle.Make == "VOLK"), coords = c("x", "y"), crs = 2951) |> 
+                       st_transform(crs = 4386 ) |> 
+                       st_coordinates() 
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = stolen_volk_latlong)
+
+```
+
+:::
+
+### Historical Crime Data 2013 - 2022 
+
+::: {.panel-tabset}
+
+## Python
+```{python pcrime dataset}
+
+#https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
+
+crime = pd.read_csv("CrimeMap_YE_-5915901148112462236.csv")
+
+crime.head()
+```
+
+## R
+```{r rcrime dataset}
+
+#https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
+
+csv_link <- "CrimeMap_YE_-5915901148112462236.csv"
+
+crime <- read_csv(csv_link)
+
+crime <- crime|> rename_all(make.names)
+
+head(crime)
+
+```
+
+:::
+
+Note that this dataset contains over 165,000 records! That is too many to plot on a single map, so it's worth filtering for particular crimes and dates before plotting.
+
+::: {.panel-tabset}
+
+## Python
+```{python poffences}
+
+crime["Offence_Category"].unique()
+
+```
+
+```{python pyear}
+
+crime["Reported_Year"].unique()
+
+```
+
+## R
+```{r roffences}
+
+crime$Offence_Category |> unique()
+
+```
+
+```{r ryear}
+
+crime$Reported_Year |> unique()
+
+```
+
+:::
+
+::: {.panel-tabset}
+
+## Python
+```{python pbreak and enters 2023 map}
+
+crime_geo = gp.GeoDataFrame(
+    crime, geometry=gp.points_from_xy(crime["x"], crime["y"]), crs="epsg:2951")
+
+crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
+          (crime_geo["Reported_Year"] == 2023)].explore()
+
+```
+
+## R
+```{r rbreak and enters 2023 map}
+
+bande2023latlong <- st_as_sf(crime |> subset(Offence_Category == "Break and Enter" & Reported_Year == 2023), 
+                    coords = c("x", "y"),
+                    crs = 2951) |> 
+                    st_transform(crs = 4386 ) |> 
+                    st_coordinates() 
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = bande2023latlong)
+
+```
+
+:::
