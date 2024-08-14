@@ -12,6 +12,7 @@ subtitle: ''
 summary: 'Historical Climate Data resource records monthly summaries, averages, extremes values of temperature, precipitation, degree days, relative humidity, wind speed, and direction among 370 city stations in Canada.'
 output: html_document
 lastmod: '2020-07-24T18:48:09-04:00'
+ipynb-shell-interactivity: all
 ---
 
 ## Possible Analysis and Keywords
