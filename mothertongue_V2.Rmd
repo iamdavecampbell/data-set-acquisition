@@ -44,7 +44,7 @@ The dataset and its metadata file which contains detailed variable descriptions 
 
 The following code is used to download and organize the original dataset, and eparate it into two by groups of population and percentage.
 
-```{r dataset, message = FALSE}
+```{r dataset, message = FALSE, warning = FALSE}
 
 # library
 library(ggplot2)

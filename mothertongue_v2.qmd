@@ -41,7 +41,7 @@ The dataset and its metadata file which contains detailed variable descriptions 
 
 ### Data Acquisition
 
-The following code is used to download and organize the original dataset, and eparate it into two by groups of population and percentage.
+The following code is used to download and organize the original dataset, and separate it into two by groups of population and percentage.
 
 
 ```{python dataset_download}
