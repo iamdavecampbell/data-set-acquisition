@@ -1,0 +1,6 @@
+---
+title: "About"
+---
+
+This page outlines data acquisition and preparation from a variety of open data sources. Funding for this project came from the Carleton University Students as Partners Program (SaPP). Data acquisition by Junpu Xie, Dean Jayatilleke, and Dr. Dave Campbell
+

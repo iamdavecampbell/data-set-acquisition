@@ -1,0 +1,10 @@
+---
+title: ""
+listing: 
+    contents: Documents
+    type: default
+    feed:
+        type: partial
+---
+
+Full Quarto Markdown versions available on [Github](https://github.com/iamdavecampbell/data-set-acquisition)

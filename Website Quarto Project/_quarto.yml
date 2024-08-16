@@ -1,0 +1,31 @@
+project:
+  type: website
+
+website:
+  favicon: logo.png
+  search: false
+  title: "Open Government Data"
+  navbar:
+    background: primary
+    right:
+      - href: https://www.linkedin.com/in/dean-jayatilleke-a86220323/?trk=contact-info
+        text: Dean Jayatilleke
+      - href: https://www.linkedin.com/in/junpu-xie-68b832162/?originalSubdomain=ca
+        text: Junpu Xie
+      - href: https://people.math.carleton.ca/~davecampbell/Dave_Campbell.html
+        text: Dave Campbell
+      - href: about.qmd
+        text: About
+      - icon: github
+        href: https://github.com/iamdavecampbell/data-set-acquisition
+      - icon: twitter
+        href: https://twitter.com/iamdavecampbell
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
