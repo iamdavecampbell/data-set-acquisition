@@ -4,7 +4,7 @@ execute:
     cache: true
     jupyter: python3
 author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
-date: '2020-07-24'
+date: '2024-08-15'
 slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse
 categories: ["COVID Data"]
 tags: ["Linear Regression", "Normal Distribution","Time Series", "Aggregated Ddata", "Spatial Data Set", "COVID-19", "COVID Data"]
@@ -37,7 +37,7 @@ The real-time visual dashboard can be viewed in [desktop](https://www.arcgis.com
 
 COVID-19 is a serious health threat for individuals and its extended social problems are also evolving daily. Based on the given number of cases in Canada, the risk to Canadians is still considered high. 
 
-The government of Canada updates regular COVID-19 information and news [here](https://www.canada.ca/en/public-health/services/diseases/coronavirus-disease-covid-19.html), it also creates interactive data visualizations by providing a visual data gallery [here](https://health-infobase.canada.ca/covid-19/visual-data-gallery/), so that everyone can easily see the current situation of COVID-19 across Canada and the world with different measurements. Health Canada provides several visualizations including the [Canada COVID-19 Situational Awareness Dashboard](https://experience.arcgis.com/experience/2f1a13ca0b29422f9b34660f0b705043/?fbclid=IwAR0k_pf1jxwanqldeaZy0-1bao8njVXrz6A3-ejp72Kyh4Qcj0MrE72lgdo) and [interactive data map](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html).
+The government of Canada updates regular COVID-19 information and news [here](https://www.canada.ca/en/public-health/services/diseases/coronavirus-disease-covid-19.html). It also creates interactive data visualizations by providing a visual data gallery [here](https://health-infobase.canada.ca/covid-19/visual-data-gallery/), so that everyone can easily see the current situation of COVID-19 across Canada and the world with different measurements. Health Canada provides several visualizations including the [Canada COVID-19 Situational Awareness Dashboard](https://experience.arcgis.com/experience/2f1a13ca0b29422f9b34660f0b705043/?fbclid=IwAR0k_pf1jxwanqldeaZy0-1bao8njVXrz6A3-ejp72Kyh4Qcj0MrE72lgdo) and [interactive data map](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html).
 
 ***
 
