@@ -1,0 +1,29 @@
+---
+title: "Quarto Website README"
+author: "Dean Jayatilleke"
+date: '2024-08-16'
+---
+
+## Website Rendering Instructions
+
+1. Download the "Website Quarto Project" folder and all contents.
+2. Download the contents of the "Python and R Combined" directory into a folder named "Documents" and place it in the "Website Quarto Project" directory
+3. Make sure to unzip the "CrimeMap" data and delete the zip file
+4. Open the "index.qmd" and render using the Ctrl-Shift-K shortcut.
+
+The website will be rendered completely into a folder called "_site" in your "Website Quarto Project" Folder.
+
+
+## Quarto Websites for Publising a Collection of Documents
+
+[Quarto Website Projects](https://quarto.org/docs/websites/) make it easy to publish a collection of documents. 
+
+1. Create a new Quarto Project and select "Website Project" from the dropdown of options.
+2. Place all documents to be published on a single page into a folder in the main website directory.
+3. Create a Quarto Markdown File in your website project directory following the format [Here](https://quarto.org/docs/websites/website-listings.html#listing-contents)
+
+
+See [Document Listings - Quarto](https://quarto.org/docs/websites/website-listings.html) for more information.
+
+
+
