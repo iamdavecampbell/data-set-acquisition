@@ -36,7 +36,7 @@ Dataset can be discovered by multiple searching methods [here](https://open.cana
 
 ## Exports of Grains, by the final destination
 
-This dataset recorded 862 observations from the year 1922 to 2017, the data is described by many dimensions, such as commodities about 9 different types of grains, export destinations of 217 countries, 10 continents(Total Western Europe, Total Asia,…) and 1 total destination (Toal exports, all destinations), the export value unit is recorded as tonnes.
+This dataset recorded 862 observations from the year 1922 to 2017. The data is described by many dimensions, such as commodities about 9 different types of grains, export destinations of 217 countries, 10 continents(Total Western Europe, Total Asia,…) and 1 total destination (Toal exports, all destinations), the export value unit is recorded as tonnes.
 
 The dataset and its metadata file with detailed variable descriptions have been stored together as a zip file. You can find detailed information [here](https://open.canada.ca/data/en/dataset/33a5e534-b62a-45b7-b36c-ddc16d53f6a0), and you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3210000801).
 
@@ -263,7 +263,7 @@ ggplot( aes(x = year, y = total, group = Destinations)) +
 
 
 
-Now consider canola for countries that have imported at least 1,000,000 tonnes in at least one year.  Plot all of their annual import data.
+Now consider canola for countries that have imported at least 1,000,000 tonnes in at least one year and plot all of their annual import data.
 
 ::: {.panel-tabset}
 
