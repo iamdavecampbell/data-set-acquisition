@@ -9,7 +9,7 @@ slug: socioeconomic-time-series-and-statistics-canada
 categories: ["Census Data"]
 tags: ["Linear Regression", "Time Series",  "Official Statistics", "Census Data"]
 subtitle: ''
-summary: 'Using Python libraries to acquire socioeconomic data from Statistics Canada Mapper.'
+summary: 'Using Python libraries to acquire socioeconomic data from Statistics Canada.'
 lastmod: '2021-06-11T18:40:19-04:00'
 ipynb-shell-interactivity: all
 ---
@@ -34,7 +34,7 @@ Find and extract socio-economic data from Statistics Canada.  In this example we
 
 # Data Provider
 
-Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **stats-can** and **cansim** packages provides an API for downloading these tables.  See also the 
+Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **stats-can** and **cansim** packages provide Python and R APIs respectively for downloading these tables.  See also the 
 [stats-can](https://stats-can.readthedocs.io/en/latest/) or [cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignettes for examples and instructions to pull Statistics Canada datasets.
 
 # Installing stats-can and cansim
@@ -88,7 +88,7 @@ library(ggpubr) # for putting a regression equation onto a ggplot figure
 
 ## Pulling a table
 
-Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labor force data in html.
+Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labour force data in html.
 Notice that the StatCan webpage shows the table id, here it is table: 14-10-0287-01.
 
 We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.   
@@ -119,7 +119,7 @@ There are nearly 5 million rows of data!
 ## Make a few plots of Employment statistics
 
 
-Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute sex, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the differences data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
+Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute sex, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the different data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
 
 Let's inventory a few of these columns so that the exact spelling of attributes can be used below in the plots.
 
@@ -305,7 +305,7 @@ ggpairs( columns = 6:15, title = "Monthly Unemployment Rate: Not Seasonaly Adjus
 
 ## Python
 
-Notice how we produce a year and month columns by accessing properties of **pandas datetime** objects. 
+Notice how we produce year and month columns by accessing properties of **pandas datetime** objects. 
 ```{python unemployment by province}
 
 provinces["month"] = provinces["REF_DATE"].dt.month
@@ -454,7 +454,7 @@ data4plot = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DA
 ::: {.panel-tabset}
 
 ## Python
-A "decade" column is produced using floor division. The yearly data lines are colour grouped by decade so 2020-2021 are inherrently already highlighted.
+A "decade" column is produced using floor division. The yearly data lines are colour grouped by decade so 2020-2021 are inherently already highlighted.
 
 ```{python within year seasonal highlight by decade}
 
@@ -497,7 +497,7 @@ plt.show();
 ```
 
 ## R
-This figure uses a mutated variable defining the decade to set line colours,  so 2020-2021 are inherrently already highlighted.
+This figure uses a mutated variable defining the decade to set line colours,  so 2020-2021 are inherently already highlighted.
  
 This time the Canadian average is included, despite the fact that it is a weighted average of the provincial values.  __Note that this time we are also keeping the filtered, mutated data to simplify merging datasets later.__
 
@@ -765,5 +765,5 @@ both |> ggplot(aes(x=unemployment.rate, y =total.housing))+
 #### Going Further
 
 - Make residual plots for the linear regessions
-- Consider other variables/ relationship, such as   CPI from table **18-10-0004-01  Consumer Price Index, monthly, not seasonally adjusted**
+- Consider other variables/ relationship, such as CPI from table **18-10-0004-01  Consumer Price Index, monthly, not seasonally adjusted**
 - Consider looking for a time varying trend, subsetting the years, or even multiple regression with a year effect.
