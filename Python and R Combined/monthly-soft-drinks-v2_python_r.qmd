@@ -3,8 +3,8 @@ title: "Annual and Monthly Soft Drinks Production - Open Canada"
 execute:
     cache: true
     jupyter: python3
-author: "Deah Jayatilleke & Junpu Xie & Dave Campbell"
-date: '2020-08-10'
+author: "Dean Jayatilleke & Junpu Xie & Dave Campbell"
+date: '2024-08-13'
 slug: manufacture-data-annual-monthly-soft-drinks-production-open-canada
 categories: ["Regression"]
 tags: ["Linear Chart", "Data Merging and Cleaning", "Time Series", "Soft Drinks", "Canada"]
@@ -25,6 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - Data Merging and Cleaning
 - Soft Drinks
 - Manufacturing Data
+
 ## Data Provider
 
 Statistics Canada's [Open Government](https://open.canada.ca/en) is a free and open-access platform  containing over 80,000 datasets across diverse subjects. The purpose of sharing all data documents with the public is to remain transparent and accessible. 
@@ -35,9 +36,9 @@ Dataset can be discovered by multiple searching methods [here](https://open.cana
 
 ## Food Manufacturing: Annual Soft Drink Production 
 
-A dataset recording the soft drink production every quarter from 1950 to 1977, its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/15dac000-240f-494c-86b6-311d8f8012b9), you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610010001).
+A dataset recording the soft drink production every quarter from 1950 to 1977. Its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/15dac000-240f-494c-86b6-311d8f8012b9). You also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610010001).
 
-The dataset switched to monthly soft drinks production from 1976 to 1995. Its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/de2e4ec3-dcb8-4dd1-aad8-3ccc1a61d633), you also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610009901).
+The dataset switched to monthly soft drinks production from 1976 to 1995. Its supporting documentation can be found [here](https://open.canada.ca/data/en/dataset/de2e4ec3-dcb8-4dd1-aad8-3ccc1a61d633). You also can quickly discover the customized table [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610009901).
 
 All datasets and their metadata files including detailed variable descriptions are stored as a zip file. The variables in the data sets are dates and production variables recorded in units of thousands of gallons on a monthly, quarterly, and annual basis.
 
@@ -45,7 +46,7 @@ All datasets and their metadata files including detailed variable descriptions a
 
 ### Data loading 
 
-The following code is used to organize monthly and annual orginal datasets, and merge them into one quarterly soft drink production dataset from 1950 to 1995. 
+The following code is used to organize monthly and annual orginal datasets and merge them into one quarterly soft drink production dataset from 1950 to 1995. 
 
 ::: {.panel-tabset}
 
