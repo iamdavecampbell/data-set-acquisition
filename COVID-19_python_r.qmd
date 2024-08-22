@@ -55,6 +55,7 @@ library(lubridate)
 library(ggpubr)
 ```
 
+:::
 ### Organizing Data
 
 The following code is used to download and rearrange the original dataset from webpage.
