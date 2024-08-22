@@ -1,0 +1,260 @@
+---
+title: Open Ottawa
+author: "Dean Jayatilleke & Dave Campbell"
+date: '2024-07-10'
+slug: 
+execute:
+  render: auto
+categories: ["Ottawa", "Spatial Data Set", "Open Street Maps", "csv files"]
+subtitle: ''
+summary: 'Retrieving Open Ottawa Data and producing plots using Open Street Maps'
+output: html_document
+ipynb-shell-interactivity: all
+image: 'open-ottawa-preview-image.png'
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Data Provider
+
+[Open Ottawa](https://open.ottawa.ca/) is an open-access data portal designed to provide accessible datasets from municipal data sources. Users can access datasets from a variety of municipal departments including Parks, Public Health, Water Treatment, and many others. All data from this portal is subject to [Open Data Licence Version 2.0](https://open.ottawa.ca/pages/open-data-licence). Information released under this licence may be copied, modified, published, adapted, or otherwise used for any lawful purpose, as long as a data attibution from the information provider is included. When using information from multiple providers, the following attribution must be used: Contains information licensed under the Open Government Licence – City of Ottawa.
+
+## Plotting Geographical Data Points on Open Street Maps
+
+::: {.panel-tabset}
+
+## Python
+```{python packages}
+
+import pandas as pd 
+import geopandas as gp
+import mapclassify
+import folium
+
+```
+
+## R
+```{r libraries, message = FALSE, warning = FALSE}
+
+library(leaflet) 
+library(sf)
+library(tidyverse)
+library(OpenStreetMap)
+
+```
+
+:::
+
+A word about retrieving Open Ottawa Data.
+
+Open Ottawa datasets are available to download as CSVs, however the download URL is generated on demand, and expires shortly, within a few days,
+or sometimes even hours. For this reason, when revisiting a dataset, you may have to navigate to the dataset's "About" page and regenerate a download link.
+
+
+### Service Requests 
+
+::: {.panel-tabset}
+
+## Python
+```{python pservice request dataset}
+
+#https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about
+
+service = pd.read_csv("311opendata_currentyear")
+
+service.head()
+
+```
+
+
+```{python pservice data cleaning}
+
+service.columns = service.columns.str.split("|").str[0].str.rstrip()
+
+```
+
+## R
+```{r service request dataset}
+
+#https://open.ottawa.ca/datasets/8a5030af268a4a3485b72356dd7dfa85/about
+
+csv_path <- ("311opendata_currentyear")
+
+service <- read_csv(csv_path)
+
+head(service)
+
+```
+
+```{r service data prep}
+
+colnames(service) <- sub(" \\|.*", "", colnames(service))
+service <- service |> rename_all(make.names)
+
+```
+
+:::
+
+Some service requests do not include location data. Let's filter those out.
+
+::: {.panel-tabset}
+
+## Python
+```{python pservice locations}
+
+service_locations = service[~service["Latitude"].str.contains("N")]
+
+service_locations.tail()
+
+```
+
+## R
+```{r rservice locations}
+
+parkservice <- service |> filter(!str_detect(Latitude, 'N'))|>
+               filter(str_detect(Description, "Park")) |>
+               st_as_sf(coords = c("Longitude", "Latitude")) |>
+               st_coordinates()
+
+service_locations <- service |> filter(!str_detect(Latitude, 'N'))
+
+```
+
+:::
+
+
+After initially plotting all points, I noticed that there was a service request apparently placed from the Pacific Ocean near Africa. Clearly there was a data input error. It's worth filtering for latitudes containing 45 (which reflect Ottawa).
+
+
+
+
+::: {.panel-tabset}
+
+## Python
+```{python service map}
+
+service_geo = gp.GeoDataFrame(
+    service_locations, geometry=gp.points_from_xy(service_locations["Longitude"],
+    service_locations["Latitude"]), crs="epsg:4386")
+
+service_geo[service_geo["Latitude"].str.contains("45")].explore()
+
+
+
+
+
+
+
+```
+
+## R
+
+
+First make static plots, then make plots that are zoom-able.   In both cases data must be converted into numeric latitude and longitude.  
+With static plots, we need to draw a background for a pre-defined region and then add the points.
+
+```{r rstatic}
+
+# filter data:
+parkservice <- service |> filter(!str_detect(Latitude, 'N'))|>
+                filter(str_detect(Description, "Park")) |>
+               st_as_sf(coords = c("Longitude", "Latitude")) |>
+               st_coordinates()
+# get the map based on the region and zoom level
+sa_map <- openmap(c(45.6,-75.25), c(45,-76.25), 
+                  zoom = 10,
+                  type = "esri-topo", mergeTiles = TRUE)
+# project the map into the region of interest
+sa_map2 <- openproj(sa_map)
+
+# Pass the open street map object into the plotting function
+autoplot.OpenStreetMap(sa_map2) + 
+  geom_point(data = parkservice,
+             aes(x = X, y = Y), # overlay the points
+             colour = "red", size =  2.5) +
+  xlab("Longitude (°E)") + ylab("Latitude (°S)")
+
+
+```
+
+Use leaflet for zoom-able maps.
+
+```{r park service map}
+
+parkservice <- service_locations |> filter(str_detect(Latitude, "45")) |>
+               filter(str_detect(Description, "Park")) |>
+               st_as_sf(coords = c("Longitude", "Latitude")) |>
+               st_coordinates()
+
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = parkservice)
+
+```
+
+:::
+
+### Traffic Collisions
+
+::: {.panel-tabset}
+
+## Python
+```{python ptraffic collision dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
+
+traffic = pd.read_csv("2020_Tabular_Transportation_Collision_Data.csv")
+
+traffic.head()
+
+```
+
+## R
+```{r rtraffic collision dataset}
+
+#https://open.ottawa.ca/datasets/ottawa::2020-tabular-transportation-collision-data/about
+
+csv_path <- "2020_Tabular_Transportation_Collision_Data.csv"
+
+traffic = read_csv(csv_path)
+
+head(traffic)
+
+```
+:::
+
+
+::: {.panel-tabset}
+
+## Python
+```{python psideswipe map}
+
+traffic_geo = gp.GeoDataFrame(
+    traffic, geometry=gp.points_from_xy(traffic["Longitude"],
+    traffic["Latitude"]), crs="epsg:4386")
+
+traffic_geo.explore()
+
+```
+
+## R
+```{r rsideswipe map}
+
+sideswipe_latlong <- traffic |> filter(str_detect(Initial_Impact_Type, "Sideswipe")) |>
+                     st_as_sf(coords = c("Longitude", "Latitude")) |>
+                     st_coordinates()
+                     
+leaflet() |>
+  addTiles() |>
+  addMarkers(data = sideswipe_latlong)
+```
+
+:::
+
+
+

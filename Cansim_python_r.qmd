@@ -1,0 +1,765 @@
+---
+title: 'Libraries for Accessing Statistics Canada Data Tables'
+execute:
+    # eval: false
+    freeze: auto  # re-render only when source changes
+    # freeze: true # never re-render during project render
+    # render: auto
+    jupyter: python3
+author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
+date: '2024-08-10'
+slug: socioeconomic-time-series-and-statistics-canada
+categories: ["Census Data","Regression", "Time Series","Software:Python","Software:R","Things that break"]
+summary: 'Using R libraries to acquire socioeconomic data from Statistics Canada Mapper.'
+
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+# Goals
+
+Find and extract socio-economic data from Statistics Canada.  In this example we manipulate and plot unemployment rates and housing starts.  Relationships between the two datasets are examined.
+
+
+# Data Provider
+
+Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **stats-can** and **cansim** packages provide Python and R APIs respectively for downloading these tables.  See also the 
+[stats-can](https://stats-can.readthedocs.io/en/latest/) or [cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignettes for examples and instructions to pull Statistics Canada datasets.
+
+# Installing stats-can and cansim
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python stats-can library, eval=FALSE}
+
+conda install -c conda-forge stats-can
+# OR
+pip install stats-can
+# code not run for this document.
+```
+
+## R
+```{R cancensus package, eval=FALSE}
+
+install.packages("cansim")
+library(cansim)
+vignette("cansim")
+
+#code not run for this document.
+```
+
+:::
+
+# Basic libraries 
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python libraries}
+from stats_can import StatsCan # for pulling Stats Can socioeconomic data
+import pandas as pd # for data wrangling
+import seaborn as sb # for plotting
+import matplotlib.pyplot as plt # for plot management
+
+```
+
+## R
+```{R, message = FALSE, warning = FALSE}
+library(tidyverse) # for its nice flow.
+library(cansim) #for pulling Stat Can socioeconomic data
+library(lubridate) # for dealing with dates
+library(GGally) # for pairs plot
+library(ggpubr) # for putting a regression equation onto a ggplot figure
+```
+
+:::
+
+## Pulling a table
+
+Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labour force data in html.
+Notice that the StatCan webpage shows the table id, here it is table: 14-10-0287-01.
+
+We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.   
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python}
+sc = StatsCan() # We create a StatsCan Object that will be used to pull data
+data = sc.table_to_df("14-10-0287-01") 
+data.head()
+data.tail()
+```
+
+## R
+```{R, message = FALSE, cache = TRUE, warning = FALSE}
+data = get_cansim("14-10-0287-01") |> rename_all(make.names) 
+
+data |> glimpse()
+
+```
+
+:::
+
+There are nearly 5 million rows of data!  
+
+
+## Make a few plots of Employment statistics
+
+
+Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute sex, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the different data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
+
+Let's inventory a few of these columns so that the exact spelling of attributes can be used below in the plots.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python}
+
+data["Statistics"].unique()
+
+```
+
+```{python}
+
+data["Age group"].unique()
+
+```
+
+```{python}
+
+data["GEO"].unique()
+
+```
+
+```{python}
+
+data["Data type"].unique()
+
+```
+
+## R
+```{R}
+data$Labour.force.characteristics  |> unique()
+data$Statistics  |> unique()
+data$Age.group  |> unique()
+data$GEO  |> unique()
+```
+
+:::
+
+### Plotting provinces against each other
+Let's consider provincial differences in employment rate for 25-55 year olds.  Using the spelling from the above output we can set up the data filters.
+
+::: {.panel-tabset group="language"}
+
+## Python
+##### Important consideration when pivoting
+Pivoting a data table will spread out a variable into new columns. Sometimes it's more convenient to have each province as it's own column.  Here we do this to plot provinces against each other and see how they relate. In this case, we want each province's unemployment rate from the "Labour force characteristics" column. However, notice that there is a "Data type" column that shows two possible entries for the unemployment rate attribute in the "Labour force characteristics". If we filtered the data without selected one of these Data types, and then pivoted, python would take the mean of these two values! 
+
+```{python employmentprovinces0}
+
+provinces = data[["GEO",
+                  "Sex",
+                  "Age group",
+                  "Labour force characteristics",
+                  "REF_DATE",
+                  "VALUE",
+                  "Data type"]]
+
+provinces = provinces[(provinces["Sex"] == "Both sexes") &
+                      (provinces["GEO"] != "Canada") &
+                      (provinces["Labour force characteristics"] == "Unemployment rate") &
+                      (provinces["Age group"] == "25 to 54 years") &
+                      (provinces["Data type"] == "Unadjusted")]
+
+
+pivoted = pd.pivot_table(provinces,
+                         index = ["Sex",
+                                  "Age group",
+                                  "Labour force characteristics",
+                                  "REF_DATE"],
+                         values = "VALUE",
+                         columns = "GEO",
+                         observed = False).reset_index()
+
+pivoted.head()
+```
+
+## R
+##### When **pivot_wider** Works, But Not As Intended; Common Errors and How to Fix Them
+Pivoting a data table will spread out a variable into new columns.  Sometimes it's more convenient to have each province as it's own column.  Here we do this to plot provinces against each other and see how they relate.  It  can be helpful to see how to accidentally break things, so let's start there.  
+I will need to filter the data so let's start there.  Here we go right from selecting columns, filtering and then pivoting wider, which will help when plotting.  Take a look at the output.
+
+
+```{R, employmentProvinces0}
+
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+  rename_all(make.names) # rebuilt the province names
+
+```
+
+The provinces are now _list_ variables, whereas they should be _doubles_ (single numbers).  It wasn't obvious to me what went wrong the first time I broke a pivot table like this.  Let's re-run those steps without the **pivot_wider** and see if it helps to diagnose the root of the problem.  This is one of the great parts of tidyverse, we just rerun a subset of the above code, or explicitely extract one of those list elements from the original call:
+
+```{R, employmentProvinces1}
+# run fewer lines of the previous code:
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")
+
+
+## or view the problem this way, select Ontario and check out the first element:
+# data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+#   filter(Sex == "Both sexes") |> 
+#   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+#   filter( Labour.force.characteristics == "Unemployment rate")|>
+#   filter(Age.group == "25 to 54 years")|>
+#   pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+#   rename_all(make.names) |> 
+#   select(Ontario)|> head|> .[[1]]
+
+
+```
+If you look closely at the output in the first strategy you'll notice that there are multiple rows which only differ in their **VALUE**. This means that **pivot_wider** is mapping multiple rows of **VALUE** into a single element.  R handles this by smashing all those values together into list elements.  
+
+In order to have a one-to-one mapping add another variable to create a unique mapping.  Taking another close look at the **glimpse** output above, we can see that there is more than one **Data.type**.  Checking out its values we see the following:
+
+```{R}
+data$Data.type  |> unique()
+```
+
+The multiple **VALUE**s are made unique when considering the **Data.type** variable.  To simplify things, let's select the _Unadjusted_ unemployment rate.
+
+##### When **pivot_wider** Works As Intended
+
+```{R, employmentProvinces1.5}
+
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+  rename_all(make.names) 
+
+```
+
+:::
+
+### Plotting Variables Against Each Other.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python employmentprovincespairplot}
+
+sb.pairplot(pivoted, 
+            vars = pivoted.columns[4:14]).fig.suptitle("Monthly Unemployment Rate: Not Seasonally Adjusted",
+                                                        y = 1.01,
+                                                        fontsize = 14)
+plt.show();
+```
+
+## R
+```{R, employmentProvinces2}
+
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  pivot_wider(names_from= GEO, values_from=VALUE) |>  # puts each province into its own column
+  rename_all(make.names) |> 
+ggpairs( columns = 6:15, title = "Monthly Unemployment Rate: Not Seasonaly Adjusted",  
+        axisLabels = "show")
+
+
+```
+
+:::
+
+### Plotting the Provinces as Time Series
+
+::: {.panel-tabset group="language"}
+
+## Python
+
+Notice how we produce year and month columns by accessing properties of **pandas datetime** objects. 
+```{python unemployment by province}
+
+provinces["month"] = provinces["REF_DATE"].dt.month
+provinces["year"] = provinces["REF_DATE"].dt.year
+
+x = list(provinces["GEO"].unique())
+y = [1,2,3,4,5,6,7,8,9,10]
+
+sb.set_style("darkgrid")
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+
+    sb.lineplot(data = provinces[provinces["GEO"] == province],
+                x = "year",
+                y = "VALUE")
+     
+    
+    plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unemployment Rates by Province', fontsize=14)
+plt.show();
+
+```
+
+## R
+We won't bother pivoting the data table anymore, since it's convenient for **ggplot** to have a column as an identifying feature.
+
+Notice that the **REF_DATE** column is a character but it should be a date.  We'll use the lubridate package for converting into dates.  The helpfile for the _parse_date_time_ function is really useful for specifying the input format, as it clarifies that **Y** is a year with century but **y** is the two digit year without century.  Using the wrong one will break the mutation.
+
+
+```{R, employmentProvinces3}
+data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))|> # convert from character date to date format.
+  rename(unemployment.rate = VALUE)|>
+  ggplot(aes(x=date, y = unemployment.rate, colour = GEO))+
+  geom_line()+
+  ggtitle("Unemployment Rates by Province")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+# rotate axis labels so they don't overlap
+  facet_wrap(~GEO)
+
+```
+
+:::
+
+## Plot the Within Year Seasonal Trends
+
+::: {.panel-tabset group="language"}
+
+## Python
+We plot unemployment for each year in each province using a different line. In order to highlight the effect of the pandemic we first call seaborn lineplot on a subset of the data up to the year 2019. Each year is given a different colour by setting the "hue" parameter to "year". We then call seaborn linepot on a subset of the data from 2020 onwards. We choose a different colour palette so the pandemic years are clearly identifiable. Seaborn will overly successive plots on the same graph unless the plot is cleared using plt.clf().
+
+In some provinces, the strong seasonality of the unemployment rate realy pops out.  
+
+```{python within year seasonal highlight pandemic}
+
+x = list(provinces["GEO"].unique())
+y = [1,2,3,4,5,6,7,8,9,10]
+
+plt.clf()
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+    sb.lineplot(data = provinces[(provinces["GEO"] == province) &
+                                 (provinces["year"] < 2020)],
+                x = "month",
+                y = "VALUE",
+                hue = "year",
+                palette = "crest",
+                linewidth = 0.5)
+
+    sb.lineplot(data = provinces[(provinces["GEO"] == province) &
+                                 (provinces["year"] >= 2020)],
+                x = "month",
+                y = "VALUE",
+                hue = "year",
+                palette = "Reds_d",
+                linewidth = 2.5)
+    if province == "British Columbia":
+        plt.legend(title="Year", 
+                   bbox_to_anchor=(1.05, 1), 
+                   loc='upper left', 
+                   borderaxespad=0, 
+                   ncol = 3)
+    else:           
+        plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("")        
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unemployment Rates by Province: Highlighting Pandemic Years', 
+             fontsize = 13)
+plt.show();
+
+```
+
+## R
+Let's split the date into year and month columns using the **separate** function.
+Then within a provincial facet we can plot each year as a different line.  This figure makes lines darker as they go through the years by using **year** as the colour variable but highlights 2020-2021 in red using a second call to the _geom_line_ function. There are a few strategies to do this, here I built a dataset with a new mutated variable specifying the 2020-2021 years and used it for plotting.  This begins with a lot of filtering to obtain the 'right' data.
+
+In some provinces, the strong seasonality of the unemployment rate realy pops out.  
+
+```{R, employmentProvinces4}
+
+data4plot = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
+  rename(unemployment.rate = VALUE)
+
+  ggplot()+
+  geom_line(data=data4plot,aes(x=month, y = unemployment.rate, colour = year, group = year))+
+  # re-add in the pandemic year wwhile forcing the colour red
+  geom_line(data=data4plot|> filter(year>2019),aes(x=month, y = unemployment.rate, group = year),colour = "red",lwd=1.24)+
+    #add to the manual legend.
+  scale_x_continuous(breaks = c(2,4,6,8,10))+
+  ggtitle("Unadjusted Unemployment Rates by Province for 25 - 54 Year Olds: highlighting pandemic years")+
+  facet_wrap(~GEO)
+```
+
+:::
+
+## Plot the within year seasonal trends, but highlight by decade
+
+::: {.panel-tabset group="language"}
+
+## Python
+A "decade" column is produced using floor division. The yearly data lines are colour grouped by decade so 2020-2021 are inherently already highlighted.
+
+```{python within year seasonal highlight by decade}
+
+provinces["decade"] = provinces["year"] // 10 * 10
+
+for province, i in zip(x, y):
+    plt.subplot(3,4,i)
+    plt.tight_layout()
+
+    sb.lineplot(data = provinces[provinces["GEO"] == province],
+                x = "month",
+                y = "VALUE",
+                hue = "decade",
+                palette = "bright",
+                units = "year",
+                estimator = None)
+     
+    
+    plt.legend('', frameon = False)
+    plt.title(province, fontsize = 8)
+
+    if province == "British Columbia":
+        plt.legend(title="decade", 
+                   bbox_to_anchor=(1.05, 1), 
+                   loc='upper left', 
+                   borderaxespad=0, 
+                   ncol = 3)
+    else:           
+        plt.legend('', frameon = False)
+
+    if province == "Quebec":
+        plt.ylabel("Unemployment Rate")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Unemployment Rates by Province: Highlighted by Decade', fontsize=13)
+plt.show();
+
+```
+
+## R
+This figure uses a mutated variable defining the decade to set line colours,  so 2020-2021 are inherently already highlighted.
+ 
+This time the Canadian average is included, despite the fact that it is a weighted average of the provincial values.  __Note that this time we are also keeping the filtered, mutated data to simplify merging datasets later.__
+
+```{R, pandemic5}
+
+unemployment = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Sex == "Both sexes") |> 
+  # filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
+  filter( Labour.force.characteristics == "Unemployment rate")|>
+  filter(Age.group == "25 to 54 years")|>
+  filter(Data.type == "Unadjusted")|>
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
+  mutate(pandemic = 1+.1*as.numeric(as.numeric(year>=2020)))|>
+  mutate(decade = factor(floor(year/10)*10 ))|>
+  rename(unemployment.rate = VALUE)|>
+  rename(province = GEO)
+  
+
+
+  ggplot(data = unemployment)+
+  geom_line(aes(x=month, y = unemployment.rate, colour = decade, group = year))+
+  scale_colour_brewer(palette = "Paired")+ # nicer colours
+  scale_x_continuous(breaks = c(2,4,6,8,10))+ # place axis labels on even numbered months
+  ggtitle("Unemployment Rates by Province")+
+  facet_wrap(~province)
+
+```
+
+:::
+
+## Housing starts
+
+The housing starts are more complicated beacuse they are based on cities but the unemployment is based on provices
+
+::: {.panel-tabset group="language"}
+
+## Python
+
+```{python housing dataset}
+
+housing = sc.table_to_df("34-10-0154-01") 
+housing.head()
+
+```
+
+```{python unique cities}
+
+# the unique cities
+housing["GEO"].unique()
+
+```
+
+## R
+```{R, housing, cache = TRUE}
+housing = get_cansim("34-10-0154-01") |> rename_all(make.names) 
+
+housing |> glimpse()
+# the unique cities
+housing |> pull(GEO) |> unique()
+```
+
+:::
+
+To merge the housing starts with the unemployment, we need to set both to the same measurement unit, provinces per {month, year}.  To construct provincial housing starts, sum over the municipailites within a province. Many of these StatCan tables have multiple data types, so we will only consider **Housing.estimates** = _"Housing starts"_ and **Type.of.unit ** = _"Total units"_.
+
+Notice that Ottawa-Gatineau is split into ON and QC parts.
+
+::: {.panel-tabset group="language"}
+
+## Python
+Let's use the string split function to split apart the province and city. Considering the **GEO** location **"Ottawa-Gatineau, Ontario part, Ontario/Quebec"** and splitting at the ",", we will have to specify that we want to split at the first comma. Also note that location "Census metropolitan area" does not contain province information, so 'None' will appear in that column.
+
+```{python tidy dataset}
+
+# Build the city and province columns by splitting at the first comma - notice the space after the comma - this serves to discard that space
+housing[['city', 'province']] = housing['GEO'].str.split(', ', n=1, expand=True)
+
+
+# Now handle the "Ontario part", "Quebec part" entries
+housing["province"] = housing["province"].str.split(" p").str[0]
+
+housing.head()
+```
+
+## R
+Let's use the separate function to split apart the province and city.  Considering the **GEO** location **"Ottawa-Gatineau, Ontario part, Ontario/Quebec"** and splitting at the "," we can end up with some innaccurate provinces **"Ontario/Quebec"** or destroy the useful location information by removing **"Ontario part"**.
+
+Here are a few options using regular expressions.  Note that most of these give warnings, generally complaining about the **GEO** location  _"Census metropolitan areas"_.  Strategies to split the **GEO** location at commas will result in NA's since this location has no comma.  Those warnings are left in the output below.
+
+```{R}
+# set up city by replacing everything after the first "," with "":
+housing |> mutate(city = str_replace_all(GEO, pattern = "(,\\s).*", replacement ="")) |> 
+  pull(city) |> unique() |> head(16)
+
+#Split everything at the last comma:
+# Separate GEO at a ", ", but if more than one exists find the one which is NOT followed by any characters, then a comma:
+#Notice how this handles the Ontario and Quebec parts of the Ottawa-Gatineau region
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s(?!(.*,))") |> 
+  select(city,  province) |>
+  unique()|> head(16)
+
+#Build the province by splitting at the first comma, then adjusting the province by 
+# handing cases such as "Ontario part, Ontario/Quebec"
+# notice that I'm actually splitting at all commas and allowing anything after the 
+# second comma (where it exists) to be discarded.
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  select(city,  province)|> unique()|> head(16) 
+#note that this leaves in an artifact province :"Ontario/Quebec" from Ottawa-Gatineau 
+# but that is a combo of the Ontario part and the Quebec part
+# that province combo could be replaced with NA and then eliminated later
+# for example:
+
+housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))|>
+  select(city,  province)|> unique()|> head(16) 
+```
+
+:::
+
+#### Preparing for Merging Datasets
+
+Here we rebuild the dataset and sum housing starts within provinces
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python mergeprep housing}
+
+# Drop all data except Housing Starts and Total Units
+# Rename VALUE Housing start so we know what housing parameter we are looking at
+
+housing_starts = housing[(housing["Housing estimates"] == "Housing starts") &
+                  (housing["Type of unit"] == "Total units")]
+
+housing_starts = housing_starts.rename(columns = {"VALUE" : "Housing starts"})
+
+housing_starts["year"] = housing_starts["REF_DATE"].dt.year
+housing_starts["month"] = housing_starts["REF_DATE"].dt.month
+
+housing_starts = housing_starts.groupby(["province",
+                               "year",
+                               "month",
+                               "REF_DATE"],
+                               as_index = False,)["Housing starts"].sum()
+
+housing_starts.head()
+
+```
+
+```{python mergeprep unemployment}
+
+unemployment = provinces[["GEO", "REF_DATE", "VALUE", "month", "year", "decade"]]
+
+
+unemployment = unemployment.rename(columns = {"VALUE" : "unemployment rate", 
+                                              "GEO" : "province"})
+
+unemployment.head()
+
+```
+
+```{python merge}
+
+
+merged = pd.merge(unemployment, housing_starts, on = ['province', 'year', 'month', 'REF_DATE'])
+
+merged.head()
+
+```
+
+## R
+```{R}
+# We will keep the final strategy above, but also mutate in the
+# Housing.estimates  and Type.of.unit
+# select fewer variables, to clean it up prior to merging datasets
+housing.starts = housing |> separate(GEO, into  = c("city","province"), sep = ",\\s") |> 
+  mutate(province = str_replace_all(province, pattern = " part", replacement = ""))|>
+  mutate(province = str_replace_all(province, pattern = "Ontario/Quebec", replacement = "NA"))|>
+  rename(housing.starts = VALUE)|> # so I'm not confused later
+  filter(Housing.estimates == "Housing starts")|>
+  filter(Type.of.unit == "Total units") |>
+  filter(!is.na(province))|> # get rid of census metropolitan areas
+  mutate(date = parse_date_time(REF_DATE, orders = "Y-m"))|> # convert from character date to date format.
+  separate(REF_DATE, into = c("year","month"),sep = "-")|>#split year-month into year  month columns
+  mutate(year = as.numeric(year))|>
+  mutate(month = as.numeric(month))|>
+  group_by(province, year, month, date) |> # look within provinces at a given time
+  summarize(total.housing = sum(housing.starts)) |>
+  ungroup() 
+
+
+
+
+housing.starts |> glimpse()
+```
+
+By default _inner_join_ will merge two datasets based on their common column names. Only rows which appear in both datasets will be kept.
+
+```{R}
+
+both =  unemployment |>
+  select(province, year, month, decade,pandemic, unemployment.rate) |> 
+  inner_join(housing.starts)
+
+
+both |> glimpse()
+```
+
+:::
+
+#### Comparing Unemployment and Housing Starts
+
+Note that there are Prince Edward Island and the territories not represented within the housing starts dataset and therefore are not in the following plots.
+
+In general as unemployment increases, housing starts decrease.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python housing v unemployment plot}
+
+x = list(merged["province"].unique())
+y = y = [1,2,3,4,5,6,7,8,9]
+
+for province, i in zip(x, y):
+    plt.subplot(3,3,i)
+    plt.tight_layout()
+
+    sb.regplot(data = merged[merged["province"] == province],
+                x = "unemployment rate",
+                y = "Housing starts",
+                scatter_kws={'s':1})
+     
+    plt.title(province, fontsize = 8)
+    plt.legend('', frameon = False)
+
+    if province == "Quebec":
+        plt.ylabel("Total housing")
+    else:
+        plt.ylabel("") 
+
+plt.subplots_adjust(top = 0.9)
+plt.suptitle('Regression plots of Housing vs. Unemployment Rate', fontsize=13)
+plt.show();
+```
+
+## R
+```{R}
+
+both |> ggplot(aes(x=unemployment.rate, y =total.housing))+
+  geom_point( aes(colour =  province, group = province),alpha = .1)+#alpha is the transparancy of the points
+  ggpubr::stat_regline_equation()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~province)
+
+
+```
+
+:::
+
+#### Going Further
+
+- Make residual plots for the linear regessions
+- Consider other variables/ relationship, such as CPI from table **18-10-0004-01  Consumer Price Index, monthly, not seasonally adjusted**
+- Consider looking for a time varying trend, subsetting the years, or even multiple regression with a year effect.

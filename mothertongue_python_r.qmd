@@ -1,0 +1,260 @@
+---
+title: "Population by Mother Tongue and Geography - Open Canada"
+date: '2020-08-10'
+author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
+execute:
+  render: auto
+  slug: population-data-population-by-mother-tongue-and-geography-open-canada
+categories: ["Census Data","Time Series", "Software:Python","Software:R","Open Canada","zipfiles", "csv files"]
+subtitle: ''
+summary: 'The dataset records the population and percentage by three different types of mother tongue (English, French, and non-official languages) in the regions of Canada and all Canadian provinces from 1951 to 2016.'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Data Provider
+
+Statistics Canada's [Open Government](https://open.canada.ca/en) is a free and open-access platform  containing over 80,000 datasets across diverse subjects. The purpose of sharing all data documents with the public is to remain transparent and accessible. 
+
+Dataset can be discovered by multiple searching methods [here](https://open.canada.ca/en/open-data), such as [Browse by subject](https://open.canada.ca/en/open-data), [Open Government Portal](https://search.open.canada.ca/en/od/?sort=last_modified_tdt%20desc&page=1&search_text=&od-search-portal=Open%20Data&_ga=2.198521263.1872662645.1597195650-535176367.1594143568) for direct keywords search, [Open Maps](https://open.canada.ca/en/open-map) which contains geospatial information data, [Open Data Inventory](https://open.canada.ca/en/search/inventory) from the government of Canada organization, [Apps Gallery](https://open.canada.ca/en/apps) for representing those mobile and web-based application data, [Open Data 101](https://open.canada.ca/en/open-data-principles) for letting people know how to use dataset and so on.
+
+***
+
+## Population by mother tongue and geography from 1951 to 2016
+
+This census dataset tabulates the population and percentage by three different types of mother tongue (English, French, and non-official languages) from 1951 to 2016.
+
+The dataset and its metadata file which contains detailed variable descriptions have been stored together as a zip file [here](https://open.canada.ca/data/en/dataset/5347fcac-feb2-4f17-a5f9-cbc9ecbd99a4).  Alternatively, customized tables are available [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1510000301).
+
+## Libraries
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python plib}
+import requests, zipfile, io
+import tempfile as tf
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+```
+## R
+```{r rlib, message = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(gridExtra) #for grid.arrage() function 
+
+```
+
+:::
+
+### Data Acquisition
+
+The following code is used to download and organize the original dataset, and separate it into two by groups of population and percentage.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python pdataset}
+
+# Download the zip file of population by mother tongue
+
+temp = tf.TemporaryFile()
+url = "https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip"
+r = requests.get(url)
+temp = zipfile.ZipFile(io.BytesIO(r.content))
+file_list = temp.namelist()
+print(file_list)
+
+```
+```{python pdataset_tidying}
+
+# Reading the csv file by name
+tongue = pd.read_csv(temp.open('15100003.csv'))
+
+# Organize the dataset and split it by measurement methods
+tongue = tongue.rename(columns = {"GEO" : "location",
+                                  "REF_DATE" : "year"})
+tongue = tongue[["year",
+                 "location",
+                 "Mother tongue",
+                 "Statistics",
+                 "VALUE"]]
+
+tongue = pd.pivot_table(tongue, 
+                        values = "VALUE",
+                        index = ["year",
+                                 "location", 
+                                 "Mother tongue"], 
+                                 columns = "Statistics").reset_index()
+```
+
+
+
+## R
+```{r rdataset, message = FALSE, warning = FALSE}
+
+# Download the zip file of population by mother tongue
+temp <- tempfile()
+download.file("https://www150.statcan.gc.ca/n1/tbl/csv/15100003-eng.zip",temp)
+(file_list <- as.character(unzip(temp, list = TRUE)$Name))
+tongue <- read_csv(unz(temp, "15100003.csv"))
+unlink(temp) # Delete temp file
+
+# Organize the dataset and split it by measurement methods
+tongue = tongue |> rename_all(make.names) |>
+         rename(year = REF_DATE, location = GEO)|>
+         select(year, location, Mother.tongue, Statistics, VALUE) |> 
+         pivot_wider(names_from= Statistics, values_from=VALUE)
+
+```
+
+:::
+
+### Percentage changes of different mother-tongue speakers in Canada
+
+The following code plots count, percentage, and percent change in mother tongue speakers in Canada.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python pcanada}
+
+canada = tongue[(tongue["location"] == "Canada") & 
+                (tongue["Mother tongue"] != "Total, mother tongue")]
+
+sb.set_style("darkgrid")
+
+can_plot_1 = sb.lineplot(data = canada,
+                                x = "year", 
+                                y = "Number", 
+                                hue = "Mother tongue")
+can_plot_1.set_title("Number of speakers of mother tongues in Canada")
+plt.show();
+
+```
+
+``` {python pcanada2}
+
+plt.clf()
+can_plot_2 = sb.lineplot(data = canada, 
+                         x = "year", 
+                         y = "Percentage", 
+                         hue = "Mother tongue")
+can_plot_2.set_title("Percentage of speakers of mother tongues in Canada")
+plt.show();
+
+```
+
+``` {python pcanada 3}
+# Suppress warning about chained indexing 
+pd.options.mode.chained_assignment = None 
+
+
+canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_change()
+
+plt.clf()
+can_plot_3 = sb.lineplot(data = canada, 
+                         x = "year", 
+                         y = "Percentage Change",
+                         hue = "Mother tongue")
+can_plot_3.set_title("Percentage change over 4 years "
+                     "for different mother tongues in Canada")
+plt.show();
+```
+
+## R
+```{r rcanada, message = FALSE}
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
+ggplot( aes(x = year, y = Number, group = Mother.tongue)) +
+  labs(title = "Number of speakers of mother tongues in Canada") +
+  geom_line(aes(color = Mother.tongue))
+
+
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
+ggplot( aes(x = year, y = Percentage, group = Mother.tongue)) +
+  labs(title = "Percentage of speakers of mother tongues in Canada") +
+  geom_line(aes(color = Mother.tongue))
+
+
+tongue |> subset(location == "Canada" & Mother.tongue != "Total, mother tongue") |>
+  group_by(Mother.tongue) |> 
+  mutate(pct_change = (Percentage/lag(Percentage) - 1) * 100) |>
+  na.omit() |>
+ggplot( aes(x = year, y = pct_change, group = Mother.tongue)) +
+  labs(y = "Percentage Change", title = "Percentage change over 4 years for different mother tongues in Canada") +
+  geom_line(aes(color = Mother.tongue))
+
+```
+
+:::
+
+> Summary
+
+* The upper-panel graph shows the population of different language speakers in Canada from 1961 to 2016. We can see the time series of all different mother-tongue speakers are increasing.
+
+* The second-panel graph of [Percentage of different mother tongue speaker in Canada] tells us the proportion of French speakers has decreased steadily, while the proportion of non-official language speakers has grown.
+
+
+### Percentage changes of mother-tongue speakers in different provinces
+
+After comparing changes in mother tongue, the following code focuses on the changes within provinces. 
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python pother language 1}
+# Plot the French and non-official language speakers proportion among all provinces in Canada
+plt.clf()
+not_eng_plot_1 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
+                                    (tongue["Mother tongue"] == "French")]), 
+                             x = "year", 
+                             y = "Percentage",
+                              hue = "location")
+not_eng_plot_1.set_title("Percentage of French "
+                         "mother tongues in different provinces")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+plt.show();
+
+```
+
+``` {python pother language 2}
+
+plt.clf()
+not_eng_plot_2 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
+                                    (tongue["Mother tongue"] == "Non-official languages")]),
+                             x = "year",
+                             y = "Percentage",
+                             hue = "location")
+not_eng_plot_2.set_title("Percentage of non-official "
+                         "language mother tongues in different provinces")
+plt.legend(bbox_to_anchor=(1.05, 1),
+           loc='upper left', 
+           borderaxespad=0)
+plt.show();
+
+```
+
+## R
+```{r rother language}
+
+# Plot the French and non-official language speakers proportion among all provinces in Canada 
+tongue |> subset(location != "Canada" & Mother.tongue == "French")|>
+ggplot(aes(x = year, y = Percentage, group = location)) +
+  labs(y = "Percentage", title = "Percentage of French  mother tongues in different provinces") +
+  geom_line(aes(color = location))
+
+tongue |> subset(location != "Canada" & Mother.tongue == "Non-official languages")|> 
+ggplot( aes(x = year, y = Percentage, group = location)) +
+  labs(y = "Percentage", title = "Percentage of non-official language mother tongues in different provinces") +
+  geom_line(aes(color = location))
+
+```
+
+:::
