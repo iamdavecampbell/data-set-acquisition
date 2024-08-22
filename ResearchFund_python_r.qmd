@@ -1,7 +1,7 @@
 ---
 title: "Ontario Research Fund - Research Excellence Program - Open Ontario"
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
-date: '2020-08-18'
+date: '2024-08-18'
 execute:
   render: auto
   slug: education-data-ontario-research-fund-research-excellence-ptrogram-data-catalogue-frome-governmnet-of-ontario
