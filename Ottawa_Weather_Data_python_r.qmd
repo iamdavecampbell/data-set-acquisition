@@ -224,35 +224,36 @@ plt.show();
 ## R
 ```{r rJuly max and Jan min plot}
 
-data_daily |> 
+MeanOfJulyMax = data_daily |> 
   filter(Month == "07") |> 
   group_by(Year) |> 
-  summarise(MeanOfJulyMax=mean(Max.Temp...C.),
-            MeanOfJanMin=mean(Min.Temp...C.)) |>
-  ungroup() |>
+  summarise(MeanOfJulyMax=mean(Max.Temp...C.)) |>
+  ungroup() 
+
+MeanOfJanMin = data_daily |> 
+  filter(Month == "01") |> 
+  group_by(Year) |> 
+  summarise(MeanOfJanMin=mean(Min.Temp...C.)) |>
+  ungroup() 
+
+
+
 ggplot()+
-  geom_line(aes(x=Year,y=MeanOfJulyMax , color="red"))+
-  geom_line(aes(x=Year,y=MeanOfJanMin,color="blue"))+
+  geom_line(data = MeanOfJulyMax, aes(x=Year,y=MeanOfJulyMax , color="red"))+
+  geom_line(data = MeanOfJanMin,  aes(x=Year,y=MeanOfJanMin,color="blue"))+
   ggtitle("Means of the July Max and Jan Min Temperatures")+
   labs(x = "Year", y="degrees C")+
   theme(legend.position = "none") 
 
 
 
-
-data_daily |> 
-  filter(Month == "07") |> 
-  group_by(Year) |> 
-      summarise(MeanOfJulyMax=mean(Max.Temp...C.),
-                MeanOfJanMin=mean(Min.Temp...C.)) |>
-  ungroup() |>
-ggplot()+
-  geom_point(aes(x=MeanOfJulyMax,y=MeanOfJanMin))
+# merge the January minimum and the July maximum by matching year
+MeanOfJulyMax |> 
+    left_join(MeanOfJanMin) |>
+    ggplot()+
+    geom_point(aes(x=MeanOfJulyMax,y=MeanOfJanMin, colour = Year), size = 5)
 
 
-
-
-weather =  data_daily
 ```
 
 :::
