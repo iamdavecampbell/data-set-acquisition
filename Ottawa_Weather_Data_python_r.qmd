@@ -25,7 +25,7 @@ You also can [search](https://climate.weather.gc.ca/historical_data/search_histo
 
 ***
 
-## Climate Data: Daily Weather Report for the first half of 2020
+## Climate Data: Daily Weather Report
 
 This dataset shows the basic [historical weather data](https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=53001&Year=2020&Month=6&Day=1&timeframe=2&submit=Download+Data) in a specific climate station.  Both climate ID and TC ID are used to identify meteorological reports, one is assigned by Meteorological Service of Canada, another is assigned by Transport Canada. More glossary can be found [here](https://climate.weather.gc.ca/glossary_e.html#stnOper).
 
@@ -80,7 +80,7 @@ The weather station, year, and time resolution are all defined by the url as a R
 
 base_url = ["https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=4333&Year=", "&Month=1&Day=1&timeframe=2&submit=Download+Data"]
 
-for year in range(1970, 2021):
+for year in range(1970, 2023):
     r = requests.get(base_url[0] + str(year) + base_url[1])
 
     with open("Data/Ottawa" + str(year) + "-daily.csv", "wb") as file:
@@ -109,7 +109,7 @@ base_url = c("https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format
 #timeframe=3 = monthly
 
 destfile = list()
-for(year in 1970:2020){
+for(year in 1970:2023){
   download.file(paste0(
                       base_url[1],year,
                       base_url[2]),
