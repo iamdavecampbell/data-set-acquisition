@@ -146,11 +146,18 @@ df["Date/Time"] = pd.to_datetime(df["Date/Time"])
 ## R
 ```{r rload daily data, eval=TRUE,message=FALSE}
 
-files2load = list.files(path = "Data",pattern="daily")
-data_daily=NULL
-for(lp in 1:length(files2load)){
-  data_daily = rbind(data_daily,read_csv(paste0("Data/",files2load[lp])))
+files2load = list.files(path="Data",pattern="daily")
+# Big loop to load and append all files,
+# but first extract the data types from the most year:
+data_daily = read_csv(paste0("Data/",tail(files2load,1)))
+columntypes = data_daily %>% summarise_all(class) |> as.list()
+# then use bind_rows to ensure all columns are properly aligned:
+for(year in 1:(length(files2load)-1)){
+  data_daily = bind_rows(data_daily,
+                         read_csv(paste0("Data/",files2load[year]),
+                                  col_types = columntypes))
 }
+
 
 ```
 
