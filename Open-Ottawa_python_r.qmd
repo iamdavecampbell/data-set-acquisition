@@ -5,7 +5,7 @@ date: '2024-07-10'
 slug: 
 execute:
   render: auto
-categories: ["Ottawa", "Spatial Data Set", "Open Street Maps", "csv files"]
+categories: ["Ottawa", "Spatial Data Set", "Open Street Maps", "csv files","Software:Python","Software:R"]
 subtitle: ''
 summary: 'Retrieving Open Ottawa Data and producing plots using Open Street Maps'
 output: html_document
@@ -140,7 +140,7 @@ After initially plotting all points, I noticed that there was a service request 
 
 service_geo = gp.GeoDataFrame(
     service_locations, geometry=gp.points_from_xy(service_locations["Longitude"],
-    service_locations["Latitude"]), crs="epsg:4386")
+    service_locations["Latitude"]))
 
 service_geo[service_geo["Latitude"].str.contains("45")].explore()
 
@@ -236,7 +236,7 @@ head(traffic)
 
 traffic_geo = gp.GeoDataFrame(
     traffic, geometry=gp.points_from_xy(traffic["Longitude"],
-    traffic["Latitude"]), crs="epsg:4386")
+    traffic["Latitude"]))
 
 traffic_geo.explore()
 

@@ -27,7 +27,7 @@ You also can [search](https://climate.weather.gc.ca/historical_data/search_histo
 
 ## Climate Data: Daily Weather Report
 
-This dataset shows the basic [historical weather data](https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=53001&Year=2020&Month=6&Day=1&timeframe=2&submit=Download+Data) in a specific climate station.  Both climate ID and TC ID are used to identify meteorological reports, one is assigned by Meteorological Service of Canada, another is assigned by Transport Canada. More glossary can be found [here](https://climate.weather.gc.ca/glossary_e.html#stnOper).
+This dataset shows the basic [historical weather data](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html) in a specific climate station.  Both climate ID and TC ID are used to identify meteorological reports, one is assigned by Meteorological Service of Canada, another is assigned by Transport Canada. More glossary can be found [here](https://climate.weather.gc.ca/glossary_e.html#stnOper).
 
 The daily climate data in Ottawa is summarized via the Max, Min, and Mean Temperatures, as well as Heat and Cool Degree Days.  Data is also collected for the speed and direction of maximum gust when the maximum gust speed exceeds 29 km/h. The data source can be downloaded in CSV form, you can modify the code to download monthly data files, with additional instructions in the "readme.pdf" file  [here](https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH).  
 
@@ -144,7 +144,7 @@ df["Date/Time"] = pd.to_datetime(df["Date/Time"])
 ```
 
 ## R
-```{r rload daily data, eval=TRUE,message=FALSE}
+```{r rload daily data, eval=TRUE,message=FALSE, warning=FALSE}
 
 files2load = list.files(path="Data",pattern="daily")
 # Big loop to load and append all files,
@@ -298,7 +298,7 @@ plt.show();
 ```
 
 ## R
-```{r rloadottawa monthly data}
+```{r rloadottawa monthly data, message = FALSE, warnings = FALSE}
 # Find name of the monthly csv file in the "Data" folder if you don't remember it from above
 file2load = list.files("Data",pattern="monthly")
 # Load and then convert all column names to nicer R syntax:
@@ -325,7 +325,8 @@ ggplot(
 - Temperature units are in Celcius.
 - Monthly values can be derived from daily ones.
 - The speed of maximum gust is in kilometers per hour.
-- Heat degree days is the number of degrees Celsius that the mean temperature is less than 18 Celcius, the cool degree days is a number of degrees Celsius that the mean temperature is equal to and above 18 Celcius.
+- Heating degree days are the number of degrees Celsius that the mean temperature is below 18 Celcius.  This is a measure of heating requirement on that day. 
+- Cooling degree days are the number of degrees Celsius that the mean temperature is above 18 Celcius.  This is a measure of the amount of cooling required on that day.
 - The direction of the maximum gust is in tens of degrees, 9 means 90 degrees, which is an east wind, and 36 means 360 degrees implies a wind blowing from the geographic north pole.
 - Other appeared letters like "M" indicates a missing value, "^" indicates the value displayed is based on incomplete data. All legend is shown at the end of the data source page.
 

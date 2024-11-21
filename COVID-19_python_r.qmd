@@ -5,7 +5,7 @@ date: '2024-08-22'
 execute:
   render: auto
 slug: covid-data-covid-19-govenrmnent-of-canada-and-jhu-csse
-categories: [" Regression","Time Series","Health Canada", "csv files","Software:Python","Software:R"]
+categories: ["Time Series","Health Canada", "csv files","Software:Python","Software:R"]
 subtitle: ''
 summary: 'The COVID-19 data from the Government of Canada provide detailed information about COVID-19 data in time-series and aggregated forms.'
 lastmod: '2020-07-24T18:48:09-04:00'

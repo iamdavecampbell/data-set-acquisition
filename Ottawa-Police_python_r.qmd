@@ -74,7 +74,7 @@ The location of each reported shooting is given in the EPSG:2951 coordinate syst
 ```{python pshootings map}
 
 geo_df = gp.GeoDataFrame(
-    shootings, geometry=gp.points_from_xy(shootings["x"], shootings["y"]), crs="epsg:2951")
+    shootings, geometry=gp.points_from_xy(shootings["x"], shootings["y"]))
 
 geo_df.explore()
 ```
@@ -134,7 +134,7 @@ bike_thefts.head()
 ```{python pexpensive bicycle thefts map}
 
 geo_df = gp.GeoDataFrame(
-    bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]), crs="epsg:2951")
+    bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]))
 
 geo_df[geo_df["Bicycle Value"] > 2000].explore()
 
@@ -195,7 +195,7 @@ vehicle_theft["Vehicle Make"].unique()
 ```{python pstolen volkswagons map}
 
 vehicle_theft_geo = gp.GeoDataFrame(
-    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]), crs="epsg:2951")
+    vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]))
 
 vehicle_theft_geo[vehicle_theft_geo["Vehicle Make"] == "VOLK"].explore()
 
@@ -299,7 +299,7 @@ crime$Reported_Year |> unique()
 ```{python pbreak and enters 2023 map}
 
 crime_geo = gp.GeoDataFrame(
-    crime, geometry=gp.points_from_xy(crime["x"], crime["y"]), crs="epsg:2951")
+    crime, geometry=gp.points_from_xy(crime["x"], crime["y"]))
 
 crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
           (crime_geo["Reported_Year"] == 2023)].explore()
