@@ -65,7 +65,7 @@ The following code is used to download the dataset.
 ```{python pdataset,  cache = TRUE}
 
 # Download the csv file AND change the data format of the year
-data_download = pd.read_csv("https://files.ontario.ca/opendata/black_bear_2019.csv")
+data_download = pd.read_csv("https://data.ontario.ca/dataset/c14b7d2b-7c42-4727-92c6-99f140ed3a57/resource/7dd6328e-74cc-4291-a041-2345cf7c6186/download/black_bear_2023.csv")
 
 total = data_download[data_download.WMU == "Total"]
 data = data_download[data_download.WMU != "Total"]
@@ -75,7 +75,7 @@ data = data_download[data_download.WMU != "Total"]
 ## R
 ```{r rdataset, message = FALSE, warning = FALSE, cache = TRUE}
 # Download the csv file AND change the data format of the year
-data_download <- read_csv("https://files.ontario.ca/opendata/black_bear_2019.csv")
+data_download <- read_csv("https://data.ontario.ca/dataset/c14b7d2b-7c42-4727-92c6-99f140ed3a57/resource/7dd6328e-74cc-4291-a041-2345cf7c6186/download/black_bear_2023.csv")
 
 total <- data_download |> rename_all(make.names)|> filter(WMU =="Total")
 data <- data_download |> rename_all(make.names)|> filter(WMU !="Total")
