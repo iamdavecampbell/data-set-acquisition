@@ -1,0 +1,30 @@
+# History and session files
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+
+# RStudio project files
+.Rproj.user/
+
+# Quarto output
+*.html
+*.pdf
+*.docx
+
+# Quarto cache and logs
+_cache/
+_quarto/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.Renviron
+*.key
+*.pem
+
+# Ignore all folders
+*/

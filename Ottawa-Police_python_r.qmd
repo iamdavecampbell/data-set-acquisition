@@ -16,8 +16,21 @@ image: 'ottawa-police-preview-image.png'
 
 knitr::opts_chunk$set(echo = TRUE)
 
+# Load the 'reticulate' package to interface with Python
+library(reticulate)
+
+# Use the virtual environment specified by the RETICULATE_VIRTUALENV_PATH environment variable
+# This ensures that the correct Python environment is used for running Python code
+use_virtualenv(Sys.getenv("RETICULATE_VIRTUALENV_PATH"), required = TRUE)
+
 ```
 
+```{python pysetup, include=FALSE}
+# disable SSL warnings
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+```
 
 ## Data Provider
 
@@ -36,6 +49,13 @@ import geopandas as gp # Useful for manipulating geographic data in dataframes
 import mapclassify # Geopandas uses these to produce plots on Open Street Maps 
 import folium # Geopandas uses these to produce plots on Open Street Maps 
 
+# Import the GIS class to connect to ArcGIS Online or Enterprise
+# This provides authentication and access to your content (maps, layers, services)
+from arcgis.gis import GIS
+
+# Import FeatureLayer to interact with a specific feature layer (vector data with attributes)
+# This allows you to query, read, and update data in a hosted layer
+from arcgis.features import FeatureLayer
 
 ```
 
@@ -46,25 +66,200 @@ library(leaflet)
 library(sf)
 library(tidyverse)
 
-```
+library(arcgis)        # Main package for interacting with ArcGIS REST APIs (e.g., get token, query layers)
+library(arcgisutils)   # Helper functions for working with ArcGIS (e.g., getting portal info, building URLs)
+library(httr)          # For making HTTP requests (used under the hood or for custom API calls)
+library(jsonlite)      # To parse JSON responses from the ArcGIS REST API
 
+
+```
 :::
 
-A word about retrieving Ottawa Police Data.
+### Retrieving Ottawa Police Data using City of Ottawa's API
 
-Ottawa Police datasets are available to download as CSVs, however the download URL is generated on demand and expires shortly, within a few days or sometimes even hours. Also, the availability of dataset csv download is somewhat tenuous, and you may find that particular dataset is unavailable for download at a given time.  For this reason, it is recommended that the dataset of interest be downloaded into a working directory. It can then be read using read_csv directly from that file. Errors may occur if a download url is passed directly to read_csv.
+To retrieve OPS (Ottawa Police Service) data, we can write a helper function that uses the ArcGIS API, which is where the City of Ottawa stores its datasets. This method allows us to search the entire ArcGIS resource and query by owner, data type, keywords, and more. Moreover, this approach makes the code reproducible and easily reusable in the future, as we won't have to worry about static URLs that may change, links that are generated on demand, or manual updates whenever datasets are moved or updated. Let us now look at an example in both Python and R to see how easy it becomes to search and retrieve OPS data dynamically.
 
+::: {.panel-tabset group="language"}
+## Python
+
+```{python data}
+
+# Connect anonymously to the public ArcGIS Online portal by creating GIS object. 
+# See ArcGIS documentation for details
+gis = GIS("https://www.arcgis.com", anonymous=True)
+
+# This method searches on ArcGIS Online with the provided query.
+# In this case we filter data owned and provided by Ottawa Police Service 
+# See links to documentation below
+search_items = gis.content.search(query="owner:OttawaPoliceService", item_type="Feature Layer", max_items=15)
+                                
+items_dict = {} # Store search results in a dictionary                                
+
+# Then we can print maximum of 15 results as we specified above with the Feature Layer type      
+if search_items is not None:
+  for item in search_items:
+    if item.url: # Check if item has RestAPI Url as it will be needed to get data in the future
+      print(f"Found dataset: {item.title}\nURL: {item.url}")
+      
+      # Check if layers/tables exist and are not empty
+      if hasattr(item, 'layers') and item.layers is not None:
+        for layer in item.layers:
+          items_dict[item.title] = layer.url
+          print(f" - Layer URL: {layer.url}\n")
+      
+      if hasattr(item, 'tables') and item.tables is not None:
+        for table in item.tables:
+          items_dict[item.title] = table.url
+          print(f" - Table URL: {table.url}\n")
+print(items_dict)
+```
+
+-   [GIS](https://developers.arcgis.com/python/guide/using-the-gis/) : represents the GIS, either ArcGIS Online or an ArcGIS Portal
+-   [GIS.content.search](https://developers.arcgis.com/python/latest/guide/accessing-and-creating-content/): Accessing and creating content
+
+## R
+Note: While paid tools like ArcGIS Pro and ArcPy offer additional features, this approach provides the essential functionality for most tasks and is perfect for learning or small-scale projects.
+
+If you're working with R, you’ll need to create a free ArcGIS account and enter your credentials in your environment variables (such as .env or .Renviron) for authentication. This way, your sensitive data like username and password won't be hardcoded into your code, keeping it secure and flexible.
+
+```{r arcgis}
+
+# Set environment variables from .Renviron
+Sys.setenv(
+  ARCGIS_USER = Sys.getenv("ARCGIS_USER"),
+  ARCGIS_PASSWORD = Sys.getenv("ARCGIS_PASSWORD")
+)
+
+token_response <- auth_user(
+  username = Sys.getenv("ARCGIS_USER"),     # Get ArcGIS username from environment variable
+  password = Sys.getenv("ARCGIS_PASSWORD"), # Get ArcGIS password from environment variable
+  host = arc_host(),                        # Specify the ArcGIS host URL (ArcGIS Online or Enterprise)
+  expiration = 300                          # Set token expiration time (in seconds)
+)
+
+```
+
+After that, you should get a token response with expiry date, token_type, arcgis_host etc.
+
+We will use this token in the code below.
+This code authenticates and performs a search for ArcGIS services owned by a specific organization (e.g., OttawaPoliceService) using the ArcGIS REST API. It sends a GET request to search for services, filtering the results to include only those related to FeatureServer (you may include others like MapServer, ImageServer, GPServer etc). The response is parsed to extract the service URLs and names. The code then filters the services, keeping only those related to feature layers and tables (FeatureServer). It then loops through these services, sending another GET request to retrieve detailed service information. For each service, it extracts and prints the names and IDs of the layers and tables, saving their URLs in a data.frame called saved_layers for future use. The purpose is to search, extract, and store information about ArcGIS services and their layers/tables for later retrieval.
+
+```{r arcgis rshootings}
+# Example: Search with token
+search_url <- "https://www.arcgis.com/sharing/rest/search"
+
+token <- token_response$access_token
+
+params <- list(
+  f = "json",
+  q = "owner:OttawaPoliceService",
+  num = 10,
+  sortField = "relevance",
+  sortOrder = "desc",
+  token = token  # Add your token here
+)
+
+response <- httr::GET(url = search_url, query = params)
+
+# Parse response
+content_list <- jsonlite::fromJSON(content(response, "text", encoding = "UTF-8"))
+
+# Only keep service URLs/names
+service_urls <- content_list$results$url
+names_urls <- content_list$results$name
+
+# 2. Find only service_urls with "FeatureServer"
+keep_idx <- grepl("FeatureServer", service_urls, fixed = TRUE)
+
+# 3. Use same index to filter both
+service_urls <- service_urls[keep_idx]
+names_urls <- names_urls[keep_idx]
+
+# Store Layers/Tables based on search results to retrieve later
+saved_layers <- data.frame(
+  name = character(),
+  url = character(),
+  stringsAsFactors = FALSE
+)
+
+for (i in seq_along(service_urls)) {
+  url <- service_urls[i]
+  base_name <- names_urls[i]  # Get the matching name
+  
+  cat("\nWorking on URL:", url, "\n")
+  
+  response <- GET(url, query = list(f = "json"))
+  if (response$status_code != 200) {
+    cat("  Failed request.\n")
+    next
+  }
+  
+  service_info <- fromJSON(content(response, "text", encoding = "UTF-8"))
+  
+  # For layers
+  if (!is.null(service_info$layers) && is.data.frame(service_info$layers) && nrow(service_info$layers) > 0) {
+    cat("  Layers:\n")
+    for (i in 1:nrow(service_info$layers)) {
+      layer <- service_info$layers[i, ]
+      layer_url <- paste0(url, "/", layer$id)
+      
+      cat(sprintf("   - %s (id: %d)\n", layer$name, layer$id))
+      
+      # Save to list
+      saved_layers <- rbind(saved_layers, data.frame(
+        name = base_name,
+        url = layer_url,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  
+  # For tables
+  if (!is.null(service_info$tables) && is.data.frame(service_info$tables) && nrow(service_info$tables) > 0) {
+    cat("  Tables:\n")
+    for (i in 1:nrow(service_info$tables)) {
+      table <- service_info$tables[i, ]
+      table_url <- paste0(url, "/", table$id)
+      
+      cat(sprintf("   - %s (id: %d)\n", table$name, table$id))
+      
+      # Save to list
+      saved_layers <- rbind(saved_layers, data.frame(
+        name = base_name,
+        url = table_url,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+}
+
+print(saved_layers)
+
+```
+:::
 ### Shootings 
 
 ::: {.panel-tabset group="language"}
-
 ## Python
+
 ```{python pshootings data}
 
-#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+# Get the URL of the "Shootings Open Data" layer from the dictionary
+layer_url = items_dict["Shootings Open Data"]
 
-shootings = pd.read_csv("Shootings_Open_Data_3086844035331583488.csv")
+# Create a FeatureLayer object to interact with the layer
+layer = FeatureLayer(layer_url)
 
+# Query all features from the layer as a Spatial DataFrame
+shootings = layer.query(where="1=1", out_fields="*", as_df=True)
+
+# Extract the 'x' coordinate from the geometry (SHAPE)
+shootings['x'] = shootings['SHAPE'].apply(lambda geo: geo['x'])
+
+# Extract the 'y' coordinate from the geometry (SHAPE)
+shootings['y'] = shootings['SHAPE'].apply(lambda geo: geo['y'])
+
+# Display the first few rows of the DataFrame
 shootings.head()
 
 ```
@@ -82,11 +277,11 @@ geo_df.explore()
 ## R
 ```{r rshootings dataset}
 
-#https://data.ottawapolice.ca/datasets/aeb09d77912246139014516c8eeefcd9_0/about
+# print(saved_layers$url[saved_layers$name == "Shootings_Open_Data"])
 
-csv_link <- "Shootings_Open_Data_3086844035331583488.csv"
+layer <- arc_open(saved_layers$url[saved_layers$name == "Shootings_Open_Data"])
 
-shootings <- read_csv(csv_link)
+shootings <- arc_select(layer, fields = "*", where_clause = "1=1")
 
 head(shootings)
 
@@ -122,10 +317,13 @@ leaflet() |>
 ## Python
 ```{python pbicycle thefts dataset}
 
-#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
+layer_url = items_dict["Bike Theft Open Data"]
+layer = FeatureLayer(layer_url)
 
-bike_thefts = pd.read_csv("Bike_Theft_Open_Data_3884822422354997826.csv")
+bike_thefts = layer.query(where="1=1", out_fields="*", as_df=True)
 
+bike_thefts['x'] = bike_thefts['SHAPE'].apply(lambda geo: geo['x'])
+bike_thefts['y'] = bike_thefts['SHAPE'].apply(lambda geo: geo['y'])
 bike_thefts.head()
 
 ```
@@ -136,18 +334,16 @@ bike_thefts.head()
 geo_df = gp.GeoDataFrame(
     bike_thefts, geometry=gp.points_from_xy(bike_thefts["x"], bike_thefts["y"]))
 
-geo_df[geo_df["Bicycle Value"] > 2000].explore()
+geo_df[geo_df["BIKE_VALUE"] > 2000].explore()
 
 ```
 
 ## R
 ```{r rbike thefts dataset}
 
-#https://data.ottawapolice.ca/datasets/eff8a6410ec74136b5f611017e244a4e_0/about
+layer <- arc_open(saved_layers$url[saved_layers$name == "Bike_Theft_Open_Data"])
 
-csv_link <- "Bike_Theft_Open_Data_3884822422354997826.csv"
-
-bike_thefts <- read_csv(csv_link)
+bike_thefts <- arc_select(layer, fields = "*", where_clause = "1=1")
 bike_thefts <- bike_thefts |> rename_all(make.names)
 
 head(bike_thefts)
@@ -156,7 +352,7 @@ head(bike_thefts)
 
 ```{r rexpensive_bike_thefts geo data}
 
-expensive_bike_theftslatlong <- st_as_sf(bike_thefts |> subset(Bicycle.Value > 2000), coords = c("x", "y"), crs = 2951) |> 
+expensive_bike_theftslatlong <- st_as_sf(bike_thefts |> subset(BIKE_VALUE > 2000), coords = c("x", "y"), crs = 2951) |> 
                                 st_transform(crs = 4386 ) |> 
                                 st_coordinates() 
 ```
@@ -174,13 +370,16 @@ leaflet() |>
 ### Motor Vehicle Thefts
 
 ::: {.panel-tabset group="language"}
-
 ## Python
+
 ```{python pmotor vehicle theft data}
 
-#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+layer_url = items_dict["Theft of Motor Vehicle Open Data"]
+layer = FeatureLayer(layer_url)
 
-vehicle_theft = pd.read_csv("Auto_Theft_Open_Data_2158590371504723284.csv")
+vehicle_theft = layer.query(where="1=1", out_fields="*", as_df=True)
+vehicle_theft['x'] = vehicle_theft['SHAPE'].apply(lambda geo: geo['x'])
+vehicle_theft['y'] = vehicle_theft['SHAPE'].apply(lambda geo: geo['y'])
 
 vehicle_theft.head()
 
@@ -188,7 +387,7 @@ vehicle_theft.head()
 
 ```{python pvehicle makes}
 
-vehicle_theft["Vehicle Make"].unique()
+vehicle_theft["VEH_MAKE"].unique()
 
 ```
 
@@ -197,19 +396,16 @@ vehicle_theft["Vehicle Make"].unique()
 vehicle_theft_geo = gp.GeoDataFrame(
     vehicle_theft, geometry=gp.points_from_xy(vehicle_theft["x"], vehicle_theft["y"]))
 
-vehicle_theft_geo[vehicle_theft_geo["Vehicle Make"] == "VOLK"].explore()
+vehicle_theft_geo[vehicle_theft_geo["VEH_MAKE"] == "VOLK"].explore()
 
 ```
 
 ## R
 ```{r rmotor vehicle thefts dataset}
 
-#https://data.ottawapolice.ca/datasets/e5453a203e2a4baeac32ac4e70ce852c_0/about
+layer <- arc_open(saved_layers$url[saved_layers$name == "Auto_Theft_Open_Data"])
 
-csv_link <- "Auto_Theft_Open_Data_2158590371504723284.csv"
-
-vehicle_theft <- read_csv(csv_link)
-
+vehicle_theft <- arc_select(layer, fields = "*", where_clause = "1=1")
 vehicle_theft <- vehicle_theft |> rename_all(make.names)
 
 head(vehicle_theft)
@@ -218,7 +414,7 @@ head(vehicle_theft)
 
 ```{r rstolen volkswagons map}
 
-stolen_volk_latlong <- st_as_sf(vehicle_theft |> subset(Vehicle.Make == "VOLK"), coords = c("x", "y"), crs = 2951) |> 
+stolen_volk_latlong <- st_as_sf(vehicle_theft |> subset(VEH_MAKE == "VOLKSWAGEN"), coords = c("x", "y"), crs = 2951) |> 
                        st_transform(crs = 4386 ) |> 
                        st_coordinates() 
 
@@ -235,25 +431,26 @@ leaflet() |>
 ::: {.panel-tabset group="language"}
 
 ## Python
-```{python pcrime dataset}
+```{python pcrime dataset }
 
-#https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
+layer_url = items_dict["Criminal Offences Open Data"]
+layer = FeatureLayer(layer_url)
 
-crime = pd.read_csv("CrimeMap_YE_-5915901148112462236.csv")
+crime = layer.query(where="1=1", out_fields="*", as_df=True)
+crime['x'] = crime['SHAPE'].apply(lambda geo: geo['x'] if geo and 'x' in geo else None)
+crime['y'] = crime['SHAPE'].apply(lambda geo: geo['y'] if geo and 'y' in geo else None)
 
 crime.head()
+
 ```
 
 ## R
 ```{r rcrime dataset}
 
-#https://data.ottawapolice.ca/datasets/25a533e5e7c945faadf37765639657a5_16/about
+layer <- arc_open(saved_layers$url[saved_layers$name == "Criminal_Offences_Open_Data"])
 
-csv_link <- "CrimeMap_YE_-5915901148112462236.csv"
-
-crime <- read_csv(csv_link)
-
-crime <- crime|> rename_all(make.names)
+crime <- arc_select(layer, fields = "*", where_clause = "1=1")
+crime <- crime |> rename_all(make.names)
 
 head(crime)
 
@@ -268,26 +465,26 @@ Note that this dataset contains over 165,000 records! That is too many to plot o
 ## Python
 ```{python poffences}
 
-crime["Offence_Category"].unique()
+crime["OFF_CATEG"].unique()
 
 ```
 
 ```{python pyear}
 
-crime["Reported_Year"].unique()
+crime["YEAR"].unique()
 
 ```
 
 ## R
 ```{r roffences}
 
-crime$Offence_Category |> unique()
+crime$OFF_CATEG |> unique()
 
 ```
 
 ```{r ryear}
 
-crime$Reported_Year |> unique()
+crime$YEAR |> unique()
 
 ```
 
@@ -301,15 +498,15 @@ crime$Reported_Year |> unique()
 crime_geo = gp.GeoDataFrame(
     crime, geometry=gp.points_from_xy(crime["x"], crime["y"]))
 
-crime_geo[(crime_geo["Offence_Category"] == "Break and Enter") &
-          (crime_geo["Reported_Year"] == 2023)].explore()
+crime_geo[(crime_geo["OFF_CATEG"] == "Break and Enter") &
+          (crime_geo["YEAR"] == 2023)].explore()
 
 ```
 
 ## R
 ```{r rbreak and enters 2023 map}
 
-bande2023latlong <- st_as_sf(crime |> subset(Offence_Category == "Break and Enter" & Reported_Year == 2023), 
+bande2023latlong <- st_as_sf(crime |> subset(OFF_CATEG == "Break and Enter" & YEAR == 2023), 
                     coords = c("x", "y"),
                     crs = 2951) |> 
                     st_transform(crs = 4386 ) |> 
@@ -320,5 +517,4 @@ leaflet() |>
   addMarkers(data = bande2023latlong)
 
 ```
-
 :::
