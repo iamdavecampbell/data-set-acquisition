@@ -16,8 +16,21 @@ image: 'ottawa-police-preview-image.png'
 
 knitr::opts_chunk$set(echo = TRUE)
 
+# Load the 'reticulate' package to interface with Python
+library(reticulate)
+
+# Use the virtual environment specified by the RETICULATE_VIRTUALENV_PATH environment variable
+# This ensures that the correct Python environment is used for running Python code
+use_virtualenv(Sys.getenv("RETICULATE_VIRTUALENV_PATH"), required = TRUE)
+
 ```
 
+```{python pysetup, include=FALSE}
+# disable SSL warnings
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+```
 
 ## Data Provider
 
@@ -36,6 +49,13 @@ import geopandas as gp # Useful for manipulating geographic data in dataframes
 import mapclassify # Geopandas uses these to produce plots on Open Street Maps 
 import folium # Geopandas uses these to produce plots on Open Street Maps 
 
+# Import the GIS class to connect to ArcGIS Online or Enterprise
+# This provides authentication and access to your content (maps, layers, services)
+from arcgis.gis import GIS
+
+# Import FeatureLayer to interact with a specific feature layer (vector data with attributes)
+# This allows you to query, read, and update data in a hosted layer
+from arcgis.features import FeatureLayer
 
 ```
 
@@ -45,6 +65,12 @@ import folium # Geopandas uses these to produce plots on Open Street Maps
 library(leaflet) 
 library(sf)
 library(tidyverse)
+
+library(arcgis)        # Main package for interacting with ArcGIS REST APIs (e.g., get token, query layers)
+library(arcgisutils)   # Helper functions for working with ArcGIS (e.g., getting portal info, building URLs)
+library(httr)          # For making HTTP requests (used under the hood or for custom API calls)
+library(jsonlite)      # To parse JSON responses from the ArcGIS REST API
+
 
 ```
 
