@@ -40,14 +40,14 @@ The original dataset of bears harvested and active hunters and its supporting do
 ::: {.panel-tabset group="language"}
 
 ## Python
-```{python plib,  cache = TRUE}
+```{python plib}
 import pandas as pd 
 import requests
 import seaborn as sb
 import matplotlib as plt
 ```
 ## R
-```{r rlib, message = FALSE, warning = FALSE, cache = TRUE}
+```{r rlib, message = FALSE, warning = FALSE}
 
 library(jsonlite)
 library(latticeExtra)
@@ -57,17 +57,184 @@ library(tidyverse)
 :::
 
 
-### Organizing Dataset
+### Finding the DataStore Resource Id
 
-The following code is used to download the dataset. Rather than reading a static CSV snapshot, both examples use Ontario's CKAN DataStore API. The resource id identifies the black bear hunting activity table, and the pagination loop retrieves all available records.
+The Ontario Data Catalogue uses the [CKAN API](https://data.ontario.ca/about#developers). A CKAN package is a dataset landing page, while a resource is an individual file, table, API-backed data object, or supporting document attached to that dataset.
+
+Before downloading the records, we can use the API to search for the black bear hunting dataset and identify the active CSV resource id needed by the `datastore_search` endpoint.
 
 ::: {.panel-tabset group="language"}
 
 ## Python
-```{python pdataset,  cache = TRUE}
+```{python psearch}
 
-api_url = "https://data.ontario.ca/en/api/3/action/datastore_search"
-resource_id = "7dd6328e-74cc-4291-a041-2345cf7c6186"
+api_base = "https://data.ontario.ca/en/api/3/action"
+search_terms = "black bear hunting activity harvests"
+
+search_response = requests.get(
+    f"{api_base}/package_search",
+    params={
+        "q": search_terms,
+        "rows": 10
+    },
+    timeout=30
+)
+search_response.raise_for_status()
+
+search_results = search_response.json()["result"]["results"]
+
+datasets = pd.DataFrame([
+    {
+        "name": dataset["name"],
+        "title": dataset["title"],
+        "resources": dataset["num_resources"],
+        "modified": dataset["metadata_modified"]
+    }
+    for dataset in search_results
+])
+
+datasets
+
+```
+
+## R
+```{r rsearch, message = FALSE, warning = FALSE}
+
+api_base <- "https://data.ontario.ca/en/api/3/action"
+search_terms <- "black bear hunting activity harvests"
+
+search_url <- paste0(
+  api_base,
+  "/package_search?q=", URLencode(search_terms, reserved = TRUE),
+  "&rows=10"
+)
+
+search_results <- fromJSON(search_url, simplifyDataFrame = TRUE)$result$results
+
+datasets <- search_results |>
+  transmute(
+    name,
+    title,
+    resources = num_resources,
+    modified = metadata_modified
+  )
+
+datasets
+
+```
+:::
+
+The search results include the dataset name `black-bear-hunting-activity-and-harvests`. That name can be passed to `package_show` to retrieve the full metadata for the dataset, including all attached resources.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python presource}
+
+package_name = "black-bear-hunting-activity-and-harvests"
+
+package_response = requests.get(
+    f"{api_base}/package_show",
+    params={"id": package_name},
+    timeout=30
+)
+package_response.raise_for_status()
+
+package = package_response.json()["result"]
+resources = pd.DataFrame(package["resources"])
+
+resource_summary = resources[
+    [
+        "id",
+        "name",
+        "format",
+        "language",
+        "datastore_active",
+        "data_last_updated"
+    ]
+]
+
+resource_summary
+
+```
+
+## R
+```{r rresource, message = FALSE, warning = FALSE}
+
+package_name <- "black-bear-hunting-activity-and-harvests"
+
+package_url <- paste0(
+  api_base,
+  "/package_show?id=", URLencode(package_name, reserved = TRUE)
+)
+
+package <- fromJSON(package_url, simplifyDataFrame = TRUE)$result
+resources <- as_tibble(package$resources)
+
+resource_summary <- resources |>
+  select(
+    id,
+    name,
+    format,
+    language,
+    datastore_active,
+    data_last_updated
+  )
+
+resource_summary
+
+```
+:::
+
+For DataStore API calls, choose a resource where `datastore_active` is `TRUE`. This dataset has English and French CSV resources. The English CSV resource id is the value used in the data download.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python pselect}
+
+datastore_resources = resources[
+    (resources["datastore_active"] == True) &
+    (resources["format"] == "CSV")
+]
+
+english_resource = datastore_resources[
+    datastore_resources["language"] == "english"
+].iloc[0]
+
+resource_id = english_resource["id"]
+
+resource_id
+
+```
+
+## R
+```{r rselect, message = FALSE, warning = FALSE}
+
+datastore_resources <- resources |>
+  filter(datastore_active == TRUE, format == "CSV")
+
+english_resource <- datastore_resources |>
+  filter(language == "english") |>
+  slice(1)
+
+resource_id <- english_resource$id
+
+resource_id
+
+```
+:::
+
+### Organizing Dataset
+
+The following code is used to download the dataset. Rather than reading a static CSV snapshot, both examples use Ontario's CKAN DataStore API. The resource id discovered above identifies the black bear hunting activity table, and the pagination loop retrieves all available records.
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python pdataset}
+
+datastore_search_url = f"{api_base}/datastore_search"
 
 def get_all_records(resource_id, limit=500):
     records = []
@@ -75,7 +242,7 @@ def get_all_records(resource_id, limit=500):
 
     while True:
         response = requests.get(
-            api_url,
+            datastore_search_url,
             params={
                 "resource_id": resource_id,
                 "limit": limit,
@@ -103,17 +270,16 @@ data = data_download[data_download.WMU != "Total"]
 ```
 
 ## R
-```{r rdataset, message = FALSE, warning = FALSE, cache = TRUE}
-api_url <- "https://data.ontario.ca/en/api/3/action/datastore_search"
-resource_id <- "7dd6328e-74cc-4291-a041-2345cf7c6186"
+```{r rdataset, message = FALSE, warning = FALSE}
+datastore_search_url <- paste0(api_base, "/datastore_search")
 
-get_all_records <- function(resource_id, limit = 1000) {
+get_all_records <- function(resource_id, limit = 500) {
   records <- list()
   offset <- 0
 
   repeat {
     page_url <- paste0(
-      api_url,
+      datastore_search_url,
       "?resource_id=", resource_id,
       "&limit=", limit,
       "&offset=", offset
@@ -145,20 +311,17 @@ The data has columns WMU, year, number of active hunters, and the harvest.  All 
 ::: {.panel-tabset group="language"}
 
 ## Python
-```{python,  cache = TRUE}
-# first rows:
+```{python}
+
 total.head()
-# last rows:
-data.tail()
+data.head()
 
 ```
 
 ## R
-```{r, cache = TRUE}
-# first rows:
+```{r}
 head(total)
-# last rows:
-tail(data)
+head(data)
 ```
 
 :::
@@ -170,7 +333,7 @@ The following code plots the number of bears harvested per active hunter in each
 ::: {.panel-tabset group="language"}
 
 ## Python
-```{python pplots,  cache = TRUE}
+```{python pplots}
 
 harvest_hunter_plot = sb.scatterplot(data = data,
                                      x = 'Active Hunters',
@@ -182,7 +345,7 @@ harvest_hunter_plot.set_title("Hunters and Harvest in different WMUs");
 ```
 
 ## R
-```{r rplotss, cache = TRUE}
+```{r rplotss}
 
 ggplot(data, aes(x = Active.Hunters, y = Harvest, colour = WMU))+
   geom_point(show.legend = FALSE)+
