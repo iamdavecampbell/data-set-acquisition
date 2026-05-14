@@ -6,11 +6,11 @@ execute:
     # note that this is a little different from "cache: true"
     jupyter: python3
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
-date: '2024-08-10'
+date: '2026-05-14'
 slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
 categories: ["Regression", "Time Series",  "Open Ontario", "csv files","Software:Python","Software:R"]
 subtitle: ''
-summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year from 2012 to 2018 in different wildlife management unit (WMU).'
+summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year in different wildlife management unit (WMU).'
 output: html_document
 ipynb-shell-interactivity: all
 ---
@@ -227,7 +227,7 @@ resource_id
 
 ### Organizing Dataset
 
-The following code is used to download the dataset. Rather than reading a static CSV snapshot, both examples use Ontario's CKAN DataStore API. The resource id discovered above identifies the black bear hunting activity table, and the pagination loop retrieves all available records.
+The following code is used to download the dataset. Rather than reading a static CSV snapshot, we use Ontario's CKAN DataStore API. The resource id discovered above identifies the black bear hunting activity table, and the pagination loop retrieves all available records.
 
 ::: {.panel-tabset group="language"}
 
@@ -236,7 +236,7 @@ The following code is used to download the dataset. Rather than reading a static
 
 datastore_search_url = f"{api_base}/datastore_search"
 
-def get_all_records(resource_id, limit=500):
+def get_all_records(resource_id, limit=1000):
     records = []
     offset = 0
 
@@ -273,7 +273,7 @@ data = data_download[data_download.WMU != "Total"]
 ```{r rdataset, message = FALSE, warning = FALSE}
 datastore_search_url <- paste0(api_base, "/datastore_search")
 
-get_all_records <- function(resource_id, limit = 500) {
+get_all_records <- function(resource_id, limit = 1000) {
   records <- list()
   offset <- 0
 
@@ -312,16 +312,18 @@ The data has columns WMU, year, number of active hunters, and the harvest.  All 
 
 ## Python
 ```{python}
-
+# view the first rows
 total.head()
-data.head()
-
+# viewthe last rows
+data.tail()
 ```
 
 ## R
 ```{r}
+# view the first rows
 head(total)
-head(data)
+# view the last rows
+tail(data)
 ```
 
 :::
