@@ -8,7 +8,7 @@ execute:
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
 date: '2026-05-14'
 slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
-categories: ["Regression", "Time Series",  "Open Ontario", "csv files","Software:Python","Software:R"]
+categories: ["Regression", "Time Series",  "Open Ontario", "CKAN API","Software:Python","Software:R"]
 subtitle: ''
 summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year in different wildlife management unit (WMU).'
 output: html_document
@@ -61,7 +61,7 @@ library(tidyverse)
 
 The Ontario Data Catalogue uses the [CKAN API](https://data.ontario.ca/about#developers). A CKAN package is a dataset landing page, while a resource is an individual file, table, API-backed data object, or supporting document attached to that dataset.
 
-Before downloading the records, we can use the API to search for the black bear hunting dataset and identify the active CSV resource id needed by the `datastore_search` endpoint.
+Before downloading the records, we can use the API to search for the black bear hunting dataset and identify the active CSV resource id needed by the `datastore_search` endpoint.  Here we'll search for **black bear** and see if we can find the data table identifier.   Search is performed by adding search terms to the `api_base` to construct a url.  We include a `timeout` in the request to avoid waiting forever if our internet (or the API) breaks.  The API returns a json file `search_results` with 10 rows (user defined value) that needs reshaping to make it easier to read the important values.
 
 ::: {.panel-tabset group="language"}
 
@@ -69,7 +69,7 @@ Before downloading the records, we can use the API to search for the black bear 
 ```{python psearch}
 
 api_base = "https://data.ontario.ca/en/api/3/action"
-search_terms = "black bear hunting activity harvests"
+search_terms = "black bear"
 
 search_response = requests.get(
     f"{api_base}/package_search",
@@ -101,7 +101,7 @@ datasets
 ```{r rsearch, message = FALSE, warning = FALSE}
 
 api_base <- "https://data.ontario.ca/en/api/3/action"
-search_terms <- "black bear hunting activity harvests"
+search_terms <- "black bear"
 
 search_url <- paste0(
   api_base,
@@ -124,7 +124,7 @@ datasets
 ```
 :::
 
-The search results include the dataset name `black-bear-hunting-activity-and-harvests`. That name can be passed to `package_show` to retrieve the full metadata for the dataset, including all attached resources.
+The search results include the dataset name `black-bear-hunting-activity-and-harvests`. That name can be passed as the value of `package_show` in the next API call.  The return is again in json format with the full metadata for the dataset, including last modification date, data license information, notes (here in both English and French), keywords all attached resources.  Our goal is to make sure that we obtain the right version of the data by finding the `resource_id` for the table. 
 
 ::: {.panel-tabset group="language"}
 
