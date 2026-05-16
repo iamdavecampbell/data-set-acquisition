@@ -8,7 +8,7 @@ execute:
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
 date: '2026-05-14'
 slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
-categories: ["Regression", "Time Series",  "Open Ontario", "CKAN API","Software:Python","Software:R"]
+categories: ["Regression", "Time Series",  "Open Ontario", "API","Software:Python","Software:R"]
 subtitle: ''
 summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year in different wildlife management unit (WMU).'
 output: html_document

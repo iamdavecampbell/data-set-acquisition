@@ -1,5 +1,5 @@
 ---
-title: 'Libraries for Accessing Statistics Canada Data Tables'
+title: 'Accessing Statistics Canada Data Tables'
 execute:
     # eval: false
     freeze: auto  # re-render only when source changes
@@ -7,10 +7,10 @@ execute:
     # render: auto
     jupyter: python3
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
-date: '2024-08-10'
+date: '2026-05-14'
 slug: socioeconomic-time-series-and-statistics-canada
-categories: ["Census Data","Regression", "Time Series","Software:Python","Software:R","Things that break"]
-summary: 'Using R libraries to acquire socioeconomic data from Statistics Canada Mapper.'
+categories: ["Census Data","Regression", "Time Series","Statistics Canada","Software:Python","Software:R", "Things that break", "API"]
+summary: 'Using Statistics Canada Web Data Service endpoints to acquire socioeconomic data with Python and R.'
 
 ---
 
@@ -30,33 +30,8 @@ Find and extract socio-economic data from Statistics Canada.  In this example we
 
 # Data Provider
 
-Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  The **stats-can** and **cansim** packages provide Python and R APIs respectively for downloading these tables.  See also the 
-[stats-can](https://stats-can.readthedocs.io/en/latest/) or [cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignettes for examples and instructions to pull Statistics Canada datasets.
+Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  Statistics Canada's [Web Data Service](https://www.statcan.gc.ca/en/developers/wds) provides official API endpoints for downloading tables and metadata.  In Python, we can use the WDS API directly with **requests** and **pandas**, rather than relying on a specialized wrapper package.  In R, the **cansim** library is a well maintained API wrapper for downloading these tables.  See also the [cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignette for examples and instructions to pull Statistics Canada datasets in R.
 
-# Installing stats-can and cansim
-
-::: {.panel-tabset group="language"}
-
-## Python
-```{python stats-can library, eval=FALSE}
-
-conda install -c conda-forge stats-can
-# OR
-pip install stats-can
-# code not run for this document.
-```
-
-## R
-```{R cancensus package, eval=FALSE}
-
-install.packages("cansim")
-library(cansim)
-vignette("cansim")
-
-#code not run for this document.
-```
-
-:::
 
 # Basic libraries 
 
@@ -64,8 +39,12 @@ vignette("cansim")
 
 ## Python
 ```{python libraries}
-from stats_can import StatsCan # for pulling Stats Can socioeconomic data
+from pathlib import Path
+from zipfile import ZipFile
+import stats_can
+
 import pandas as pd # for data wrangling
+import requests # for calling Statistics Canada's Web Data Service
 import seaborn as sb # for plotting
 import matplotlib.pyplot as plt # for plot management
 
@@ -85,7 +64,7 @@ library(ggpubr) # for putting a regression equation onto a ggplot figure
 ## Pulling a table
 
 Visit [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=3.1&pickMembers%5B2%5D=4.1&pickMembers%5B3%5D=5.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=1976&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2021&referencePeriods=19760101%2C20210101) for example to see labour force data in html.
-Notice that the StatCan webpage shows the table id, here it is table: 14-10-0287-01.
+Notice that the StatCan webpage shows the table id, here it is table: **14-10-0287-01**.
 
 We'll use that to grab the table.   Be warned that this data table is a csv of around 1 GB in size.   
 
@@ -93,10 +72,51 @@ We'll use that to grab the table.   Be warned that this data table is a csv of a
 
 ## Python
 ```{python}
-sc = StatsCan() # We create a StatsCan Object that will be used to pull data
-data = sc.table_to_df("14-10-0287-01") 
+# Download a full StatCan table ZIP once, cache it locally,
+# and read the data CSV into pandas.
+
+## query the API to obtain the location of the datafile.
+table_id = "14-10-0287-01"
+language="en"
+cache_dir="statcan_cache"
+
+# cache location
+cache_path = Path(cache_dir)
+cache_path.mkdir(exist_ok=True)
+
+# API set up
+product_id = table_id.replace("-", "")[:8]
+api_url = ("https://www150.statcan.gc.ca/t1/wds/rest/"
+      f"getFullTableDownloadCSV/{product_id}/{language}")
+
+# extract the zipfile url from the api response
+response = requests.get(api_url, timeout=30)
+response.raise_for_status()
+payload = response.json()
+zip_url = payload["object"]
+
+zip_path = cache_path / zip_url.split("/")[-1]
+
+if not zip_path.exists():
+    with requests.get(zip_url, stream=True, timeout=120) as response:
+        response.raise_for_status()
+        with zip_path.open("wb") as file:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    file.write(chunk)
+
+with ZipFile(zip_path) as zipped_table:
+    csv_files = [
+        name for name in zipped_table.namelist()
+        if name.endswith(".csv") and "MetaData" not in name 
+        ]
+    with zipped_table.open(csv_files[0]) as file:
+      table = pd.read_csv(file, low_memory=False)
+
+table["REF_DATE"] = pd.to_datetime(table["REF_DATE"], errors="coerce")
+data = table
+
 data.head()
-data.tail()
 ```
 
 ## R
@@ -115,7 +135,7 @@ There are nearly 5 million rows of data!
 ## Make a few plots of Employment statistics
 
 
-Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute sex, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the different data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
+Stat Can tables are structured so that each row has a single value and columns define attributes about that value  Each row of data has a specific attribute Gender, age (**Age.group**), and Location (**GEO**) attributes, for units of the value (**SCALAR_FACTOR**), the specific type of labour force characteristic measured (**Labour.force.characteristics**), and the different data types such as point estimates and (bootstrap) standard errors (**Statistics**), and raw or seasonally adjusted (**Data.type**).  In general this means that we need to filter and reshape the data.  
 
 Let's inventory a few of these columns so that the exact spelling of attributes can be used below in the plots.
 
@@ -168,14 +188,14 @@ Pivoting a data table will spread out a variable into new columns. Sometimes it'
 ```{python employmentprovinces0}
 
 provinces = data[["GEO",
-                  "Sex",
+                  "Gender",
                   "Age group",
                   "Labour force characteristics",
                   "REF_DATE",
                   "VALUE",
                   "Data type"]]
 
-provinces = provinces[(provinces["Sex"] == "Both sexes") &
+provinces = provinces[(provinces["Gender"] == "Total - Gender") &
                       (provinces["GEO"] != "Canada") &
                       (provinces["Labour force characteristics"] == "Unemployment rate") &
                       (provinces["Age group"] == "25 to 54 years") &
@@ -183,7 +203,7 @@ provinces = provinces[(provinces["Sex"] == "Both sexes") &
 
 
 pivoted = pd.pivot_table(provinces,
-                         index = ["Sex",
+                         index = ["Gender",
                                   "Age group",
                                   "Labour force characteristics",
                                   "REF_DATE"],
@@ -202,8 +222,8 @@ I will need to filter the data so let's start there.  Here we go right from sele
 
 ```{R, employmentProvinces0}
 
-data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
-  filter(Sex == "Both sexes") |> 
+data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -216,16 +236,16 @@ The provinces are now _list_ variables, whereas they should be _doubles_ (single
 
 ```{R, employmentProvinces1}
 # run fewer lines of the previous code:
-data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
-  filter(Sex == "Both sexes") |> 
+data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")
 
 
 ## or view the problem this way, select Ontario and check out the first element:
-# data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
-#   filter(Sex == "Both sexes") |> 
+# data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE)|>
+#   filter(Gender == "Total - Gender") |> 
 #   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
 #   filter( Labour.force.characteristics == "Unemployment rate")|>
 #   filter(Age.group == "25 to 54 years")|>
@@ -249,8 +269,8 @@ The multiple **VALUE**s are made unique when considering the **Data.type** varia
 
 ```{R, employmentProvinces1.5}
 
-data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
-  filter(Sex == "Both sexes") |> 
+data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -279,8 +299,8 @@ plt.show();
 ## R
 ```{R, employmentProvinces2}
 
-data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
-  filter(Sex == "Both sexes") |> 
+data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -341,8 +361,8 @@ Notice that the **REF_DATE** column is a character but it should be a date.  We'
 
 
 ```{R, employmentProvinces3}
-data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
-  filter(Sex == "Both sexes") |> 
+data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -422,8 +442,8 @@ In some provinces, the strong seasonality of the unemployment rate realy pops ou
 
 ```{R, employmentProvinces4}
 
-data4plot = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
-  filter(Sex == "Both sexes") |> 
+data4plot = data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Gender == "Total - Gender") |> 
   filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -499,8 +519,8 @@ This time the Canadian average is included, despite the fact that it is a weight
 
 ```{R, pandemic5}
 
-unemployment = data |> select(GEO,Sex,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
-  filter(Sex == "Both sexes") |> 
+unemployment = data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,Data.type)|>
+  filter(Gender == "Total - Gender") |> 
   # filter(GEO != "Canada")|> # since the Canada value will be a type of weighted average
   filter( Labour.force.characteristics == "Unemployment rate")|>
   filter(Age.group == "25 to 54 years")|>
@@ -536,7 +556,45 @@ The housing starts are more complicated beacuse they are based on cities but the
 
 ```{python housing dataset}
 
-housing = sc.table_to_df("34-10-0154-01") 
+table_id = "34-10-0154-01"
+language="en"
+cache_dir="statcan_cache"
+
+# cache location
+cache_path = Path(cache_dir)
+cache_path.mkdir(exist_ok=True)
+
+# API set up
+product_id = table_id.replace("-", "")[:8]
+api_url = ("https://www150.statcan.gc.ca/t1/wds/rest/"
+      f"getFullTableDownloadCSV/{product_id}/{language}")
+
+# extract the zipfile url from the api response
+response = requests.get(api_url, timeout=30)
+response.raise_for_status()
+payload = response.json()
+zip_url = payload["object"]
+
+zip_path = cache_path / zip_url.split("/")[-1]
+
+if not zip_path.exists():
+    with requests.get(zip_url, stream=True, timeout=120) as response:
+        response.raise_for_status()
+        with zip_path.open("wb") as file:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    file.write(chunk)
+
+with ZipFile(zip_path) as zipped_table:
+    csv_files = [
+        name for name in zipped_table.namelist()
+        if name.endswith(".csv") and "MetaData" not in name 
+        ]
+    with zipped_table.open(csv_files[0]) as file:
+      table = pd.read_csv(file, low_memory=False)
+
+table["REF_DATE"] = pd.to_datetime(table["REF_DATE"], errors="coerce")
+housing = table
 housing.head()
 
 ```
