@@ -1,4 +1,3 @@
----
 title: "Black bear hunting activity and harvests - Open Ontario"
 execute:
     freeze: auto  # re-render only when source changes
@@ -32,7 +31,7 @@ The provincial government of Ontario provides open access to thousands of data s
 
 The dataset records numbers of black bears harvested and active black bear license holders every year from 2012 to 2018 in different wildlife management unit (WMU). The WMUs are the administrative coverage area that serves as a land base for wildlife monitoring and management.  
 
-The original dataset of bears harvested and active hunters and its supporting document can be found [here](https://data.ontario.ca/dataset/black-bear-hunting-activity-and-harvests) and you can quickly preview the CSV dataset file [here](https://data.ontario.ca/dataset/black-bear-hunting-activity-and-harvests/resource/7dd6328e-74cc-4291-a041-2345cf7c6186). Moreover, The legend description can be viewed [here](https://files.ontario.ca/data-dictionary-black-bear-en.xlsx).
+The original dataset of bears harvested and active hunters and its supporting document can be found [here](https://data.ontario.ca/dataset/black-bear-hunting-activity-and-harvests) and you can quickly preview the CSV dataset file [here](https://data.ontario.ca/dataset/black-bear-hunting-activity-and-harvests/resource/7dd6328e-74cc-4291-a041-2345cf7c6186). Moreover, The legend description can be viewed [here](https://files.ontario.ca/data-dictionary-black-bear-en.xlsx).  Note that we could use a web browser to visit the page, find the appropriate dataset, download it and then load it into R / Python directly, but for reproducibility and to automate reporting when new data is released, we automate the full process using the API.
 
 
 ## Libraries
@@ -44,6 +43,7 @@ The original dataset of bears harvested and active hunters and its supporting do
 import pandas as pd 
 import requests
 import seaborn as sb
+import openpyxl
 import matplotlib as plt
 ```
 ## R
@@ -57,11 +57,12 @@ library(tidyverse)
 :::
 
 
-### Finding the DataStore Resource Id
+### Using the API to Find the DataStore Resource Id
 
-The Ontario Data Catalogue uses the [CKAN API](https://data.ontario.ca/about#developers). A CKAN package is a dataset landing page, while a resource is an individual file, table, API-backed data object, or supporting document attached to that dataset.
+The Ontario Data Catalogue uses the [CKAN API](https://data.ontario.ca/about#developers). The CKAN API uses some specific terminology, a CKAN package is a dataset landing page, while a resource is an individual file, table, API-backed data object, or supporting document attached to that dataset.  
+The CKAN API is similar ot a REST API in that we interface it using a constructed URL and obtain a response.   We will use it to search for a dataset and obtain the url to download a csv file.
 
-Before downloading the records, we can use the API to search for the black bear hunting dataset and identify the active CSV resource id needed by the `datastore_search` endpoint.  Here we'll search for **black bear** and see if we can find the data table identifier.   Search is performed by adding search terms to the `api_base` to construct a url.  We include a `timeout` in the request to avoid waiting forever if our internet (or the API) breaks.  The API returns a json file `search_results` with 10 rows (user defined value) that needs reshaping to make it easier to read the important values.
+We use the API to search for the black bear hunting dataset and identify the active CSV resource id needed by the `datastore_search` API endpoint.  Here we'll search for **black bear** and see if we can find the data table identifier.   Search is performed by adding search terms to the `api_base` to construct a url.  We include a `timeout` in the request to avoid waiting forever if our internet (or the API) breaks.  The API returns a json file `search_results` with up to 10 rows (user defined value that works here because there aren't many bear datasets) that needs reshaping to make it easier to read the important values.
 
 ::: {.panel-tabset group="language"}
 
@@ -124,7 +125,7 @@ datasets
 ```
 :::
 
-The search results include the dataset name `black-bear-hunting-activity-and-harvests`. That name can be passed as the value of `package_show` in the next API call.  The return is again in json format with the full metadata for the dataset, including last modification date, data license information, notes (here in both English and French), keywords all attached resources.  Our goal is to make sure that we obtain the right version of the data by finding the `resource_id` for the table. 
+The search results include the dataset name `black-bear-hunting-activity-and-harvests`. Now that we have the name, it is passed as the value of `package_show` in the next API call.  The return is again in json format with the full metadata for the dataset, including last modification date, data license information, notes (here in both English and French), keywords, and various other resources.  Our goal is to make sure that we obtain the right version of the data by finding the `resource_id` (here it is a seemingly random set of characters that uniquely identify the data and it's version for use in the API). 
 
 ::: {.panel-tabset group="language"}
 
@@ -150,7 +151,8 @@ resource_summary = resources[
         "format",
         "language",
         "datastore_active",
-        "data_last_updated"
+        "data_last_updated",
+        "url"
     ]
 ]
 
@@ -178,7 +180,8 @@ resource_summary <- resources |>
     format,
     language,
     datastore_active,
-    data_last_updated
+    data_last_updated,
+    url
   )
 
 resource_summary
@@ -186,7 +189,7 @@ resource_summary
 ```
 :::
 
-For DataStore API calls, choose a resource where `datastore_active` is `TRUE`. This dataset has English and French CSV resources. The English CSV resource id is the value used in the data download.
+For DataStore API calls, choose a resource where `datastore_active` is **TRUE**. This reduces the options to English and French CSV files, so although it isn't necessary to filter by file type, we do so below to flag the step for future reference when multiple file types are provided.  The English CSV resource **id** is the value that will be used for the data download.  
 
 ::: {.panel-tabset group="language"}
 
@@ -214,9 +217,9 @@ resource_id
 datastore_resources <- resources |>
   filter(datastore_active == TRUE, format == "CSV")
 
+
 english_resource <- datastore_resources |>
-  filter(language == "english") |>
-  slice(1)
+  filter(language == "english")
 
 resource_id <- english_resource$id
 
@@ -224,6 +227,19 @@ resource_id
 
 ```
 :::
+
+
+
+### A Few Notes
+
+To make sure these instructions are as transferrable as possible, here are a few terminology tips.  
+The **dataset URL** is the general purpose web page for a package, such as this for the Black Bear Hunding Activity and Harvests page   [https://data.ontario.ca/en/dataset/black-bear-hunting-activity-and-harvests](https://data.ontario.ca/en/dataset/black-bear-hunting-activity-and-harvests).  The **package name** is the last part of that URL,  **black-bear-hunting-activity-and-harvests**. This acts as a package identifier.  Use it with `package_show` API call. The **resource id** is the identifier for a specific file or table _inside that package_. Use it with `datastore_search` only when that resource has `datastore_active == TRUE`.  
+
+If you already have a dataset URL from hunting around the webpage in a browser, you generally don't need to bother with `package_search`. Copy the final part of the URL and pass it directly to `package_show`. Search is most useful when you do not know the package name yet.
+
+If a resource has `datastore_active == TRUE`, use its `id` with `datastore_search`. If `datastore_active == FALSE`, use the resource `url` and read the file according to its `format`,  typically one of CSV, XLSX, GeoJSON, or ZIP.  If a package has several resources, choose by filtering down to `language`, `format`, and `name` etc... to find the correct resource.
+
+
 
 ### Organizing Dataset
 
@@ -306,7 +322,7 @@ data <- data_download |> rename_all(make.names)|> filter(WMU !="Total")
 ```
 :::
 
-The data has columns WMU, year, number of active hunters, and the harvest.  All numbers of bear harvested and active hunters are estimated based on the replies received from a sample of hunters, so it might contain a statistical error.  In the WMU called Total, all of the WMUs are summed.
+The data has columns wildlife management unit (WMU), year, number of active hunters, and the harvest.  The numbers of bear harvested and active hunters are estimated based on the replies received from a sample of hunters.  We are interested in both the individual WMUs, and the provided **Total = sum (WMU)**.
 
 ::: {.panel-tabset group="language"}
 
