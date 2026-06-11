@@ -218,12 +218,13 @@ plt.show();
 
 july["jan_meanmin"] = january["jan_meanmin"] # Add Jan column to july dataframe because seaborn takes data from a single dataframe
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.scatterplot(data = july,
                x = "july_meanmax",
-               y = "jan_meanmin")
-plt.legend('', frameon = False)
-plt.title("January Min vs July Max Temperature by Year")
+               y = "jan_meanmin",
+               ax = ax)
+ax.legend('', frameon = False)
+ax.set_title("January Min vs July Max Temperature by Year")
 plt.show();
 
 ```
@@ -284,15 +285,16 @@ ottawa_monthly =pd.read_csv("Data/"+filepath)
 #convert the dates into valid date format by arbitrarily selecting the 1st of the month to complete the date
 ottawa_monthly["Date/Time"] = pd.to_datetime(ottawa_monthly["Date/Time"])
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = ottawa_monthly,
             x = "Date/Time",
             y = "Mean Temp (°C)",
-            hue = "Year")
-plt.legend('', frameon = False)
-plt.title("Monthly Mean Temperatures")
-plt.xlabel("Year")
-plt.ylabel("Degrees C")
+            hue = "Year",
+            ax = ax)
+ax.legend('', frameon = False)
+ax.set_title("Monthly Mean Temperatures")
+ax.set_xlabel("Year")
+ax.set_ylabel("Degrees C")
 plt.show();
 
 ```

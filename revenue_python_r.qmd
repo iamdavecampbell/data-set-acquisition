@@ -177,14 +177,15 @@ ggplot( aes(x=year, y=VALUE, group=GEO, colour =GEO)) +
 ## python
 ```{python prevenue in different provinces}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = revenue[(revenue["GEO"] != "Canada") &
                            (revenue["Direct source of funds"] == "Total revenues")],
                            x = "year",
                            y = "VALUE", 
-                           hue = "GEO")
-plt.title("Total School Revenue Funded in Different Provinces")
-plt.legend(title = "Province",
+                           hue = "GEO",
+                           ax = ax)
+ax.set_title("Total School Revenue Funded in Different Provinces")
+ax.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)

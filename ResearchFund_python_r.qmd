@@ -420,7 +420,7 @@ excel_sheets(dest_file)
 research_data_historical <- readxl::read_excel(dest_file, sheet = 'Oct 2004-June 2018')
 research_data_historical |> head()
 ```
-
+:::
 
 
 
@@ -500,8 +500,6 @@ We will focus on the overall support from the `Program` **Ontario Research Fund 
 
 ::: {.panel-tabset group="language"}
 
-
-###%%%###%%##%%## HERE HERE HERE HERE HERE check python if it works, then maybe convert fiscal year to an integer by trimming the "-\\d{2}" and converting to numeric.   Then use the same same plots.
 
 ## Python
 ```{python pdataset}

@@ -128,15 +128,16 @@ plt.show();
 
 ```{python pgreenhouse plant sales}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = plants[(plants["location"] == "Canada") & 
                           (plants["Output"] == "Sales")],
                           x = "year",
                           y = "VALUE",
-                          hue = "Flowers and plants")
-plt.ylabel("Production (number)")
-plt.title("Greenhouse plants sales in Canada")                         
-plt.legend(title = "Flowers and Plants",
+                          hue = "Flowers and plants",
+                          ax = ax)
+ax.set_ylabel("Production (number)")
+ax.set_title("Greenhouse plants sales in Canada")                         
+ax.legend(title = "Flowers and Plants",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
@@ -174,17 +175,18 @@ ggplot( aes(x = year, y = VALUE, group = Flowers.and.plants)) +
 
 # Select the datasets of two different bedding plants (vegetable & ornamental) in 10 different provinces
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = plants[(plants["location"] != "Canada") & 
                           (plants["Output"] == "Production (number)") &
                           (plants["Flowers and plants"] == 
                           "Total vegetable bedding plants [115143421]")],
                           x = "year",
                           y = "VALUE",
-                          hue = "location")
-plt.ylabel("Number Produced")
-plt.title("Total vegetable bedding plants production")                         
-plt.legend(title = "Province",
+                          hue = "location",
+                          ax = ax)
+ax.set_ylabel("Number Produced")
+ax.set_title("Total vegetable bedding plants production")                         
+ax.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)
@@ -194,16 +196,17 @@ plt.show();
 
 ```{python ornamental bedding plants}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True )
 sb.lineplot(data = plants[(plants["location"] != "Canada") & 
                           (plants["Output"] == "Production (number)") &
                           (plants["Flowers and plants"] == "Total ornamental bedding plants [115143411]")],
                           x = "year",
                           y = "VALUE",
-                          hue = "location")
-plt.ylabel("Number Produced")
-plt.title("Total ornamental bedding plants production")                         
-plt.legend(title = "Province",
+                          hue = "location",
+                          ax = ax)
+ax.set_ylabel("Number Produced")
+ax.set_title("Total ornamental bedding plants production")                         
+ax.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)

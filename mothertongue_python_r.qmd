@@ -11,7 +11,7 @@ summary: 'The dataset records the population and percentage by three different t
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -147,12 +147,13 @@ plt.show();
 
 ``` {python pcanada2}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 can_plot_2 = sb.lineplot(data = canada, 
                          x = "year", 
                          y = "Percentage", 
-                         hue = "Mother tongue")
-can_plot_2.set_title("Percentage of speakers of mother tongues in Canada")
+                         hue = "Mother tongue",
+                         ax = ax)
+ax.set_title("Percentage of speakers of mother tongues in Canada")
 plt.show();
 
 ```
@@ -164,12 +165,13 @@ pd.options.mode.chained_assignment = None
 
 canada["Percentage Change"] = canada.groupby("Mother tongue")["Percentage"].pct_change()*100
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 can_plot_3 = sb.lineplot(data = canada, 
                          x = "year", 
                          y = "Percentage Change",
-                         hue = "Mother tongue")
-can_plot_3.set_title("Percentage change over 4 years "
+                         hue = "Mother tongue",
+                         ax = ax)
+ax.set_title("Percentage change over 4 years "
                      "for different mother tongues in Canada")
 plt.show();
 ```
@@ -217,30 +219,32 @@ The following code focuses on the percentages within provinces.
 ## Python
 ```{python pother language 1}
 # Plot the French and non-official language speakers percents among all provinces in Canada
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 not_eng_plot_1 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
                                     (tongue["Mother tongue"] == "French")]), 
                              x = "year", 
                              y = "Percentage",
-                              hue = "location")
-not_eng_plot_1.set_title("Percentage of French "
+                              hue = "location",
+                              ax = ax)
+ax.set_title("Percentage of French "
                          "mother tongues in different provinces")
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show();
 
 ```
 
 ``` {python pother language 2}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 not_eng_plot_2 = sb.lineplot(data = (tongue[(tongue["location"] != "Canada") & 
                                     (tongue["Mother tongue"] == "Non-official language")]),
                              x = "year",
                              y = "Percentage",
-                             hue = "location")
-not_eng_plot_2.set_title("Percentage of non-official "
+                             hue = "location",
+                             ax = ax)
+ax.set_title("Percentage of non-official "
                          "language mother tongues in different provinces")
-plt.legend(bbox_to_anchor=(1.05, 1),
+ax.legend(bbox_to_anchor=(1.05, 1),
            loc='upper left', 
            borderaxespad=0)
 plt.show();

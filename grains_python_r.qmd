@@ -120,15 +120,17 @@ totals = export_data.groupby(["year",
                               "Commodity", 
                               "Destinations"], as_index=False)['VALUE'].sum()
 
-sb.set_style("darkgrid")
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 
 sb.lineplot(data = totals[totals["Destinations"] == "Total exports, all destinations"], 
             x = "year", 
             y = "VALUE",
-            hue = "Commodity").set_title("Total grains export to all destinations")
+            hue = "Commodity",
+            ax = ax)
+ax.set_title("Total grains export to all destinations")
 
-plt.ylabel("total export (tonnes)")
-plt.legend(title="Commodity", 
+ax.set_ylabel("total export (tonnes)")
+ax.legend(title="Commodity", 
            bbox_to_anchor=(1.05, 1), 
            loc='upper left', 
            borderaxespad=0)
@@ -173,14 +175,15 @@ wheat_totals = wheat_ex_durum.groupby(["year",
                                        "Commodity", 
                                        "Destinations"], as_index=False)['VALUE'].sum()
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = wheat_totals, 
             x = "year", 
             y = "VALUE",
-            hue = "Destinations")
-plt.title("Total Annual Wheat, excluding durum, export among different continents")
-plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", 
+            hue = "Destinations",
+            ax = ax)
+ax.set_title("Total Annual Wheat, excluding durum, export among different continents")
+ax.set_ylabel("total export (tonnes)")
+ax.legend(title="Destinations", 
            bbox_to_anchor=(1.05, 1), 
            loc='upper left', 
            borderaxespad=0)
@@ -225,14 +228,15 @@ few_countries = export_data[(export_data["Commodity"] == "Wheat, excluding durum
 
 few_countries_totals = few_countries.groupby(["year", "Destinations"], as_index=False)['VALUE'].sum()
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = few_countries_totals, 
             x = "year", 
             y = "VALUE",
-            hue = "Destinations")
-plt.title("Total Wheat, excluding durum, exported by year")
-plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", 
+            hue = "Destinations",
+            ax = ax)
+ax.set_title("Total Wheat, excluding durum, exported by year")
+ax.set_ylabel("total export (tonnes)")
+ax.legend(title="Destinations", 
            bbox_to_anchor=(1.05, 1), 
            loc='upper left', 
            borderaxespad=0)
@@ -283,15 +287,16 @@ big_countries = tmp_exports[tmp_exports["VALUE"] > 1000000]["Destinations"].uniq
 
 tmp_exports = tmp_exports[tmp_exports["Destinations"].isin(big_countries)]
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 sb.lineplot(data = tmp_exports, 
             x = "year", 
             y = "VALUE",
-            hue = "Destinations")
-plt.title("Total Canola (rapeseed),  for countries that have "
+            hue = "Destinations",
+            ax = ax)
+ax.set_title("Total Canola (rapeseed),  for countries that have "
           "surpassed 1,000,000 tonnes imported in at least one year")
-plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+ax.set_ylabel("total export (tonnes)")
+ax.legend(title="Destinations", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
 plt.show();
 
 ```
@@ -334,22 +339,25 @@ ggplot( aes(x = year, y = total, group = Destinations)) +
 canola = export_data[(export_data["Commodity"] == "Canola (rapeseed)") &
                           (export_data["Destinations"] == "Total exports, all destinations")]
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+
 canola_plot = sb.lineplot(data = canola,
                           x = "month",
                           y = "VALUE",
                           hue = "year",
-                          linewidth = 0.8)
+                          linewidth = 0.8,
+                          ax = ax)
 sb.boxplot(data = canola,
            x = "month",
            y = "VALUE",
            fill = False,
            linewidth = 0.8,
-           color = "#137")
+           color = "#137",
+           ax = ax)
 
-canola_plot.set_title("Total canola (rapeseed) plants export by month")
-plt.ylabel("total export (tonnes)")
-plt.legend(title="Destinations", 
+ax.set_title("Total canola (rapeseed) plants export by month")
+ax.set_ylabel("total export (tonnes)")
+ax.legend(title="Years", 
            bbox_to_anchor=(1.05, 1), 
            loc='upper left', 
            borderaxespad=0)

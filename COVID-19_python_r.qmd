@@ -93,28 +93,31 @@ Let's start by looking at total cases.
 ## Python
 ```{python ptotalcases}
 
-sb.set_style("darkgrid")
+
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 
 canada_total = sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
                            x = "date",
-                           y = "totalcases")
+                           y = "totalcases",
+                           ax = ax)
 
-plt.title("Total Covid-19 Case Count in Canada")
-plt.xlabel("Date")
-plt.ylabel("Total Cases")
+ax.set_title("Total Covid-19 Case Count in Canada")
+ax.set_xlabel("Date")
+ax.set_ylabel("Total Cases")
 plt.show()
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 provinces_total = sb.lineplot(data = canadian_data[(canadian_data["prname"] != "Canada") &
                                                    (canadian_data["prname"] != "Repatriated travellers")],
                               x = "date",
                               y = "totalcases",
-                              hue = "prname")
+                              hue = "prname",
+                              ax = ax)
 
-plt.title("Total Covid-19 Case Count by Province")
-plt.xlabel("Date")
-plt.ylabel("Total Cases")
-plt.legend(title = "Province",
+ax.set_title("Total Covid-19 Case Count by Province")
+ax.set_xlabel("Date")
+ax.set_ylabel("Total Cases")
+ax.legend(title = "Province",
            loc = 'upper left')
 plt.show();
 
@@ -155,15 +158,16 @@ Total cases can be expected to increase indefinitely but of more interest is how
 ## Python
 ```{python pcanada yearly trends}
 
-plt.clf()
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
 
 sb.lineplot(data = canadian_data[(canadian_data["prname"] == "Canada")],
             x = "date",
-            y = "numdeaths_last7")
+            y = "numdeaths_last7",
+            ax = ax)
 
-plt.title("Covid-19 Deaths by Week in Canada")
-plt.xlabel("Date")
-plt.ylabel("Covid-19 Deaths in Last 7 Days")
+ax.set_title("Covid-19 Deaths by Week in Canada")
+ax.set_xlabel("Date")
+ax.set_ylabel("Covid-19 Deaths in Last 7 Days")
 
 plt.show();
 
@@ -190,19 +194,20 @@ As predicted, Covid-19 deaths appear to follow a yearly pattern peaking during c
 ## Python
 ```{python pprovincial yearly trends}
 
-plt.clf()
+fig, ax = plt.subplots( figsize=(8, 5), constrained_layout=True)
 
 sb.lineplot(data = canadian_data[(canadian_data["prname"] != "Canada") &
                                  (canadian_data["prname"] != "Repatriated travellers")],
             x = "date",
             y = "numdeaths_last7",
-            hue = "prname")
+            hue = "prname",
+            ax = ax)
 
-plt.title("Covid-19 Deaths by Week in Provinces")
-plt.xlabel("Date")
-plt.ylabel("Covid-19 Deaths in Last 7 Days")
+ax.set_title("Covid-19 Deaths by Week in Provinces")
+ax.set_xlabel("Date")
+ax.set_ylabel("Covid-19 Deaths in Last 7 Days")
 
-plt.legend(title = "Province",
+ax.legend(title = "Province",
            bbox_to_anchor=(1.05, 1),
            loc='upper left',
            borderaxespad=0)

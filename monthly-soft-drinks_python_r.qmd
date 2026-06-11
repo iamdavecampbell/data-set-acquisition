@@ -196,9 +196,14 @@ head(monthly)
 #Plot the graph of annual soft drink production
 
 sb.set_style("darkgrid")
-plt.clf()
-sb.lineplot(data=annual, x="Year", y="AnnualValue").set_title("Annual soft drink production")
-plt.show;
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+sb.lineplot(
+  data=annual, 
+  x="Year", 
+  y="AnnualValue", 
+  ax = ax)
+ax.set_title("Annual soft drink production")
+plt.show()
 
 ```
 
@@ -206,9 +211,15 @@ plt.show;
 
 #Plot the graph of quarterly soft drink production
 
-plt.clf()
-sb.lineplot(data=AllQuarters, x="quarter", y="QuarterlyValue", marker="o").set_title("Quarterly soft drink production")
-plt.show;
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+sb.lineplot(
+  data=AllQuarters, 
+  x="quarter", 
+  y="QuarterlyValue", 
+  marker="o",
+  ax = ax)
+ax.set_title("Quarterly soft drink production")
+plt.show()
 
 ```
 
@@ -216,9 +227,14 @@ plt.show;
 
 #Plot the graph of monthly soft drink production
 
-plt.clf()
-sb.lineplot(data=monthly, x="date", y="Produced").set_title("Monthly soft drink production")
-plt.show;
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+sb.lineplot(
+  data=monthly, 
+  x="date", 
+  y="Produced",
+  ax = ax)
+ax.set_title("Monthly soft drink production")
+plt.show()
 
 ```
 
@@ -284,11 +300,21 @@ proportions =  quarterly.pivot_table(index=['year'], columns = 'month',
 proportions = proportions.div(proportions.sum(axis=1), axis=0)
 
 proportions.head()
-proportions.plot(kind='bar', stacked = True).set_title("Percent Stacked Barchart of Quaterly Soft Drink Production")
-plt.xlabel("Year")
-plt.ylabel("Percentage")
-plt.legend(title="Month", bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0);
 
+fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+proportions.plot(
+  kind='bar', 
+  stacked = True,
+  ax = ax)
+ax.set_title("Percent Stacked Barchart of Quaterly Soft Drink Production")
+ax.set_xlabel("Year")
+ax.set_ylabel("Percentage")
+ax.legend(
+  title="Month", 
+  bbox_to_anchor=(1.05, 1),
+  loc='upper left',
+  borderaxespad=0);
+plt.show()
 ```
 
 ## R

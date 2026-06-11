@@ -387,7 +387,7 @@ data |> select(GEO,Gender,Age.group,Labour.force.characteristics,REF_DATE,VALUE,
 ::: {.panel-tabset group="language"}
 
 ## Python
-We plot unemployment for each year in each province using a different line. In order to highlight the effect of the pandemic we first call seaborn lineplot on a subset of the data up to the year 2019. Each year is given a different colour by setting the "hue" parameter to "year". We then call seaborn linepot on a subset of the data from 2020 onwards. We choose a different colour palette so the pandemic years are clearly identifiable. Seaborn will overly successive plots on the same graph unless the plot is cleared using plt.clf().
+We plot unemployment for each year in each province using a different line. In order to highlight the effect of the pandemic we first call seaborn lineplot on a subset of the data up to the year 2019. Each year is given a different colour by setting the "hue" parameter to "year". We then call seaborn linepot on a subset of the data from 2020 onwards. We choose a different colour palette so the pandemic years are clearly identifiable. Seaborn will overly successive plots on the same graph unless the plot is cleared using `plt.clf()` or a new plot is called `plt.subplots`
 
 In some provinces, the strong seasonality of the unemployment rate realy pops out.  
 
