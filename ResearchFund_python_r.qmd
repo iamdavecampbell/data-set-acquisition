@@ -5,7 +5,7 @@ date: '2024-08-18'
 execute:
   render: auto
   slug: education-data-ontario-research-fund-research-excellence-ptrogram-data-catalogue-frome-governmnet-of-ontario
-categories: ["Pairs Plot","Open Ontario", "Software:Python","Software:R","zipfiles", "csv files"]
+categories: ["Pairs Plot","Open Ontario", "Software:Python","Software:R","zipfiles", "xlsx files", "CKAN API"]
 subtitle: ''
 summary: 'This dataset includes hundreds of research porjects funded through Research Excellence Program from 2003 to 2018.'
 output: html_document
@@ -21,12 +21,21 @@ The provincial government of Ontaio provides open access to thousands of data se
 
 ***
 
-## Ontario Research Fund - Research Excellence Program 
+## Ontario Research Funding
 
 
-This Ontario Research Fund dataset includes research projects funded through the Research Excellence Program from 2003 to 2018. The first row of the dataset provides the column names.  The variables include research program titles and descriptions, approval date, lead research institution and city where the institution located, total project costs, and Ontario funding commitment. 
+This data set provides a summary of research projects funded by the Ministry of Colleges and Universities.  The data format changes in 2018-2019, so the dataset is split into current and historical versions.  We will extract both of them, since they differ in format and API details.  
 
-The dataset and its supporting document can be found [here](https://data.ontario.ca/en/dataset/ontario-research-fund-research-excellence-program) and you can quickly preview the CSV dataset file [here](https://data.ontario.ca/en/dataset/ontario-research-fund-research-excellence-program/resource/8bd5111a-1684-4254-92a6-e1b28fde495f). Moreover, The legend description can be viewed [here](https://d2khazk8e83rdv.cloudfront.net/research_funding_legend_and_summary_1.txt)
+The Ontario Research Fund [current](https://data.ontario.ca/dataset/ontario-research-funding-summary-current) dataset includes research projects funded through the Research Excellence Program from 2018 to 2026. The Ontario Research Fund [historical](https://data.ontario.ca/en/dataset/ontario-research-funding-summary-historical) dataset  covers 2004 - 2018.  These dataset can be found online as an **xlsx** file so you could use a web browser to visit the page, find the appropriate dataset(s), download, and then load it into R / Python directly.  However, for reproducibility and to facilitate reporting updates when new data is released, the full process is automated using the API.
+
+## Goal
+
+We search for the datasets using the CKAN API.   From there we filter down to the English versions and download the datasets.   Data is in different formats, so we need to extract the appropriate sheet from the xlsx files and merge them to extend the dataset.  Some scatter plots are made.
+
+
+
+
+
 
 
 ## Libraries
@@ -36,344 +45,586 @@ The dataset and its supporting document can be found [here](https://data.ontario
 ## Python
 ```{python plib}
 
-import pandas as pd 
+import pandas as pd   
 import seaborn as sb
+import requests
+import openpyxl
 import matplotlib.pyplot as plt
+
 ```
 ## R
 ```{r rlib, warning = FALSE, message = FALSE}
-
-library(tidyverse)
-library(lubridate)
-library(viridis)
-library(hrbrthemes)
-library(ggridges) 
+library(jsonlite)   # handling the json returns from API calls
+library(tidyverse)  # data manipulation
+library(lubridate)  # dates
+library(viridis)    # colours
+library(hrbrthemes) # plot options
+library(ggridges)   # plot options
+library(readxl)     # loading excel files
 ```
 :::
 
-### Organizing Dataset 
 
-The following code is used to download the dataset, pick important variables to form a new dataset and convert some variables from character format into their specific one.
+### Using the API to Find the DataStore Resource Id
 
-The head of the well-organized dataset is shown at the end of the code and from that, we can easily found those most important variables. After forming the new dataset, the rest of the paper is going to use this dataset to create some graphs.
+
+
+The Ontario Data Catalogue uses the [CKAN API](https://data.ontario.ca/about#developers). The CKAN API uses some specific terminology, a CKAN package is a dataset landing page, while a resource is an individual file, table, API-backed data object, or supporting document attached to that dataset.  
+The CKAN API is similar ot a REST API in that we interface it using a constructed URL and obtain a response.   We will use it to search for a dataset and obtain the url to download a data file.
+
+We use the API to search for the research funding dataset and identify the file url.  Here we'll search for **ontario-research-funding** and see if we can find the data table identifier.   Search is performed by adding search terms to the `api_base` to construct a url.  We include a `timeout` in the request to avoid waiting forever if our internet (or the API) breaks.  The API returns a json file `search_results` with up to 10 rows (user defined value that works here because there aren't many bear datasets) that needs reshaping to make it easier to read the important values.
+
+We already know our target dataset is  [https://data.ontario.ca/en/dataset/ontario-research-funding-summary-current](https://data.ontario.ca/en/dataset/ontario-research-funding-summary-current), so the package name is `ontario-research-funding-summary-current`. But to showcase the process, we will start by searching available resources to find the dataset name. If we knew the package name (from navigating in a browser) we could query the API via `package_show?id=<exact resource name here>`.   Here we assume that we don't know the name and need to search for it using the API to query via `package_search?q=<keywords go here>`.
+  
+
+
 
 ::: {.panel-tabset group="language"}
+
+## Python
+```{python presearch, message = FALSE, warning = FALSE}
+api_base = "https://data.ontario.ca/en/api/3/action"
+research_search_terms = "ontario-research-funding"
+
+research_search_response = requests.get(
+    f"{api_base}/package_search",
+    params={
+        "q": research_search_terms,
+        "rows": 200
+    },
+    timeout=30
+)
+research_search_response.raise_for_status()
+
+research_search_results = research_search_response.json()["result"]["results"]
+
+research_datasets = pd.DataFrame([
+    {
+        "name": dataset["name"],
+        "title": dataset["title"],
+        "resources": dataset["num_resources"],
+        "modified": dataset["metadata_modified"]
+    }
+    for dataset in research_search_results
+])
+
+research_matches = research_datasets[
+    research_datasets["name"].str.contains(
+        "ontario-research-funding",
+        regex=False
+    )
+]
+
+research_matches
+
+
+```
+
+## R
+```{r rresearch, message = FALSE, warning = FALSE}
+api_base = "https://data.ontario.ca/en/api/3/action"
+research_search_terms <- "ontario-research-funding"
+
+research_search_url <- paste0(
+  api_base,
+  "/package_search?q=", URLencode(research_search_terms, reserved = TRUE),
+  "&rows=200"
+)
+
+research_search_results <- fromJSON(
+  research_search_url,
+  simplifyDataFrame = TRUE
+)$result$results
+
+research_search_results|> glimpse()
+
+research_datasets <- research_search_results |>
+  transmute(
+    name,
+    title,
+    resources = num_resources,
+    modified = metadata_modified
+  )
+
+research_matches <- research_datasets |>
+  filter(str_detect(name, fixed("ontario-research-funding")))
+
+research_matches
+
+```
+:::
+
+We've managed to find the two different datasets; **current** and **historical**.  We will start by selecting the **current** using a regular expression match, and pass the data package name into another API call in the field `package_show`.  Note that  `resources = 2`, which after filtering to **current** below, we will see shortly relates to English and French versions of the dataset.  Later we will come back to this step and extract the **historical** dataset through a related but somewhat different procedure.  
+
+
+### Current dataset (obtain and extract the xlsx file) 
+
+
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python presearch2, message = FALSE, warning = FALSE}
+research_package_name = research_matches[
+    research_matches["name"].str.contains("current", regex=False)
+].iloc[0]["name"]
+
+research_response = requests.get(
+    f"{api_base}/package_show",
+    params={"id": research_package_name},
+    timeout=30
+)
+research_response.raise_for_status()
+
+research_package = research_response.json()["result"]
+research_resources = pd.DataFrame(research_package["resources"])
+
+research_resource_summary = research_resources[
+    [
+        "id",
+        "name",
+        "format",
+        "language",
+        "datastore_active",
+        "data_last_updated",
+        "url"
+    ]
+]
+
+research_resource_summary
+```
+
+## R
+```{r rresearch-search, message = FALSE, warning = FALSE}
+research_package_name <- research_matches |>
+  filter(str_detect(name, fixed("current"))) |>
+  slice(1) |>
+  pull(name)
+
+research_package_url <- paste0(
+  api_base,
+  "/package_show?id=", URLencode(research_package_name, reserved = TRUE)
+)
+
+research_package <- fromJSON(research_package_url, simplifyDataFrame = TRUE)$result
+research_resources <- as_tibble(research_package$resources)
+
+research_resource_summary <- research_resources |>
+  select(
+    id,
+    name,
+    format,
+    language,
+    datastore_active,
+    data_last_updated,
+    url
+  )
+
+research_resource_summary
+
+```
+:::
+  
+The research funding package has resources, but they are _Excel files_ and `datastore_active` is **FALSE**. That means the `datastore_search` code used for the bear hunting data is not the right next step. In this case, the CKAN API is used to find the current download URL.  
+
+Excel files are like complicated lists of csv files.  A typical workflow will always involves familiarizing yourself with the datafiles.  In this example we will assume that we will recognize the `sheet` name.   I know from exploring the dataset elsewhere that the sheet name changes as the data updates, so we will do some exploring to find the sheet names before settling into making a dataframe of the relevant sheet.  There are a lot of bonus options when reading in from Excel (or a general csv file), such as the number of rows to skip, loading a subset of columns..., so keep that in mind for more complex analysis. 
+
+**Note**, there is a minor difference between how R and python obtain and load the Excel file.  Python will download and open the Excel file directly from the url, whereas in R we need to download the file into a temporary location and load it from there.  
+
+
+::: {.panel-tabset group="language"}
+## Python
+```{python presearch-download-url}
+
+# filter down to English
+# also note that I'm being lazy and extracting the first row of a 1 row data frame
+# and that this is hard coded with iloc[0].  That may not be good for your needs.
+research_download_url = research_resources[
+    (research_resources["language"] == "english") &
+    (research_resources["format"] == "XLSX")
+].iloc[0]["url"]
+
+# the url:
+research_download_url
+
+# list the sheet names:
+with pd.ExcelFile(research_download_url) as xls:
+    print(xls.sheet_names)
+
+# load only the sheet name that we recognize.  
+# Seeing our sheet_name = 'July 2018-Jan 31 2026', we could use that name explicitly, 
+# but since the sheet name will update when new data comes out we just hope that the 
+# format doesn't change and ask for the sheet in position 1
+research_data_current = pd.read_excel(research_download_url, sheet_name = 1)
+research_data_current.head()
+```
+
+## R
+```{r rresearch-download-url, message = FALSE, warning = FALSE}
+
+research_download_url <- research_resources |>
+  filter(language == "english", format == "XLSX") |>
+  slice(1) |>
+  pull(url)
+# the url:
+research_download_url
+
+# To load the file in R, you need to download it first, then open it using read_excel
+dest_file <- tempfile(fileext = ".xlsx")
+download.file(research_download_url, destfile = dest_file, mode = "wb")
+
+# now we can explore the Excel file.  
+# list the sheet names:
+excel_sheets(dest_file)
+
+# load only the sheet name that we recognize.  
+# Seeing our sheet_name = 'July 2018-Jan 31 2026', we could use that name explicitly, 
+# but since the sheet name will update when new data comes out we just hope that the 
+# format doesn't change and ask for the sheet in position 2
+
+research_data_current <- readxl::read_excel(dest_file, sheet = 2)
+research_data_current |> head()
+```
+:::
+
+
+
+
+
+
+
+### Historical dataset 
+
+We already have the search information from earlier, now we repeat the process changing **current** to **historical** to obtain the second datafile.
+
+
+
+::: {.panel-tabset group="language"}
+
+## Python
+```{python presearch2-historic, message = FALSE, warning = FALSE}
+research_package_name = research_matches[
+    research_matches["name"].str.contains("historical", regex=False)
+].iloc[0]["name"]
+
+research_response = requests.get(
+    f"{api_base}/package_show",
+    params={"id": research_package_name},
+    timeout=30
+)
+research_response.raise_for_status()
+
+research_package = research_response.json()["result"]
+research_resources = pd.DataFrame(research_package["resources"])
+
+research_resource_summary = research_resources[
+    [
+        "id",
+        "name",
+        "format",
+        "language",
+        "datastore_active",
+        "data_last_updated",
+        "url"
+    ]
+]
+
+research_resource_summary
+```
+
+## R
+```{r rresearch-search-historic, message = FALSE, warning = FALSE}
+research_package_name <- research_matches |>
+  filter(str_detect(name, fixed("historical"))) |>
+  slice(1) |>
+  pull(name)
+
+research_package_url <- paste0(
+  api_base,
+  "/package_show?id=", URLencode(research_package_name, reserved = TRUE)
+)
+
+research_package <- fromJSON(research_package_url, simplifyDataFrame = TRUE)$result
+research_resources <- as_tibble(research_package$resources)
+
+research_resource_summary <- research_resources |>
+  select(
+    id,
+    name,
+    format,
+    language,
+    datastore_active,
+    data_last_updated,
+    url
+  )
+
+research_resource_summary
+
+```
+:::
+  
+As before, the research funding package has resources, but they are _Excel files_ and `datastore_active` is **FALSE**. We use the CKAN API to find the download URL.  
+
+
+::: {.panel-tabset group="language"}
+## Python
+```{python presearch-download-url-historic}
+
+# filter down to English
+# also note that I'm being lazy and extracting the first row of a 1 row data frame
+# and that this is hard coded with iloc[0].  That may not be good for your needs.
+research_download_url = research_resources[
+    (research_resources["language"] == "english") &
+    (research_resources["format"] == "XLSX")
+].iloc[0]["url"]
+
+# the url:
+research_download_url
+
+# list the sheet names:
+with pd.ExcelFile(research_download_url) as xls:
+    print(xls.sheet_names)
+
+# load only the sheet name that we recognize.  
+# Seeing our sheet_name = 'Oct 2004-June 2018', 
+# since the sheet name will probably not update since the data is historical, 
+# we hard code the name 
+research_data_historical = pd.read_excel(research_download_url, sheet_name = 'Oct 2004-June 2018')
+research_data_historical.head()
+```
+
+## R
+```{r rresearch-download-url-historic, message = FALSE, warning = FALSE}
+
+research_download_url <- research_resources |>
+  filter(language == "english", format == "XLSX") |>
+  slice(1) |>
+  pull(url)
+# the url:
+research_download_url
+
+# To load the file in R, you need to download it first, then open it using read_excel
+dest_file <- tempfile(fileext = ".xlsx")
+download.file(research_download_url, destfile = dest_file, mode = "wb")
+
+# now we can explore the Excel file.  
+# list the sheet names:
+excel_sheets(dest_file)
+
+# load only the sheet name that we recognize.  
+# Seeing our sheet_name = 'Oct 2004-June 2018', 
+# since the sheet name will probably not update since the data is historical, 
+# we hard code the name 
+
+
+research_data_historical <- readxl::read_excel(dest_file, sheet = 'Oct 2004-June 2018')
+research_data_historical |> head()
+```
+
+
+
+
+
+
+### Tips based on status of datastore\_active
+
+- If a resource has `datastore_active == TRUE`, use its `id` with `datastore_search`.
+- If `datastore_active == FALSE`, use the resource `url` directly to download the file.   Load the datafile appropriately for its `format`, typically from Open Ontario we are interested in CSV, XLSX, GeoJSON, or ZIP.
+- If a package has several resources, filter by `language`, `format`,  `name`, etc...  
+
+
+
+
+
+### Data Merging
+
+
+Merging is easiest if the datasets have the same columns, since then they can just be stacked.  Let's look at this column names that match and also those that appear in only one.
+
+
+
+::: {.panel-tabset group="language"}
+## Python
+```{python psamesame}
+# Columns common to both DataFrames
+print(list(
+    set(research_data_historical.columns)
+    .intersection(research_data_current.columns)
+))
+
+
+# Columns in current but not historical
+print(list(
+    set(research_data_current.columns)
+    .difference(research_data_historical.columns)
+))
+
+
+# Columns in historical but not current
+print(list(
+    set(research_data_historical.columns)
+    .difference(research_data_current.columns)
+))
+
+
+```
+
+
+## R
+```{r rsamesame}
+intersect(
+  colnames(research_data_historical),
+  colnames(research_data_current)
+)
+
+
+setdiff(
+  colnames(research_data_current),
+  colnames(research_data_historical) 
+  )
+
+setdiff(
+  colnames(research_data_historical),
+  colnames(research_data_current)
+  )
+
+```
+:::
+
+The only difference is a spacing issue in a variable that is not of current interest.   Reformatting the column names would resolve this.   The other potential problem is the data formats don't always align; in R, the `Field of Research (FOR) - Level 1 Division Code` is a double in **historical** but a character in **current**.  To keep things simple we will first filter the dataset and stack only the columns of interest.
+
+
+### On to making plots
+
+We will focus on the overall support from the `Program` **Ontario Research Fund - Research Excellence** at an `Institution Type` of **University**, and then keep only the `Total Project Costs`, `Ontario Commitment`, and `Fiscal Year`, and we will plot these.
+
+::: {.panel-tabset group="language"}
+
+
+###%%%###%%##%%## HERE HERE HERE HERE HERE check python if it works, then maybe convert fiscal year to an integer by trimming the "-\\d{2}" and converting to numeric.   Then use the same same plots.
 
 ## Python
 ```{python pdataset}
 
-# Download the CSV file and organize the dataset
-data = pd.read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", 
-                   skiprows=1, 
-                   encoding='unicode_escape')
+research_data = pd.concat(
+    [research_data_current, research_data_historical],
+    axis=0,
+    ignore_index=True
+)
 
-# Get rid of empty rows and change the formats of date and currency variables
-data = data.dropna(subset = ["Program"])
-data["Ontario Commitment"] = data["Ontario Commitment"].replace({'\$': '',
-                                                                 ',': ''}, 
-                                                                 regex=True)
-data["Total Project Costs"] = data["Total Project Costs"].replace({'\$': '',
-                                                                 ',': ''}, 
-                                                                 regex=True)
+# Filter the data
+df = (
+    research_data
+    .query("Program == 'Ontario Research Fund - Research Excellence'")
+    .query("`Institution Type` == 'University'")
+    [["Total Project Costs", "Ontario Commitment", "Fiscal Year"]]
+)
 
-data["Ontario Commitment"] = data["Ontario Commitment"].astype(int)
-data["Total Project Costs"] = data["Total Project Costs"].astype(int)
+# Create plot
+fig, ax = plt.subplots(figsize=(8, 6))
+
+sb.scatterplot(
+    data=df,
+    x="Total Project Costs",
+    y="Ontario Commitment",
+    hue="Fiscal Year",
+    size="Fiscal Year",
+    alpha=0.7,
+    ax=ax
+)
+
+# Add y = x reference line
+xmin = 0
+xmax = df["Ontario Commitment"].max()
+
+ax.plot(
+    [xmin, xmax],
+    [xmin, xmax],
+    linestyle="--",
+    alpha=0.5
+)
+
+ax.set_xlabel("Total Project Costs")
+ax.set_ylabel("Ontario Commitment")
+
+plt.tight_layout()
+plt.show()
 
 
-data["Approval Date"] = pd.to_datetime(data["Approval Date"])
-data.head()
 
-```
-```{python plot1}
-# Plot the Paired graph
-# Extract the year from the approval date
 
-data["year"] = data["Approval Date"].dt.year
 
-sb.set_style("darkgrid")
+# convert to numeric for filtering, then convert back to a factor as plotting hack
+plot_data_2021 = df.copy()
+plot_data_2021["Fiscal Year"] = (
+    plot_data_2021["Fiscal Year"]
+    .str.replace(r"-\d{2}", "", regex=True)
+    .astype(float)
+)
 
-sb.boxplot(data=data,
-           x="year",
-           y="Ontario Commitment",
-           orient="v")
-plt.title("Funding per Year (From Ontario)")
-plt.xlabel("Year of Approval")
-plt.ylabel("Dollars of Funding")
-plt.show;
+plot_data_2021 = plot_data_2021.query("`Fiscal Year` > 2020")
 
+plot_data_2021["Fiscal Year"] = plot_data_2021["Fiscal Year"].astype(int).astype(str)
+fig, ax = plt.subplots(figsize=(8, 6))
+
+sb.scatterplot(
+    data=plot_data_2021,
+    x="Total Project Costs",
+    y="Ontario Commitment",
+    hue="Fiscal Year",
+    alpha=0.8,
+    ax=ax
+)
+
+
+xmax = min(plot_data_2021["Total Project Costs"].max(), plot_data_2021["Ontario Commitment"].max())
+
+ax.plot([0, xmax], [0, xmax], linestyle="--", alpha=0.4)
+
+ax.set_title("Ontario Research Funding Costs and Commitments since 2021")
+
+plt.tight_layout()
+
+plt.show()
 ```
 
 ## R
 ```{r rdataset, warning = FALSE, message = FALSE}
-# Download the CSV file and organize the dataset
-data <- read_csv("https://files.ontario.ca/opendata/orfre_apr_20_18_0.csv", skip=1)
 
 
+research_data_c = research_data_current |> 
+    subset(Program == "Ontario Research Fund - Research Excellence") |>
+    subset(`Institution Type` == "University") |> 
+    select(`Total Project Costs`,`Ontario Commitment`, `Fiscal Year`) 
 
+research_data_h = research_data_historical |> 
+    subset(Program == "Ontario Research Fund - Research Excellence") |>
+    subset(`Institution Type` == "University") |> 
+    select(`Total Project Costs`,`Ontario Commitment`, `Fiscal Year`) 
 
-# Get rid of empty rows and change the formats of date and currency variables
-data <- data |> rename_all(make.names)|> 
-  subset(Program!="") |>
-  mutate(Ontario.Commitment = as.numeric(gsub("[$,]", "", Ontario.Commitment))) |>
-  mutate(Total.Project.Costs = as.numeric(gsub("[$,]", "", Total.Project.Costs))) |>
-  mutate(Approval.Date = as.Date(Approval.Date, "%d-%b-%y"))
-head(data)
+research_data = bind_rows(research_data_c, research_data_h) 
 
-# Plot the Paired graph
-#extract the year from the approval date
-data |> 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
-ggplot( )+
-  #geom_point(aes(x=year, y=Ontario.Commitment))+
-  geom_boxplot(aes(y=Ontario.Commitment, x=factor(year)))+
-   ggtitle("Funding per Year (From Ontario)")+
-  labs(y="Dollars of funding", x = "Year of approval")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-:::
-
-* The graph shows that most of the projects were for \$1,000,000 - \$4,000,000 Canadian dollars.
-
-
-### Frequency of Study Area
-
-The following code is used to draw the different research areas funding.  Note that first we need to sum within each category (OIA\_AREA) and then fill in the table so that we have zeros in all the missing years.
-
-::: {.panel-tabset group="language"}
-
-## Python
-```{python pfrequency}
-
-total_funding = data.groupby(["year", "OIA_AREA"],
-                             as_index=False)['Ontario Commitment'].sum()
-
-plt.clf()
-sb.lineplot(data = total_funding,
-            x = "year",
-            y = "Ontario Commitment",
-            hue = "OIA_AREA")
-plt.title("Total Funding Per Year Within Each Category")
-plt.ylabel("Total Funding")
-plt.legend(title = "OIA Area",
-           bbox_to_anchor=(1.05, 1),
-           loc='upper left',
-           borderaxespad=0);
-
-```
-
-## R
-```{r rfrequency, warning = FALSE}
-data |> 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
-  group_by(year,OIA_AREA) |>
-  summarize(TotalFunding = sum(Ontario.Commitment))|>
-  ungroup()|>
-  complete(OIA_AREA,year,fill = list(TotalFunding = 0))|>
-ggplot( aes(x=year, y=TotalFunding, group=OIA_AREA )) + 
-  geom_line(aes(color = OIA_AREA)) +
-  ggtitle("Total Funding Per Year Within Each Category")+
-   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
+  research_data |>
+    ggplot(aes(x = `Total Project Costs`, colour = `Fiscal Year`, y = `Ontario Commitment`)) + 
+  geom_abline(slope = 1, intercept = 0, alpha = .5, linetype = "dashed") + 
+  geom_point(alpha = .3)+
+    ggtitle("Ontario Research Funding Costs and Commitments")
 
+
+  
+   research_data |>
+    mutate(`Fiscal Year` = str_replace_all(`Fiscal Year`, pattern = "-\\d{2}", replacement = "") |> as.numeric()) |>  
+    dplyr::filter(`Fiscal Year` > 2020 ) |>  # convert to numeric for filtering, then convert back to a factor as plotting hack
+    mutate(`Fiscal Year` = as.character(`Fiscal Year`)) |>  
+    ggplot(aes(x = `Total Project Costs`, colour = `Fiscal Year`, y = `Ontario Commitment`)) + 
+  geom_abline(slope = 1, intercept = 0, alpha = .4, linetype = "dashed") + 
+  geom_point(alpha = .8)+
+    ggtitle("Ontario Research Funding Costs and Commitments since 2021")
 ```
 
 :::
 
-> Summary
-
-* Research programs are separated into 5 areas: Advanced health technologies, Bio-economy and clean technologies, Digital media information and communications technologies, Pharmaceutical research and manufacturing, and other unspecified groups. Not all programs were active every year.
-
-::: {.panel-tabset group="language"}
-
-## Python
-```{python pproportion}
-
-proportions =  total_funding.pivot_table(index=['year'],
-                                         columns = 'OIA_AREA',
-                                         values ='Ontario Commitment').reset_index().set_index('year').fillna(0)
-
-proportions = proportions.div(proportions.sum(axis=1), axis=0)
-
-plt.clf()
-proportions.plot(kind='bar', stacked = True)
-plt.title("Funding proportion in each research area")
-plt.xlabel("Year")
-plt.ylabel("Proportion of Funding")
-plt.legend(title="OIA Area",
-           bbox_to_anchor=(1.05, 1), 
-           loc='upper left', 
-           borderaxespad=0)
-plt.show();
-```
-
-## R
-```{r rpercent, warning = FALSE}
-
-# percentage of study are in research fund
-data |> 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
-  group_by(year,OIA_AREA) |>
-  summarize(TotalFunding = sum(Ontario.Commitment))|>
-  ungroup()|>
-  complete(OIA_AREA,year,fill = list(TotalFunding = 0))|>
-ggplot( aes(x = year,fill=OIA_AREA, y=TotalFunding)) + 
-    geom_bar(position="fill", stat="identity") +
-    scale_fill_viridis(discrete = T) +
-    ggtitle("Funding proportion in each research area ") +
-    theme_ipsum() +
-    xlab("year")+
-    ylab("proportion of funding")+
-   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-:::
-
-## Frequency distribution of research projects grouped by cities and Lead Research Institutions
-
-The following codes are used to plot the ridgeline graphs about the frequency of research projects by cities and Lead Research Institutions.
-
-::: {.panel-tabset group="language"}
-
-## Python
-```{python pins}
-
-# Create their own summarized table
-
-# Count projects per year for each institution
-ins = data[['year', 'Lead Research Institution']].value_counts().reset_index(name = 'count')
-
-# Get frequency of counts
-ins2 = ins[['count', 'Lead Research Institution']].value_counts().reset_index(name = 'freq')
-
-ins3 = ins2.pivot_table(values = 'freq', index = "Lead Research Institution", columns = 'count').fillna(0)
-
-# Add in frequency of 0 project years for each institute
-ins3[0] = 13 - sum(ins3[i] for i in range(1,9))
-
-```
-```{python pins bar}
-
-plt.clf()
-sb.set_style('white')
+If Ontario was fully funding these research projects, then the points would fall on the dashed line.   Considering 2021 and beyond, you can see that Ontario capped the projects to maximum contribution of $2,000,000 towards the total project costs.
 
 
-for i in range(30):
-    plt.subplot(30,1,i+1)
-
-    sb.barplot(data = ins3.iloc[i],
-               width = 0.2)
-    
-    plt.legend('', frameon = False)
-    plt.xlabel('')
-    plt.ylabel(ins3.index[i], rotation = 0, ha = 'right', va = 'center')
-    plt.yticks([])
-    sb.despine(left = True)
-
-    if i != 29:
-        plt.xticks([])
-    if i == 29:
-        plt.xlabel("Number of approved research projects in a year")
-
-plt.show();
-
-```
-
-```{python pcity}
-
-# Count projects per year for each institution
-city = data[['year', 'City']].value_counts().reset_index(name = 'count')
-
-# Get frequency of counts
-city2 = city[['count', 'City']].value_counts().reset_index(name = 'freq')
-
-city3 = city2.pivot_table(values = 'freq', index = "City", columns = 'count').fillna(0)
-
-# Fill in years where num projects was 0
-
-for i in [7,8,9,10,14,15,16,19,20,21]:
-    city3[i] = 0
-
-# Add in frequency of 0 project years for each institute
-city3[0] = 13 - sum(city3[i] for i in range(1,23))
-
-```
-
-```{python pcity plot}
-
-plt.clf()
-sb.set_style('white')
-
-
-for i in range(13):
-    plt.subplot(13,1,i+1)
-
-    sb.barplot(data = city3.iloc[i],
-               width = 0.2)
-    
-    plt.legend('', frameon = False)
-    plt.xlabel('')
-    plt.ylabel(city3.index[i], rotation = 0, ha = 'right', va = 'center')
-    plt.yticks([])
-    sb.despine(left = True)
-
-    if i != 12:
-        plt.xticks([])
-    if i == 12:
-        plt.xlabel("Number of approved research projects in a year")
-
-plt.show();
-
-
-```
-
-## R
-```{r cCity}
-
-# Create thier own summarized table
-
-ins = data |> 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
-  group_by(year,Lead.Research.Institution) |>
-  tally() |>
-  ungroup()|>
-  complete(Lead.Research.Institution,year, fill = list(n = 0))
-
-city = data |> 
-  separate(Approval.Date, into = c("year","month", "date"), sep = "-")|>
-  group_by(year,City) |>
-  tally()|>
-  ungroup()|>
-  complete(City,year, fill = list(n = 0))
-
-
-# Plot their ridgeline graphs
-ins |>
-  ggplot(aes(y=Lead.Research.Institution, x=n,  fill=Lead.Research.Institution)) +
-    geom_density_ridges(alpha=0.6, stat="binline", bins=20) +
-    theme_ridges() +
-    theme(legend.position="none",
-          panel.spacing = unit(0.1, "lines"),
-          strip.text.x = element_text(size = 3)) +
-    xlab("Number of approved research projects in a year") +
-    ylab("Lead Research Institution")
-
-city |>
-  ggplot(aes(y=City, x=n,  fill=City)) +
-    geom_density_ridges(alpha=0.6, stat="binline", bins=20) +
-    theme_ridges() +
-    theme(legend.position="none",
-          panel.spacing = unit(0.1, "lines"),
-          strip.text.x = element_text(size = 3)) +
-    xlab("Number of approved research projects in a year") +
-    ylab("City")
-
-```
-
-:::
-
-> Summary
-
-* The graph counts the number of approved projects by cities and Lead Research Institutions, essentially a histogram of approvals within each year.  There are many years in which the values are zero for a city or institution so these must be re-included, otherwise the data will be misleading.

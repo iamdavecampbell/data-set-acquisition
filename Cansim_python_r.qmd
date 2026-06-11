@@ -27,10 +27,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Find and extract socio-economic data from Statistics Canada.  In this example we manipulate and plot unemployment rates and housing starts.  Relationships between the two datasets are examined.
 
+This showcases the _extended_ workflow, using the R `cansim` library and similarly finding the relevant files in python from the RESTapi.  Other pages in this repo do this in a less programmatic way, rather than querying the API to find the url for the zip file (in python), instead those pages suggest visiting the stat can page, finding the relevant table, copying the url and then downloading or (using a shortcut) assuming a known format for the url and plugging in the table of interest.
 
 # Data Provider
 
 Statistics Canada hosts a large set of socio-economic [datasets](https://www150.statcan.gc.ca/n1//en/type/data?MM=1#tables).  When searching through these, take note of the _table_ identifier.  Statistics Canada's [Web Data Service](https://www.statcan.gc.ca/en/developers/wds) provides official API endpoints for downloading tables and metadata.  In Python, we can use the WDS API directly with **requests** and **pandas**, rather than relying on a specialized wrapper package.  In R, the **cansim** library is a well maintained API wrapper for downloading these tables.  See also the [cansim](https://cran.r-project.org/web/packages/cansim/vignettes/cansim.html) vignette for examples and instructions to pull Statistics Canada datasets in R.
+
+
 
 
 # Basic libraries 
@@ -89,7 +92,7 @@ product_id = table_id.replace("-", "")[:8]
 api_url = ("https://www150.statcan.gc.ca/t1/wds/rest/"
       f"getFullTableDownloadCSV/{product_id}/{language}")
 
-# extract the zipfile url from the api response
+# obtain the zipfile url from the api response
 response = requests.get(api_url, timeout=30)
 response.raise_for_status()
 payload = response.json()

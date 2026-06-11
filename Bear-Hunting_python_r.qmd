@@ -1,3 +1,4 @@
+---
 title: "Black bear hunting activity and harvests - Open Ontario"
 execute:
     freeze: auto  # re-render only when source changes
@@ -7,7 +8,7 @@ execute:
 author: "Dean Jayatilleke, Junpu Xie, and Dave Campbell"
 date: '2026-05-14'
 slug: wild-life-data-balck-bear-hunting-activity-and-harvests-data-catalogue-from-goverrnment-of-ontario
-categories: ["Regression", "Time Series",  "Open Ontario", "API","Software:Python","Software:R"]
+categories: ["Regression", "Time Series",  "Open Ontario", "CKAN API", "Software:Python", "Software:R"]
 subtitle: ''
 summary: 'The dataset records numbers of black bears harvested and active black bear license holders every year in different wildlife management unit (WMU).'
 output: html_document
@@ -43,12 +44,10 @@ The original dataset of bears harvested and active hunters and its supporting do
 import pandas as pd 
 import requests
 import seaborn as sb
-import openpyxl
 import matplotlib as plt
 ```
 ## R
 ```{r rlib, message = FALSE, warning = FALSE}
-
 library(jsonlite)
 library(latticeExtra)
 library(tidyverse) 
