@@ -119,7 +119,7 @@ for(year in 1970:2023){
 
 #Obtain monthly data from 1883 - 2006
 base_url2 = c("https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=4333&timeframe=3&submit=Download+Data")
-download.file(base_url,
+download.file(base_url2,
                       destfile = paste0("Data/Ottawa-monthly.csv"))
 
 ```
@@ -148,8 +148,8 @@ df["Date/Time"] = pd.to_datetime(df["Date/Time"])
 
 files2load = list.files(path="Data",pattern="daily")
 # Big loop to load and append all files,
-# but first extract the data types from the most year:
-data_daily = read_csv(paste0("Data/",tail(files2load,1)))
+# but first extract the data types from a recent year:
+data_daily = read_csv(paste0("Data/","Ottawa2023-daily.csv"))
 columntypes = data_daily %>% summarise_all(class) |> as.list()
 # then use bind_rows to ensure all columns are properly aligned:
 for(year in 1:(length(files2load)-1)){
